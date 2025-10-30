@@ -94,7 +94,7 @@ async function fetchAvailableClasses() {
 
 async function enroll(classId, className, teacherName) {
   try {
-    const res = await fetch('hhttps://attendace-demo.onrender.com/api/student/classes/enroll', {
+    const res = await fetch('https://attendace-demo.onrender.com/api/student/classes/enroll', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ class_id: classId })
