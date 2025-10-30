@@ -13,3 +13,7 @@ const pool = mysql.createPool({
 });
 
 module.exports = pool;
+
+pool.getConnection()
+  .then(() => console.log("✅ Connected to MySQL Cloud Database"))
+  .catch(err => console.error("❌ MySQL Connection Error:", err.message));
