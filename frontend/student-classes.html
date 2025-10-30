@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Classes | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      background: #fefae0;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .dashboard-container {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #fff;
+      border-radius: 25px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    header .logo {
+      width: 60px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      margin: 0;
+      color: #333;
+    }
+
+    #logoutBtn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 6px 12px;
+      margin: 10px;
+      border-radius: 12px;
+      border: none;
+      background: #5f8b6e;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #logoutBtn:hover {
+      background: #497c59;
+    }
+
+    .classes-section h2 {
+      color: #5f8b6e;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .class-card {
+      background: #f5f7f8;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .class-card button {
+      padding: 6px 12px;
+      background: #5f8b6e;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .class-card button:hover {
+      background: #497c59;
+    }
+
+    .error-msg {
+      color: red;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right:0; bottom:0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    .modal-content h3 {
+      margin-top: 0;
+      color: #5f8b6e;
+    }
+
+    .modal-content .class-card {
+      margin: 8px 0;
+    }
+
+    .modal-content .close-btn {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: #5f8b6e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .modal-content .close-btn:hover {
+      background: #497c59;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>My Classes</h1>
+      <button id="logoutBtn">Logout</button>
+    </header>
+
+    <div id="errorMsg" class="error-msg"></div>
+
+    <div class="classes-section">
+      <h2>Enrolled Classes</h2>
+      <div id="myClassesContainer">
+        <!-- Enrolled classes appear here -->
+      </div>
+      <button id="addClassBtn" class="primary" style="margin-top:10px;">Add Class</button>
+    </div>
+  </div>
+
+  <!-- Modal for available classes -->
+  <div class="modal" id="availableClassesModal">
+    <div class="modal-content">
+      <h3>Select Class to Enroll</h3>
+      <div id="availableClassesContainer">
+        <!-- List of teacher classes -->
+      </div>
+      <button class="close-btn" id="closeModalBtn">Close</button>
+    </div>
+  </div>
+
+  <script src="assets/student-classes.js"></script>
+</body>
+</html>

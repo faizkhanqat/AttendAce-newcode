@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Classes | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+    }
+
+    .classes-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo { width: 80px; margin-bottom: 10px; }
+    h1 { color: #5f8b6e; margin: 0; }
+
+    .list-container { text-align: left; margin-top: 20px; }
+    .class-item {
+      background: #f5f5f5;
+      border: 1px solid #d9e0e6;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .menu-btn, .add-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .menu-btn { background: #5f8b6e; }
+    .menu-btn:hover { background: #497c59; }
+
+    .add-btn { background: #3a86ff; margin-bottom: 20px; }
+    .add-btn:hover { background: #265abf; }
+
+    .loading { text-align: center; color: #5f8b6e; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="classes-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>My Classes</h1>
+    </header>
+
+    <button class="add-btn" onclick="window.location.href='teacher-add-class.html'">+ Add Class</button>
+
+    <div id="classesList" class="list-container">
+      <p class="loading">Loading classes...</p>
+    </div>
+
+    <a href="teacher-dashboard.html" class="menu-btn"><span class="icon">⬅️</span> Back to Dashboard</a>
+  </div>
+
+  <script>
+    const classesList = document.getElementById('classesList');
+    const token = localStorage.getItem('token');
+
+    async function fetchClasses() {
+      try {
+        const res = await fetch('https://localhost:3700/api/teacher/classes', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || 'Failed to fetch classes');
+        }
+
+        const classes = await res.json();
+        classesList.innerHTML = '';
+
+        if (!classes.length) {
+          classesList.innerHTML = '<p class="loading">No classes found.</p>';
+          return;
+        }
+
+        classes.forEach(cls => {
+          const div = document.createElement('div');
+          div.className = 'class-item';
+          div.innerHTML = `<span>${cls.name}</span>
+                           <span>${cls.subject || ''}</span>`;
+          classesList.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error(err);
+        classesList.innerHTML = `<p class="loading">Error loading classes: ${err.message}</p>`;
+      }
+    }
+
+    fetchClasses();
+  </script>
+</body>
+</html>

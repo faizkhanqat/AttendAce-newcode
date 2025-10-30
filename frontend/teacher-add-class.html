@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Class | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .add-class-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #5f8b6e;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #d9e0e6;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #5f8b6e;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #497c59;
+    }
+    .message {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    a.menu-btn {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 15px;
+      background: #5f8b6e;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+    a.menu-btn:hover {
+      background: #497c59;
+    }
+  </style>
+</head>
+<body>
+  <div class="add-class-container">
+    <h1>Add a Class</h1>
+    <form id="addClassForm">
+      <div class="form-group">
+        <label for="className">Class Name</label>
+        <input type="text" id="className" required placeholder="e.g. Math 101">
+      </div>
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <input type="text" id="subject" required placeholder="e.g. Mathematics">
+      </div>
+      <button type="submit">Add Class</button>
+      <p class="message" id="msg"></p>
+    </form>
+    <a href="teacher-classes.html" class="menu-btn">⬅️ Back to Classes</a>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('token');
+
+    async function addClass(name, subject) {
+      try {
+        const res = await fetch('https://localhost:3700/api/teacher/classes/add', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ name, subject })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || 'Failed to add class');
+        }
+
+        document.getElementById('msg').textContent = 'Class added successfully ✅';
+        document.getElementById('msg').className = 'message success';
+        // Clear form
+        document.getElementById('addClassForm').reset();
+
+      } catch (err) {
+        console.error('Add class error:', err);
+        document.getElementById('msg').textContent = 'Error: ' + err.message;
+        document.getElementById('msg').className = 'message error';
+      }
+    }
+
+    document.getElementById('addClassForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = document.getElementById('className').value;
+      const subject = document.getElementById('subject').value;
+      addClass(name, subject);
+    });
+  </script>
+</body>
+</html>

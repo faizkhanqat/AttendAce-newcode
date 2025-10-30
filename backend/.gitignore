@@ -1,0 +1,11 @@
+# Node.js dependencies
+node_modules/
+
+# Environment variables
+backend/.env
+
+# SSL certificates (optional)
+backend/ssl/
+
+# Logs
+*.log

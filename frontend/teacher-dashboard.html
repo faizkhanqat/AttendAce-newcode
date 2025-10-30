@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Dashboard | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    /* Same styling as login/register and student dashboard */
+    body {
+      background: #fefae0;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .dashboard-container {
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 25px;
+      background: #fff;
+      border-radius: 25px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 25px;
+      position: relative;
+    }
+
+    header .logo {
+      width: 60px;
+      margin-bottom: 10px;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      margin: 0;
+      color: #333;
+    }
+
+    /* Logout button in header */
+    #logoutBtn {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 6px 12px;
+      margin: 10px;
+      border-radius: 12px;
+      border: none;
+      background: #5f8b6e;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    #logoutBtn:hover {
+      background: #497c59;
+    }
+
+    .profile-card {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+      padding: 15px;
+      background: #f5f7f8;
+      border-radius: 15px;
+    }
+
+    .profile-card img.profile-pic {
+      width: 80px;
+      border-radius: 50%;
+    }
+
+    .profile-info h2 {
+      margin: 0;
+      font-size: 20px;
+      color: #5f8b6e;
+    }
+
+    .profile-info p {
+      margin: 3px 0;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .menu-options {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .menu-options a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px;
+      text-decoration: none;
+      font-weight: 500;
+      border-radius: 12px;
+      border: none;
+      background: #5f8b6e;
+      color: #fff;
+      transition: all 0.3s ease;
+    }
+
+    .menu-options a.primary {
+      background: #497c59;
+    }
+
+    .menu-options a:hover {
+      opacity: 0.85;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Teacher Dashboard</h1>
+      <button id="logoutBtn">Logout</button>
+    </header>
+
+    <div class="profile-card">
+      <img src="assets/illustrations/teacher.png" alt="Profile Picture" class="profile-pic">
+      <div class="profile-info">
+        <h2 id="teacherName"></h2>
+        <p>ID: <span id="teacherId"></span></p>
+        <p id="teacherDept"></p>
+      </div>
+    </div>
+
+    <nav class="menu-options">
+      <a href="teacher-classes.html"><span class="icon">📚</span> My Classes</a>
+      <a href="teacher-qrgenerator.html" class="primary"><span class="icon">📱</span> Generate QR</a>
+      <a href="settings.html"><span class="icon">⚙️</span> Settings</a>
+    </nav>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      document.getElementById('teacherName').textContent = user.name;
+      document.getElementById('teacherId').textContent = user.id || 'N/A';
+      document.getElementById('teacherDept').textContent = user.department || 'Department info not set';
+
+      // Logout functionality
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = 'login.html';
+      });
+    });
+  </script>
+</body>
+</html>

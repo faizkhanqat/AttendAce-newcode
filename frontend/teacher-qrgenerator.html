@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate QR | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+    }
+
+    .qr-generator-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #5f8b6e;
+      margin: 0;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    select, input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #d9e0e6;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #5f8b6e;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #497c59;
+    }
+
+    #qrResult {
+      margin-top: 20px;
+    }
+
+    canvas {
+      margin-top: 10px;
+    }
+
+    .menu-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: #5f8b6e;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: 0.3s;
+    }
+
+    .menu-btn:hover {
+      background: #497c59;
+    }
+
+    .error-msg {
+      color: red;
+      margin-top: 10px;
+      font-weight: 500;
+    }
+
+    .countdown {
+      margin-top: 10px;
+      font-weight: 500;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="qr-generator-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Generate QR for Attendance</h1>
+    </header>
+
+    <form id="qrForm">
+      <div class="form-group">
+        <label for="classSelect">Select Class</label>
+        <select id="classSelect">
+          <option value="">Loading classes...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="duration">Duration (minutes)</label>
+        <input type="number" id="duration" value="15" min="1">
+      </div>
+      <button type="submit">Generate QR</button>
+    </form>
+
+    <div id="qrResult"></div>
+    <p class="countdown" id="countdown"></p>
+    <p class="error-msg" id="errorMsg"></p>
+
+    <a href="teacher-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
+  </div>
+
+  <!-- Include QRCode.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="assets/teacher-qrgenerator.js"></script>
+</body>
+</html>

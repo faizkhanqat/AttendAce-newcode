@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Register | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 20px;
+      color: #5f8b6e;
+    }
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 5px;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #d9e0e6;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: #5f8b6e;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #497c59;
+    }
+    .message {
+      margin-top: 15px;
+      color: red;
+      font-size: 14px;
+    }
+    .toggle-link {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #5f8b6e;
+      cursor: pointer;
+    }
+    .toggle-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 id="formTitle">AttendAce Login</h1>
+
+    <form id="authForm">
+      <!-- Full Name (for registration) -->
+      <div class="form-group" id="nameGroup" style="display: none;">
+        <label for="name">Full Name</label>
+        <input type="text" id="name">
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" required>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role" required>
+          <option value="">Select role</option>
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+
+      <div class="form-group" id="confirmGroup" style="display: none;">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword">
+      </div>
+
+      <button type="submit" id="submitBtn">Login</button>
+      <p class="message" id="msg"></p>
+    </form>
+
+    <p class="toggle-link" id="toggleLink">Don't have an account? Register</p>
+  </div>
+
+  <script>
+    let isLogin = true;
+
+    const formTitle = document.getElementById('formTitle');
+    const authForm = document.getElementById('authForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const toggleLink = document.getElementById('toggleLink');
+    const confirmGroup = document.getElementById('confirmGroup');
+    const nameGroup = document.getElementById('nameGroup');
+    const msg = document.getElementById('msg');
+
+    toggleLink.addEventListener('click', () => {
+      isLogin = !isLogin;
+      if (isLogin) {
+        formTitle.textContent = 'AttendAce Login';
+        submitBtn.textContent = 'Login';
+        toggleLink.textContent = "Don't have an account? Register";
+        confirmGroup.style.display = 'none';
+        nameGroup.style.display = 'none';
+      } else {
+        formTitle.textContent = 'AttendAce Register';
+        submitBtn.textContent = 'Register';
+        toggleLink.textContent = "Already have an account? Login";
+        confirmGroup.style.display = 'block';
+        nameGroup.style.display = 'block';
+      }
+      msg.textContent = '';
+    });
+
+    async function login(email, password, role) {
+      try {
+        const res = await fetch('https://localhost:3700/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, role })
+        });
+
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(error || 'Login failed');
+        }
+
+        const data = await res.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        if (role === 'student') {
+          window.location.href = 'student-dashboard.html';
+        } else {
+          window.location.href = 'teacher-dashboard.html';
+        }
+
+      } catch (err) {
+        msg.textContent = 'Login failed: ' + err.message;
+      }
+    }
+
+    async function register(name, email, password, role) {
+      try {
+        const res = await fetch('https://localhost:3700/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password, role })
+        });
+
+        if (!res.ok) {
+          const error = await res.text();
+          throw new Error(error || 'Registration failed');
+        }
+
+        const data = await res.json();
+        alert('Registration successful! Please login.');
+        toggleLink.click();
+
+      } catch (err) {
+        msg.textContent = 'Registration failed: ' + err.message;
+      }
+    }
+
+    authForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+
+      if (isLogin) {
+        login(email, password, role);
+      } else {
+        const name = document.getElementById('name').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (!name || !email || !password || !role || !confirmPassword) {
+          msg.textContent = 'Please fill all fields';
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          msg.textContent = "Passwords don't match";
+          return;
+        }
+
+        register(name, email, password, role);
+      }
+    });
+  </script>
+</body>
+</html>

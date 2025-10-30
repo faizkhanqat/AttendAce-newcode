@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan QR | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+    }
+
+    .qr-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .logo {
+      width: 80px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #5f8b6e;
+      margin: 0;
+    }
+
+    #reader {
+      width: 100%;
+      margin: 20px auto;
+      border: 4px solid #5f8b6e;
+      border-radius: 12px;
+      background: #000;
+      position: relative;
+      height: 300px;
+    }
+
+    .instructions {
+      margin-top: 15px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .menu-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: #5f8b6e;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: 0.3s;
+    }
+
+    .menu-btn:hover {
+      background: #497c59;
+    }
+
+    .error {
+      color: red;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="qr-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Mark Attendance</h1>
+    </header>
+
+    <div id="reader"></div>
+    <p class="instructions">Place the classroom QR code inside the frame</p>
+    <p id="errorMsg" class="error"></p>
+
+    <nav>
+      <a href="student-dashboard.html" class="menu-btn"><span class="icon">❌</span> Cancel</a>
+    </nav>
+  </div>
+
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="assets/scanqr.js"></script>
+</body>
+</html>
