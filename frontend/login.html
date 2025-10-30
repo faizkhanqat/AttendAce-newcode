@@ -149,7 +149,7 @@
 
     async function login(email, password, role) {
       try {
-        const res = await fetch('https://localhost:3700/api/auth/login', {
+        const res = await fetch('https://attendace-demo.onrender.com/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password, role })
@@ -177,7 +177,7 @@
 
     async function register(name, email, password, role) {
       try {
-        const res = await fetch('https://localhost:3700/api/auth/register', {
+        const res = await fetch('https://attendace-demo.onrender.com/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, role })

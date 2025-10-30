@@ -11,7 +11,7 @@ let countdownInterval = null;
 
 async function fetchClasses() {
   try {
-    const res = await fetch('https://localhost:3700/api/teacher/classes', {
+    const res = await fetch('https://attendace-demo.onrender.com/api/teacher/classes', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) throw new Error('Failed to fetch classes');
@@ -63,7 +63,7 @@ async function generateQRCode(classId, duration) {
     qrResult.innerHTML = `<img src="${dataUrl}" alt="QR Code">`;
 
     // Register token in backend via /api/qr/generate
-    const res = await fetch('https://localhost:3700/api/qr/generate', {
+    const res = await fetch('https://attendace-demo.onrender.com/api/qr/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ class_id: classId, expires_in_minutes: duration })
