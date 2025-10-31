@@ -35,8 +35,8 @@ exports.updateProfile = async (req, res) => {
 
     res.json({ message: 'Profile updated successfully', user: updated[0] });
   } catch (err) {
-    console.error('Error updating student profile:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Update error:', error.message);
+  res.status(500).json({ error: error.message });
   }
 };
 
