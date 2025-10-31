@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function fetchMyClasses() {
   try {
-    const res = await fetch('https://attendace-demo.onrender.com/api/student/classes/my', {
+    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/my', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) {
@@ -66,7 +66,7 @@ async function fetchMyClasses() {
 
 async function fetchAvailableClasses() {
   try {
-    const res = await fetch('https://attendace-demo.onrender.com/api/student/classes', {
+    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!res.ok) {
@@ -94,7 +94,7 @@ async function fetchAvailableClasses() {
 
 async function enroll(classId, className, teacherName) {
   try {
-    const res = await fetch('https://attendace-demo.onrender.com/api/student/classes/enroll', {
+    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/enroll', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ class_id: classId })
@@ -118,7 +118,7 @@ async function enroll(classId, className, teacherName) {
 
 async function unenroll(classId, btn) {
   try {
-    const res = await fetch('https://attendace-demo.onrender.com/api/student/classes/unenroll', {
+    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/unenroll', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ class_id: classId })

@@ -10,7 +10,7 @@ if (!token) {
 
 async function markAttendance(class_id, qrToken) {
   try {
-    const res = await fetch('https://attendace-demo.onrender.com/api/attendance/mark', {
+    const res = await fetch('https://attendace-zjzu.onrender.com/api/attendance/mark', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ class_id, token: qrToken })
