@@ -189,13 +189,13 @@
     : 'https://attendace-zjzu.onrender.com/api/teacher/update';
 
 const res = await fetch(endpoint, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + localStorage.getItem('token')
-            },
-            body: JSON.stringify(updatedUser)
-          });
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer ' + localStorage.getItem('token')
+  },
+  body: JSON.stringify(updatedUser)
+});
 
           const data = await res.json();
           if (res.ok) {
