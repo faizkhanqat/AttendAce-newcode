@@ -29,73 +29,48 @@ async function fetchClasses() {
   }
 }
 
-function generateRandomToken(length = 12) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let t = '';
-  for (let i = 0; i < length; i++) t += chars.charAt(Math.floor(Math.random() * chars.length));
-  return t;
-}
-
-function startCountdown(duration) {
+function startCountdown(seconds) {
   clearInterval(countdownInterval);
-  let remaining = duration * 60;
-  countdownEl.textContent = `Expires in: ${duration}:00`;
+  let remaining = seconds;
+  countdownEl.textContent = `Next QR in: ${remaining}s`;
   countdownInterval = setInterval(() => {
     remaining--;
-    const min = Math.floor(remaining / 60);
-    const sec = remaining % 60;
-    countdownEl.textContent = `Expires in: ${min}:${sec < 10 ? '0' : ''}${sec}`;
+    countdownEl.textContent = `Next QR in: ${remaining}s`;
     if (remaining <= 0) clearInterval(countdownInterval);
   }, 1000);
 }
 
-async function generateQRCode(classId, duration) {
-  if (!classId) {
-    alert('Please select a class');
-    return;
-  }
-  const qrToken = generateRandomToken(24);
-
+async function generateDynamicQRCode(classId) {
   try {
-    // QR contains class_id + token as JSON
-    const qrData = JSON.stringify({ class_id: classId, token: qrToken });
-    const dataUrl = await QRCode.toDataURL(qrData, { width: 200 });
-    qrResult.innerHTML = `<img src="${dataUrl}" alt="QR Code">`;
-
-    // Register token in backend via /api/qr/generate
-    const res = await fetch('https://attendace-zjzu.onrender.com/api/qr/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ class_id: classId, expires_in_minutes: duration })
+    const res = await fetch(`https://attendace-zjzu.onrender.com/api/qr/dynamic?class_id=${classId}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
     });
+    if (!res.ok) throw new Error('Failed to generate QR');
+    const data = await res.json();
 
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Failed to register QR in backend');
-    }
+    // Make QR image
+    const qrData = JSON.stringify({ class_id: classId, token: data.token });
+    const qrUrl = await QRCode.toDataURL(qrData, { width: 200 });
+    qrResult.innerHTML = `<img src="${qrUrl}" alt="Dynamic QR">`;
 
-    const resp = await res.json();
-    // backend returns its token and expiry — but we embedded our QR token too.
-    // Start countdown using duration (frontend side)
-    startCountdown(duration);
-    errorMsg.textContent = `QR generated for ${duration} minutes`;
+    startCountdown(10); // 10 seconds countdown
   } catch (err) {
     console.error(err);
     errorMsg.textContent = 'Error generating QR: ' + err.message;
   }
 }
 
-function startQRRotation(classId, duration) {
+function startQRRotation(classId) {
   if (qrInterval) clearInterval(qrInterval);
-  generateQRCode(classId, duration);
-  qrInterval = setInterval(() => generateQRCode(classId, duration), duration * 60 * 1000);
+  generateDynamicQRCode(classId);
+  qrInterval = setInterval(() => generateDynamicQRCode(classId), 10000); // rotate every 10s
 }
 
 qrForm.addEventListener('submit', e => {
   e.preventDefault();
   const classId = classSelect.value;
-  const duration = parseInt(document.getElementById('duration').value) || 15;
-  startQRRotation(classId, duration);
+  if (!classId) return alert('Select a class first');
+  startQRRotation(classId);
 });
 
 fetchClasses();

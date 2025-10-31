@@ -3,8 +3,12 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authMiddleware');
 const authorizeRole = require('../middlewares/roleMiddleware');
-const { generateQR } = require('../controllers/qrController');
+const { generateDynamicQR, verifyQR } = require('../controllers/qrController');
 
-router.post('/generate', authenticateToken, authorizeRole('teacher'), generateQR);
+// Teacher generates dynamic QR every few seconds
+router.get('/dynamic', authenticateToken, authorizeRole('teacher'), generateDynamicQR);
+
+// Student verifies scanned QR
+router.post('/verify', authenticateToken, authorizeRole('student'), verifyQR);
 
 module.exports = router;
