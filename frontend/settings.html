@@ -183,7 +183,12 @@
         };
 
         try {
-          const res = await fetch('https://attendace-zjzu.onrender.com/api/users/update', {
+          const endpoint =
+  user.role === 'student'
+    ? 'https://attendace-zjzu.onrender.com/api/student/update'
+    : 'https://attendace-zjzu.onrender.com/api/teacher/update';
+
+const res = await fetch(endpoint, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
