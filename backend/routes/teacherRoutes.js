@@ -1,16 +1,16 @@
-// backend/routes/teacherRoutes.js
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authMiddleware');
 const authorizeRole = require('../middlewares/roleMiddleware');
-const { getClasses, addClass, generateQR } = require('../controllers/teacherController');
+const teacherController = require('../controllers/teacherController');
 
-// Apply authentication + role middleware to all teacher routes
+// Auth middleware
 router.use(authenticateToken, authorizeRole('teacher'));
 
-// Routes
-router.get('/classes', getClasses);                // Fetch all classes
-router.post('/classes/add', addClass);            // Add a new class
-router.post('/classes/generate-qr', generateQR);  // Generate QR token for a class
+router.get('/profile', teacherController.getProfile);
+router.put('/update', teacherController.updateProfile);
+router.get('/classes', teacherController.getClasses);
+router.post('/classes/add', teacherController.addClass);
+router.post('/classes/generate-qr', teacherController.generateQR);
 
 module.exports = router;

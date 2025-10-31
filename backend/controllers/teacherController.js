@@ -1,13 +1,9 @@
-// backend/controllers/teacherController.js
 const db = require('../config/db');
 
 // Get teacher profile
 exports.getProfile = async (req, res) => {
   try {
-    const [rows] = await db.query(
-      'SELECT id, name, email FROM users WHERE id = ?',
-      [req.user.id]
-    );
+    const [rows] = await db.query('SELECT id, name, email, phone, role FROM users WHERE id = ?', [req.user.id]);
     res.json(rows[0]);
   } catch (err) {
     console.error(err);
@@ -15,13 +11,34 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// Get all classes for teacher
-exports.getClasses = async (req, res) => {
+// Update teacher profile
+exports.updateProfile = async (req, res) => {
   try {
-    const [classes] = await db.query(
-      'SELECT * FROM classes WHERE teacher_id = ?',
+    const { name, email, phone } = req.body;
+    if (!name || !email)
+      return res.status(400).json({ message: 'Name and email required' });
+
+    await db.query(
+      'UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?',
+      [name, email, phone || null, req.user.id]
+    );
+
+    const [updated] = await db.query(
+      'SELECT id, name, email, phone, role FROM users WHERE id = ?',
       [req.user.id]
     );
+
+    res.json({ message: 'Profile updated successfully', user: updated[0] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get classes
+exports.getClasses = async (req, res) => {
+  try {
+    const [classes] = await db.query('SELECT * FROM classes WHERE teacher_id = ?', [req.user.id]);
     res.json(classes);
   } catch (err) {
     console.error(err);
@@ -29,11 +46,11 @@ exports.getClasses = async (req, res) => {
   }
 };
 
-// Add a new class
+// Add new class
 exports.addClass = async (req, res) => {
   try {
     const { name, subject } = req.body;
-    if (!name) return res.status(400).json({ message: 'Class name is required' });
+    if (!name) return res.status(400).json({ message: 'Class name required' });
 
     const [result] = await db.query(
       'INSERT INTO classes (name, subject, teacher_id) VALUES (?, ?, ?)',
@@ -47,29 +64,20 @@ exports.addClass = async (req, res) => {
   }
 };
 
-// Generate QR token for a class
+// Generate QR
 exports.generateQR = async (req, res) => {
   try {
     const { class_id, token, duration } = req.body;
+    if (!class_id || !token)
+      return res.status(400).json({ message: 'Missing data' });
 
-    if (!class_id || !token) {
-      return res.status(400).json({ message: 'Missing class_id or token' });
-    }
-
-    const qrDuration = duration || 15; // default 15 minutes
-
+    const qrDuration = duration || 15;
     await db.query(
       'INSERT INTO qr_tokens (class_id, token, duration, created_at) VALUES (?, ?, ?, NOW())',
       [class_id, token, qrDuration]
     );
 
-    res.status(201).json({
-      message: 'QR registered successfully',
-      token,
-      class_id,
-      duration: qrDuration
-    });
-
+    res.status(201).json({ message: 'QR registered', token, class_id, duration: qrDuration });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });

@@ -1,21 +1,19 @@
-// backend/routes/studentRoutes.js
 const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authMiddleware');
 const authorizeRole = require('../middlewares/roleMiddleware');
 const studentController = require('../controllers/studentController');
 
-router.get('/profile', authenticateToken, authorizeRole('student'), studentController.getProfile);
-router.get('/analytics', authenticateToken, authorizeRole('student'), studentController.getAnalytics);
+// Auth middleware
+router.use(authenticateToken, authorizeRole('student'));
 
-// available classes (teacher classes not yet enrolled)
-router.get('/classes', authenticateToken, authorizeRole('student'), studentController.getAvailableClasses);
+router.get('/profile', studentController.getProfile);
+router.put('/update', studentController.updateProfile);
+router.get('/analytics', studentController.getAnalytics);
 
-// enroll / unenroll
-router.post('/classes/enroll', authenticateToken, authorizeRole('student'), studentController.enrollInClass);
-router.post('/classes/unenroll', authenticateToken, authorizeRole('student'), studentController.unenrollFromClass);
-
-// get my enrolled classes
-router.get('/classes/my', authenticateToken, authorizeRole('student'), studentController.getMyClasses);
+router.get('/classes', studentController.getAvailableClasses);
+router.get('/classes/my', studentController.getMyClasses);
+router.post('/classes/enroll', studentController.enrollInClass);
+router.post('/classes/unenroll', studentController.unenrollFromClass);
 
 module.exports = router;

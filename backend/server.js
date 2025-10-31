@@ -1,5 +1,3 @@
-// backend/server.js
-
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -16,7 +14,7 @@ const PORT = process.env.PORT || 3700;
 
 // Middleware
 app.use(cors({
-  origin: '*', // Render handles HTTPS automatically
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -33,12 +31,11 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/qr', qrRoutes);
 
-// Fallback for frontend routes
+// Frontend fallback
 app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
-// Start plain HTTP (Render adds HTTPS automatically)
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
 });

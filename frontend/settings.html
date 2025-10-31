@@ -6,7 +6,6 @@
   <title>Settings | AttendAce</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
-    /* Consistent SSC with login/register and dashboards */
     body {
       background: #fefae0;
       font-family: 'Poppins', sans-serif;
@@ -16,7 +15,6 @@
       justify-content: center;
       padding: 20px 0;
     }
-
     .settings-container {
       max-width: 500px;
       width: 100%;
@@ -24,106 +22,30 @@
       border-radius: 25px;
       box-shadow: 0 5px 25px rgba(0,0,0,0.1);
       padding: 25px;
-      box-sizing: border-box;
     }
-
-    header {
-      text-align: center;
-      margin-bottom: 25px;
-    }
-
-    header .logo {
-      width: 60px;
-      margin-bottom: 10px;
-    }
-
-    header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 24px;
-      margin: 0;
-      color: #333;
-    }
-
-    .details-form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-
-    label {
-      font-weight: 500;
-      color: #333;
-      font-size: 14px;
-    }
-
+    header { text-align: center; margin-bottom: 25px; }
+    header .logo { width: 60px; margin-bottom: 10px; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0; color: #333; }
+    .details-form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    label { font-weight: 500; color: #333; font-size: 14px; }
     input, button.menu-btn {
-      padding: 12px 15px;
-      font-size: 15px;
-      border-radius: 12px;
-      border: 1px solid #d9e0e6;
-      font-family: 'Poppins', sans-serif;
-      box-sizing: border-box;
+      padding: 12px 15px; font-size: 15px; border-radius: 12px;
+      border: 1px solid #d9e0e6; font-family: 'Poppins', sans-serif;
     }
-
-    button.menu-btn {
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-
-    button.primary {
-      background: #5f8b6e;
-      color: #fff;
-    }
-
-    button.primary:hover {
-      background: #497c59;
-    }
-
-    button.danger {
-      background: #e74c3c;
-      color: #fff;
-    }
-
-    button.danger:hover {
-      background: #c0392b;
-    }
-
+    button.menu-btn { border: none; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    button.primary { background: #5f8b6e; color: #fff; }
+    button.primary:hover { background: #497c59; }
+    button.danger { background: #e74c3c; color: #fff; }
+    button.danger:hover { background: #c0392b; }
     a.menu-btn {
-      text-align: center;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-      background: #5f8b6e;
-      color: #fff;
-      border-radius: 12px;
-      padding: 12px;
-      font-weight: 500;
-      transition: all 0.3s ease;
+      text-align: center; text-decoration: none; display: flex;
+      align-items: center; justify-content: center; gap: 5px;
+      background: #5f8b6e; color: #fff; border-radius: 12px;
+      padding: 12px; font-weight: 500; transition: 0.3s;
     }
-
-    a.menu-btn:hover {
-      background: #497c59;
-    }
-
-    .menu-options {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
+    a.menu-btn:hover { background: #497c59; }
+    .menu-options { display: flex; flex-direction: column; gap: 10px; }
   </style>
 </head>
 <body>
@@ -153,76 +75,64 @@
     </form>
 
     <div class="menu-options">
-      <button type="button" class="menu-btn primary" id="saveBtn"><span class="icon">✔️</span> Save Changes</button>
-      <a href="#" class="menu-btn" id="backBtn"><span class="icon">⬅️</span> Back to Dashboard</a>
-      <button class="menu-btn danger" id="logoutBtn"><span class="icon">🚪</span> Logout</button>
+      <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
+      <a href="#" class="menu-btn" id="backBtn">⬅️ Back to Dashboard</a>
+      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
     </div>
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Get user from localStorage
       const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
+      const token = localStorage.getItem('token');
 
-      // Populate fields
-      document.getElementById('fullName').value = user.name;
-      document.getElementById('userId').value = user.id || 'N/A';
-      document.getElementById('email').value = user.email;
+      if (!user || !token) return (window.location.href = 'login.html');
+
+      document.getElementById('fullName').value = user.name || '';
+      document.getElementById('userId').value = user.id || '';
+      document.getElementById('email').value = user.email || '';
       document.getElementById('phone').value = user.phone || '';
 
-      // Save changes
       document.getElementById('saveBtn').addEventListener('click', async () => {
         const updatedUser = {
-          name: document.getElementById('fullName').value,
-          email: document.getElementById('email').value,
-          phone: document.getElementById('phone').value
+          name: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
         };
 
+        const endpoint = user.role === 'student'
+          ? 'https://attendace-zjzu.onrender.com/api/student/update'
+          : 'https://attendace-zjzu.onrender.com/api/teacher/update';
+
         try {
-          const endpoint =
-  user.role === 'student'
-    ? 'https://attendace-zjzu.onrender.com/api/student/update'
-    : 'https://attendace-zjzu.onrender.com/api/teacher/update';
+          const res = await fetch(endpoint, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token,
+            },
+            body: JSON.stringify(updatedUser),
+          });
 
-const res = await fetch(endpoint, {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + localStorage.getItem('token')
-  },
-  body: JSON.stringify(updatedUser)
-});
-
+          if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
-          if (res.ok) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            alert('Profile updated successfully!');
-          } else {
-            alert(data.message || 'Update failed');
-          }
+
+          localStorage.setItem('user', JSON.stringify(data.user));
+          alert('Profile updated successfully!');
         } catch (err) {
-          console.error(err);
-          alert('Server error');
+          console.error('Update error:', err);
+          alert('Could not update profile');
         }
       });
 
-      // Back button
       document.getElementById('backBtn').addEventListener('click', () => {
-        if(user.role === 'student'){
-          window.location.href = 'student-dashboard.html';
-        } else {
-          window.location.href = 'teacher-dashboard.html';
-        }
+        window.location.href = user.role === 'student'
+          ? 'student-dashboard.html'
+          : 'teacher-dashboard.html';
       });
 
-      // Logout
       document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        localStorage.clear();
         window.location.href = 'login.html';
       });
     });
