@@ -5,7 +5,7 @@ const authenticateToken = require('../middlewares/authMiddleware');
 const authorizeRole = require('../middlewares/roleMiddleware');
 const { generateDynamicQR, verifyQR } = require('../controllers/qrController');
 
-// Teacher generates dynamic QR every few seconds
+// Teacher generates rotating dynamic QR
 router.get('/dynamic', authenticateToken, authorizeRole('teacher'), generateDynamicQR);
 
 // Student verifies scanned QR

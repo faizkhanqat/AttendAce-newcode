@@ -4,8 +4,7 @@ const { v4: uuidv4 } = require('uuid');
 const moment = require('moment');
 
 /**
- * Generate a new QR token that expires in 10 seconds
- * Each request gives a new token linked to a class
+ * 🔄 Generate a new QR token that expires in 10 seconds
  */
 exports.generateDynamicQR = async (req, res) => {
   try {
@@ -16,19 +15,22 @@ exports.generateDynamicQR = async (req, res) => {
     const expiresAt = moment().add(10, 'seconds').format('YYYY-MM-DD HH:mm:ss');
 
     await pool.query(
-      'INSERT INTO qr_tokens (class_id, teacher_id, token, expires_at) VALUES (?, ?, ?, ?)',
+      'INSERT INTO qr_tokens (class_id, teacher_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
       [class_id, req.user.id, token, expiresAt]
     );
 
+    // 🧹 cleanup expired tokens every time a new one is generated
+    await pool.query('DELETE FROM qr_tokens WHERE expires_at < NOW()');
+
     return res.json({ token, expires_at: expiresAt });
   } catch (err) {
-    console.error('Error generating dynamic QR:', err);
+    console.error('❌ Error generating dynamic QR:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 /**
- * Verify if a scanned QR token is valid (not expired)
+ * ✅ Verify scanned QR token
  */
 exports.verifyQR = async (req, res) => {
   try {
@@ -37,7 +39,7 @@ exports.verifyQR = async (req, res) => {
       return res.status(400).json({ message: 'token and class_id required' });
 
     const [rows] = await pool.query(
-      'SELECT * FROM qr_tokens WHERE token = ? AND class_id = ? ORDER BY created_at DESC LIMIT 1',
+      'SELECT * FROM qr_tokens WHERE token = ? AND class_id = ? LIMIT 1',
       [token, class_id]
     );
 
@@ -50,7 +52,18 @@ exports.verifyQR = async (req, res) => {
 
     return res.json({ valid: true, class_id: qr.class_id });
   } catch (err) {
-    console.error('Error verifying QR:', err);
+    console.error('❌ Error verifying QR:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+/**
+ * 🧹 Background cleanup (every 30s)
+ */
+setInterval(async () => {
+  try {
+    await pool.query('DELETE FROM qr_tokens WHERE expires_at < NOW()');
+  } catch (err) {
+    console.error('Cleanup error:', err.message);
+  }
+}, 30000);
