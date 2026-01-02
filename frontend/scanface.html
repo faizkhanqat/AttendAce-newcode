@@ -16,6 +16,7 @@
       min-height: 100vh;
       padding: 40px 0;
     }
+
     .face-container {
       background: #fff;
       padding: 30px;
@@ -24,25 +25,40 @@
       width: 100%;
       max-width: 500px;
       text-align: center;
+      position: relative;
     }
+
     header { margin-bottom: 20px; }
     header .logo { width: 80px; margin-bottom: 10px; }
     header h1 { color: #5f8b6e; margin: 0; }
-    #video-container {
+
+    .video-wrapper {
       position: relative;
-      display: inline-block;
-    }
-    video {
-      border: 4px solid #5f8b6e;
-      border-radius: 12px;
       width: 100%;
       max-width: 400px;
+      margin: 0 auto;
+      border: 4px solid #5f8b6e;
+      border-radius: 12px;
+      overflow: hidden;
     }
+
+    video {
+      width: 100%;
+      display: block;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
     #status {
       margin-top: 15px;
       font-weight: 500;
       color: #333;
     }
+
     .menu-btn {
       display: inline-block;
       margin-top: 20px;
@@ -53,6 +69,7 @@
       border-radius: 12px;
       transition: 0.3s;
     }
+
     .menu-btn:hover { background: #497c59; }
   </style>
 </head>
@@ -63,10 +80,11 @@
       <h1>Mark Attendance by Face</h1>
     </header>
 
-    <div id="video-container">
+    <div class="video-wrapper" id="video-container">
       <video id="video" autoplay muted></video>
     </div>
-    <p id="status">Initializing camera...</p>
+
+    <p id="status">Initializing...</p>
 
     <nav>
       <a href="student-dashboard.html" class="menu-btn"><span class="icon">⬅️</span> Back to Dashboard</a>
@@ -74,7 +92,7 @@
   </div>
 
   <!-- Face API -->
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
-  <script src="assets/scanface.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <script defer src="assets/scanface.js"></script>
 </body>
 </html>

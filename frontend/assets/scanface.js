@@ -1,3 +1,5 @@
+// frontend/assets/scanface.js
+
 const video = document.getElementById('video');
 const status = document.getElementById('status');
 const token = localStorage.getItem('token'); // JWT
@@ -7,11 +9,11 @@ if (!token) {
   throw new Error('No JWT token found');
 }
 
-// Global flags
+// Flags
 let attendanceMarked = false;
 let selectedClassId = null;
 
-// Fetch enrolled classes for dropdown
+// Fetch classes for student
 async function fetchClasses() {
   try {
     const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes', {
@@ -25,14 +27,13 @@ async function fetchClasses() {
       return;
     }
 
-    // If only 1 class, auto-select
+    // Auto-select if only 1 class
     if (data.classes.length === 1) {
       selectedClassId = data.classes[0].id;
       status.innerText = `Detected face. Class: ${data.classes[0].name}`;
     } else {
-      // Prompt user to choose
-      const classOptions = data.classes.map(c => `${c.id}: ${c.name}`).join('\n');
-      const input = prompt(`Select class ID to mark attendance:\n${classOptions}`);
+      const options = data.classes.map(c => `${c.id}: ${c.name}`).join('\n');
+      const input = prompt(`Select class ID to mark attendance:\n${options}`);
       if (input && data.classes.some(c => c.id == input)) {
         selectedClassId = input;
       } else {
@@ -41,23 +42,27 @@ async function fetchClasses() {
     }
   } catch (err) {
     console.error(err);
-    status.innerText = 'Error fetching enrolled classes.';
+    status.innerText = 'Error fetching classes';
   }
 }
 
-// Load face-api models
-Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
-  faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models')
-]).then(async () => {
-  status.innerText = 'Models loaded. Initializing camera...';
-  await fetchClasses();
-  startVideo();
-}).catch(err => {
-  status.innerText = 'Error loading face models';
-  console.error(err);
-});
+// Load models and start video
+async function init() {
+  status.innerText = 'Loading face detection models...';
+  try {
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
+      faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
+    ]);
+    status.innerText = 'Models loaded. Fetching classes...';
+    await fetchClasses();
+    startVideo();
+  } catch (err) {
+    console.error(err);
+    status.innerText = 'Error loading face detection models.';
+  }
+}
 
 // Start webcam
 function startVideo() {
@@ -67,12 +72,12 @@ function startVideo() {
       status.innerText = 'Align your face in front of the camera';
     })
     .catch(err => {
-      status.innerText = 'Cannot access camera';
       console.error(err);
+      status.innerText = 'Cannot access camera. Please allow permissions.';
     });
 }
 
-// Main loop: detect face
+// Detect faces
 video.addEventListener('play', () => {
   const canvas = faceapi.createCanvasFromMedia(video);
   document.getElementById('video-container').appendChild(canvas);
@@ -83,8 +88,8 @@ video.addEventListener('play', () => {
     if (attendanceMarked || !selectedClassId) return;
 
     const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-                                     .withFaceLandmarks()
-                                     .withFaceDescriptors();
+      .withFaceLandmarks()
+      .withFaceDescriptors();
 
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
 
@@ -93,17 +98,16 @@ video.addEventListener('play', () => {
       return;
     }
 
-    // Draw detections
-    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-    faceapi.draw.drawDetections(canvas, resizedDetections);
+    const resized = faceapi.resizeResults(detections, displaySize);
+    faceapi.draw.drawDetections(canvas, resized);
 
     // Mark attendance once
     status.innerText = 'Face detected! Marking attendance...';
     await markAttendanceFace(selectedClassId);
-  }, 2000); // every 2 seconds
+  }, 2000);
 });
 
-// Function to mark attendance via backend
+// Backend API call
 async function markAttendanceFace(class_id) {
   try {
     const res = await fetch('https://attendace-zjzu.onrender.com/api/attendance/face-mark', {
@@ -118,7 +122,7 @@ async function markAttendanceFace(class_id) {
     const data = await res.json();
     if (res.ok) {
       status.innerText = `✅ Attendance marked for class ID ${class_id}`;
-      attendanceMarked = true; // prevent duplicates
+      attendanceMarked = true;
     } else {
       status.innerText = `❌ ${data.message}`;
     }
@@ -127,3 +131,6 @@ async function markAttendanceFace(class_id) {
     status.innerText = 'Error marking attendance';
   }
 }
+
+// Initialize
+init();
