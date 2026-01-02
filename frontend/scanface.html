@@ -1,0 +1,75 @@
+<!--scanface.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Attendance | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+    }
+    .face-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+    header { margin-bottom: 20px; }
+    header .logo { width: 80px; margin-bottom: 10px; }
+    header h1 { color: #5f8b6e; margin: 0; }
+    video {
+      border: 4px solid #5f8b6e;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: 500;
+      color: #333;
+    }
+    .menu-btn {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 12px 20px;
+      background: #5f8b6e;
+      color: white;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: 0.3s;
+    }
+    .menu-btn:hover { background: #497c59; }
+  </style>
+</head>
+<body>
+  <div class="face-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Mark Attendance by Face</h1>
+    </header>
+
+    <video id="video" autoplay muted></video>
+    <p id="status">Initializing camera...</p>
+
+    <nav>
+      <a href="student-dashboard.html" class="menu-btn"><span class="icon">⬅️</span> Back to Dashboard</a>
+    </nav>
+  </div>
+
+  <!-- Face API -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+  <script src="assets/scanface.js"></script>
+</body>
+</html>
