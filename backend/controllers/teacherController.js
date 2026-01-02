@@ -1,3 +1,4 @@
+//backend/controllers/teacherController.js
 const db = require('../config/db');
 
 // Get teacher profile

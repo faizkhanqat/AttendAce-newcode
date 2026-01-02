@@ -1,3 +1,4 @@
+//backend//contollers/studentController.js
 const pool = require('../config/db');
 
 // Get student profile
