@@ -1,3 +1,4 @@
+// backend/controllers/attendanceController.js
 const pool = require('../config/db');
 
 /**
@@ -51,7 +52,7 @@ exports.markAttendance = async (req, res) => {
 /**
  * Get attendance analytics for the logged-in student
  */
-exports.getAnalytics = async (req, res) => {
+exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
@@ -86,7 +87,54 @@ exports.getAnalytics = async (req, res) => {
 
     return res.json({ classes: analytics });
   } catch (err) {
-    console.error('❌ Error fetching analytics:', err);
+    console.error('❌ Error fetching student analytics:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+/**
+ * Get attendance analytics for teacher's classes
+ */
+exports.getTeacherAnalytics = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+
+    // Fetch classes created by the teacher
+    const [classes] = await pool.query(
+      'SELECT id, name FROM classes WHERE teacher_id = ?',
+      [teacherId]
+    );
+
+    const analytics = [];
+
+    for (const cls of classes) {
+      // Total students in class
+      const [totalStudentsRows] = await pool.query(
+        'SELECT COUNT(*) AS total_students FROM student_classes WHERE class_id = ?',
+        [cls.id]
+      );
+
+      // Total attendance entries for class
+      const [attendanceRows] = await pool.query(
+        'SELECT COUNT(*) AS attended_count FROM attendance WHERE class_id = ?',
+        [cls.id]
+      );
+
+      const avgAttendance = totalStudentsRows[0].total_students
+        ? Math.round(attendanceRows[0].attended_count / totalStudentsRows[0].total_students)
+        : 0;
+
+      analytics.push({
+        id: cls.id,
+        name: cls.name,
+        total_students: totalStudentsRows[0].total_students,
+        avg_attendance: avgAttendance,
+      });
+    }
+
+    return res.json({ classes: analytics });
+  } catch (err) {
+    console.error('❌ Error fetching teacher analytics:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

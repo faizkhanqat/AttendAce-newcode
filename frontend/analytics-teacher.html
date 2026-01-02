@@ -1,0 +1,37 @@
+<!--analytics-teacher.html-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Analytics | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { background: #fefae0; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px 0; display: flex; justify-content: center; }
+    .analytics-container { max-width: 600px; width: 100%; background: #fff; border-radius: 25px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); padding: 25px; box-sizing: border-box; margin-bottom: 20px; }
+    header { text-align: center; margin-bottom: 25px; position: relative; }
+    header .logo { width: 60px; margin-bottom: 10px; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0; color: #333; }
+    #charts { padding: 20px; border-radius: 15px; background: #f5f7f8; text-align: center; min-height: 250px; display: flex; justify-content: center; align-items: center; font-size: 16px; color: #333; flex-direction: column; }
+    .menu-btn { display: block; width: 100%; text-align: center; margin-top: 20px; padding: 12px; border-radius: 12px; font-weight: 500; text-decoration: none; background: #5f8b6e; color: #fff; transition: all 0.3s ease; }
+    .menu-btn:hover { background: #497c59; }
+  </style>
+</head>
+<body>
+  <div class="analytics-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Teacher Analytics</h1>
+    </header>
+
+    <div id="charts">
+      <p>Loading class attendance...</p>
+    </div>
+
+    <a href="teacher-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
+  </div>
+
+  <script src="assets/analytics-teacher.js"></script>
+</body>
+</html>
