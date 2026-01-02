@@ -1,4 +1,3 @@
-//backend/server.js
 const path = require('path');
 const express = require('express');
 const cors = require('cors');
@@ -21,9 +20,12 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Frontend folder
+// Serve frontend
 const frontendPath = path.join(__dirname, '../frontend');
 app.use(express.static(frontendPath));
+
+// Serve assets/models correctly
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
 
 // API routes
 app.use('/api/auth', authRoutes);
@@ -37,6 +39,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });
 
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
