@@ -95,22 +95,26 @@ function startDetection() {
 
   detectionInterval = setInterval(async () => {
     try {
-      // --- Detection ---
       const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
       console.log('🔁 Loop running, detections:', detections.length);
 
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // --- Test: Draw a fixed red rectangle in the center ---
-      ctx.strokeStyle = 'red';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(canvas.width / 2 - 50, canvas.height / 2 - 50, 100, 100);
-
-      // --- Draw detected faces if any ---
       if (detections.length > 0) {
         const resized = faceapi.resizeResults(detections, displaySize);
-        faceapi.draw.drawDetections(canvas, resized);
+
+        // --- Draw rectangle around each detected face ---
+        resized.forEach(det => {
+          const box = det.detection.box;
+          ctx.strokeStyle = 'blue';  // color of rectangle
+          ctx.lineWidth = 2;
+          ctx.strokeRect(box.x, box.y, box.width, box.height);
+        });
+
+        // --- Draw landmarks for reference ---
+        faceapi.draw.drawFaceLandmarks(canvas, resized);
+
         console.log('🎯 Face detected!');
         status.innerText = '✅ Face detected!';
       } else {
