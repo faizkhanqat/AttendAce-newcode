@@ -109,8 +109,8 @@ function startDetection() {
           const box = det.detection.box;
 
           // --- Rectangle tweak ---
-          const offsetX = 0;      // move left/right
-          const offsetY = -15;    // move rectangle up (negative = up)
+          const offsetX = -55;      // move left/right
+          const offsetY = -55;    // move rectangle up (negative = up)
           const scaleW = 1.05;    // widen rectangle a bit
           const scaleH = 1.25;    // heighten rectangle to cover forehead to chin
 
