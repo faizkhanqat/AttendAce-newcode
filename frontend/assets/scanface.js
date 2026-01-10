@@ -56,8 +56,8 @@ async function init() {
     ]);
 
     console.log('✅ Models loaded');
-
     status.innerText = 'Models loaded. Fetching classes...';
+
     await fetchClasses();
 
     status.innerText = 'Starting camera...';
@@ -105,7 +105,7 @@ async function startVideo() {
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { width: 640, height: 480 } // higher resolution
+      video: { width: 640, height: 480 } 
     });
     video.srcObject = stream;
 
@@ -140,19 +140,17 @@ function startDetection() {
 
   faceapi.matchDimensions(canvas, displaySize);
 
+  // ✅ TinyFaceDetector options simplified for testing
   const options = new faceapi.TinyFaceDetectorOptions({
-    inputSize: 416,       // bigger = more accurate
-    scoreThreshold: 0.3   // lower = detect weaker faces
+    inputSize: 320,       // smaller for faster detection
+    scoreThreshold: 0.2   // lower = detect more faces
   });
 
   detectionInterval = setInterval(async () => {
-    console.log('🔁 Detecting face...');
-
     if (attendanceMarked || !selectedClassId) return;
 
-    const detections = await faceapi
-      .detectAllFaces(video, options)
-      .withFaceLandmarks();
+    // --- Minimal detection for testing ---
+    const detections = await faceapi.detectAllFaces(video, options);
 
     console.log('📦 Detections count:', detections.length);
 
@@ -164,14 +162,19 @@ function startDetection() {
       return;
     }
 
+    // Draw boxes for detected faces
     const resized = faceapi.resizeResults(detections, displaySize);
     faceapi.draw.drawDetections(canvas, resized);
 
-    status.innerText = 'Face detected! Marking attendance...';
+    status.innerText = '✅ Face detected!';
     console.log('🎯 Face detected');
+    
+    // --- Only mark attendance once for now ---
+    if (!attendanceMarked) {
+      await markAttendance();
+    }
 
-    await markAttendance();
-  }, 2000);
+  }, 1000); // check every 1 second
 }
 
 // ---------- BACKEND CALL ----------
