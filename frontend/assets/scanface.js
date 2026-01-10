@@ -104,17 +104,18 @@ function startDetection() {
       if (detections.length > 0) {
         const resized = faceapi.resizeResults(detections, displaySize);
 
-        // --- Draw rectangle around each detected face ---
+        // --- Rectangle + landmarks tweak ---
         resized.forEach(det => {
           const box = det.detection.box;
 
-          // --- Rectangle tweak ---
-          const offsetX = -55;      // move left/right
-          const offsetY = -55;    // move rectangle up (negative = up)
-          const scaleW = 1.05;    // widen rectangle a bit
-          const scaleH = 1.25;    // heighten rectangle to cover forehead to chin
+          // --- Tweak values to adjust rectangle + landmarks ---
+          const offsetX = -10;    // move left/right
+          const offsetY = -20;    // move up/down
+          const scaleW = 1.05;    // widen rectangle
+          const scaleH = 1.20;    // increase height to cover forehead/chin
 
-          ctx.strokeStyle = 'blue';  // color of rectangle
+          // Draw rectangle
+          ctx.strokeStyle = 'blue';
           ctx.lineWidth = 2;
           ctx.strokeRect(
             box.x + offsetX,
@@ -122,9 +123,15 @@ function startDetection() {
             box.width * scaleW,
             box.height * scaleH
           );
+
+          // Adjust landmarks to stay within rectangle
+          det.landmarks.positions.forEach(point => {
+            point.x += offsetX;
+            point.y += offsetY;
+          });
         });
 
-        // --- Draw landmarks for reference ---
+        // Draw adjusted landmarks
         faceapi.draw.drawFaceLandmarks(canvas, resized);
 
         console.log('🎯 Face detected!');
