@@ -107,9 +107,21 @@ function startDetection() {
         // --- Draw rectangle around each detected face ---
         resized.forEach(det => {
           const box = det.detection.box;
+
+          // --- Rectangle tweak ---
+          const offsetX = 0;      // move left/right
+          const offsetY = -15;    // move rectangle up (negative = up)
+          const scaleW = 1.05;    // widen rectangle a bit
+          const scaleH = 1.25;    // heighten rectangle to cover forehead to chin
+
           ctx.strokeStyle = 'blue';  // color of rectangle
           ctx.lineWidth = 2;
-          ctx.strokeRect(box.x, box.y, box.width, box.height);
+          ctx.strokeRect(
+            box.x + offsetX,
+            box.y + offsetY,
+            box.width * scaleW,
+            box.height * scaleH
+          );
         });
 
         // --- Draw landmarks for reference ---
