@@ -103,15 +103,23 @@ async function fetchClasses() {
 async function startVideo() {
   console.log('🎥 Requesting camera access...');
 
-  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-  video.srcObject = stream;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: { width: 640, height: 480 } // higher resolution
+    });
+    video.srcObject = stream;
 
-  video.onloadedmetadata = () => {
-    video.play();
-    console.log('▶️ Video playing');
-    status.innerText = 'Align your face in front of the camera';
-    startDetection();
-  };
+    video.onloadedmetadata = () => {
+      video.play();
+      console.log('▶️ Video playing');
+      console.log('📐 Video resolution:', video.videoWidth, video.videoHeight);
+      status.innerText = 'Align your face in front of the camera';
+      startDetection();
+    };
+  } catch (err) {
+    console.error('❌ Camera access denied:', err);
+    status.innerText = 'Cannot access camera. Please allow permissions.';
+  }
 }
 
 // ---------- FACE DETECTION ----------
@@ -132,16 +140,21 @@ function startDetection() {
 
   faceapi.matchDimensions(canvas, displaySize);
 
+  const options = new faceapi.TinyFaceDetectorOptions({
+    inputSize: 416,       // bigger = more accurate
+    scoreThreshold: 0.3   // lower = detect weaker faces
+  });
+
   detectionInterval = setInterval(async () => {
     console.log('🔁 Detecting face...');
 
     if (attendanceMarked || !selectedClassId) return;
 
     const detections = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
+      .detectAllFaces(video, options)
       .withFaceLandmarks();
 
-    console.log('📦 Detections:', detections.length);
+    console.log('📦 Detections count:', detections.length);
 
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -155,6 +168,8 @@ function startDetection() {
     faceapi.draw.drawDetections(canvas, resized);
 
     status.innerText = 'Face detected! Marking attendance...';
+    console.log('🎯 Face detected');
+
     await markAttendance();
   }, 2000);
 }
