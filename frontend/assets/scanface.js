@@ -3,7 +3,6 @@
 let video;
 let status;
 let token;
-
 let attendanceMarked = false;
 let selectedClassId = null;
 let detectionInterval = null;
@@ -72,30 +71,35 @@ async function init() {
 async function fetchClasses() {
   console.log('📡 Fetching classes...');
 
-  const res = await fetch('/api/student/classes', {
-    headers: { Authorization: 'Bearer ' + token }
-  });
+  try {
+    const res = await fetch('/api/student/classes', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
 
-  const data = await res.json();
-  console.log('📦 Classes response:', data);
+    const data = await res.json();
+    console.log('📦 Classes response:', data);
 
-  if (!data.classes || data.classes.length === 0) {
-    status.innerText = 'No enrolled classes found.';
-    return;
-  }
-
-  if (data.classes.length === 1) {
-    selectedClassId = data.classes[0].id;
-    console.log('✅ Auto-selected class:', selectedClassId);
-  } else {
-    const list = data.classes.map(c => `${c.id}: ${c.name}`).join('\n');
-    const input = prompt(`Select class ID:\n${list}`);
-    if (!data.classes.some(c => String(c.id) === input)) {
-      status.innerText = 'Invalid class selected.';
+    if (!data.classes || data.classes.length === 0) {
+      status.innerText = 'No enrolled classes found.';
       return;
     }
-    selectedClassId = input;
-    console.log('✅ Selected class:', selectedClassId);
+
+    if (data.classes.length === 1) {
+      selectedClassId = data.classes[0].id;
+      console.log('✅ Auto-selected class:', selectedClassId);
+    } else {
+      const list = data.classes.map(c => `${c.id}: ${c.name}`).join('\n');
+      const input = prompt(`Select class ID:\n${list}`);
+      if (!data.classes.some(c => String(c.id) === input)) {
+        status.innerText = 'Invalid class selected.';
+        return;
+      }
+      selectedClassId = input;
+      console.log('✅ Selected class:', selectedClassId);
+    }
+  } catch (err) {
+    console.error('❌ Error fetching classes:', err);
+    status.innerText = 'Error fetching classes';
   }
 }
 
@@ -104,9 +108,7 @@ async function startVideo() {
   console.log('🎥 Requesting camera access...');
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ 
-      video: { width: 640, height: 480 } 
-    });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
     video.srcObject = stream;
 
     video.onloadedmetadata = () => {
@@ -135,46 +137,47 @@ function startDetection() {
     height: video.videoHeight
   };
 
-  canvas.width = displaySize.width;
-  canvas.height = displaySize.height;
-
   faceapi.matchDimensions(canvas, displaySize);
 
-  // ✅ TinyFaceDetector options simplified for testing
+  // ✅ TinyFaceDetector options for testing
   const options = new faceapi.TinyFaceDetectorOptions({
-    inputSize: 320,       // smaller for faster detection
-    scoreThreshold: 0.2   // lower = detect more faces
+    inputSize: 416,       // bigger input = more accurate
+    scoreThreshold: 0.3   // lower = detect weaker faces
   });
 
   detectionInterval = setInterval(async () => {
     if (attendanceMarked || !selectedClassId) return;
 
-    // --- Minimal detection for testing ---
-    const detections = await faceapi.detectAllFaces(video, options);
+    try {
+      console.log('🔁 Detecting face...');
 
-    console.log('📦 Detections count:', detections.length);
+      const detections = await faceapi
+        .detectAllFaces(video, options)
+        .withFaceLandmarks();
 
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+      console.log('📦 Detections count:', detections.length);
 
-    if (detections.length === 0) {
-      status.innerText = 'No face detected...';
-      return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (detections.length === 0) {
+        status.innerText = 'No face detected...';
+        return;
+      }
+
+      const resized = faceapi.resizeResults(detections, displaySize);
+      faceapi.draw.drawDetections(canvas, resized);
+
+      status.innerText = '✅ Face detected!';
+      console.log('🎯 Face detected');
+
+      if (!attendanceMarked) {
+        await markAttendance();
+      }
+    } catch (err) {
+      console.error('❌ Detection error:', err);
     }
-
-    // Draw boxes for detected faces
-    const resized = faceapi.resizeResults(detections, displaySize);
-    faceapi.draw.drawDetections(canvas, resized);
-
-    status.innerText = '✅ Face detected!';
-    console.log('🎯 Face detected');
-    
-    // --- Only mark attendance once for now ---
-    if (!attendanceMarked) {
-      await markAttendance();
-    }
-
-  }, 1000); // check every 1 second
+  }, 1000);
 }
 
 // ---------- BACKEND CALL ----------
