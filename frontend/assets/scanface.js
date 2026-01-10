@@ -138,7 +138,7 @@ function startDetection() {
     if (attendanceMarked || !selectedClassId) return;
 
     const detections = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 }))
       .withFaceLandmarks();
 
     console.log('📦 Detections:', detections.length);
