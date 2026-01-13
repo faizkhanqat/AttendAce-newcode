@@ -4,21 +4,24 @@ let detectionInterval = null;
 let lastDescriptor = null;
 let lastScore = 0;
 let faceStatusBox;
+let matchStatusBox; // ✅ New element for match check
+let registeredDescriptor = null; // ✅ Store registered face descriptor
 
 console.log('✅ register-face.js loaded');
 
 window.addEventListener('DOMContentLoaded', async () => {
   video = document.getElementById('video');
   status = document.getElementById('status');
-  faceStatusBox = document.getElementById('faceStatusBox'); // ✅ New element
+  faceStatusBox = document.getElementById('faceStatusBox'); // Face registered/not box
+  matchStatusBox = document.getElementById('matchStatusBox'); // ✅ New box for match
 
-  if (!video || !status || !faceStatusBox) {
+  if (!video || !status || !faceStatusBox || !matchStatusBox) {
     console.error('❌ Required DOM elements missing');
     return;
   }
 
   await loadModels();
-  await checkFaceStatus(); // ✅ Check face status on load
+  await checkFaceStatus(); // ✅ Check face registration on load
 });
 
 async function loadModels() {
@@ -75,7 +78,7 @@ function startDetection() {
         const resized = faceapi.resizeResults(detection, displaySize);
         const box = resized.detection.box;
 
-        // Draw rectangle and landmarks
+        // Draw bounding box and landmarks
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
         ctx.strokeRect(box.x, box.y, box.width, box.height);
@@ -85,10 +88,28 @@ function startDetection() {
         lastScore = resized.detection.score;
 
         status.innerText = `Face detected! Confidence: ${lastScore.toFixed(2)}`;
+
+        // ✅ Check if face matches registered face when score >= 0.9
+        if (registeredDescriptor && lastScore >= 0.9) {
+          const distance = faceapi.euclideanDistance(lastDescriptor, registeredDescriptor);
+          if (distance < 0.6) { // Threshold can be adjusted
+            matchStatusBox.innerText = '✅ This is the registered face';
+            matchStatusBox.style.backgroundColor = '#5f8b6e';
+          } else {
+            matchStatusBox.innerText = '❌ This is NOT the registered face';
+            matchStatusBox.style.backgroundColor = '#d9534f';
+          }
+        } else {
+          matchStatusBox.innerText = '';
+          matchStatusBox.style.backgroundColor = 'transparent';
+        }
+
       } else {
         lastDescriptor = null;
         lastScore = 0;
         status.innerText = 'No face detected...';
+        matchStatusBox.innerText = '';
+        matchStatusBox.style.backgroundColor = 'transparent';
       }
     } catch (err) {
       console.error('❌ Detection error:', err);
@@ -110,6 +131,15 @@ async function checkFaceStatus() {
     if (data.registered) {
       faceStatusBox.innerText = '✅ Face already registered';
       faceStatusBox.style.backgroundColor = '#5f8b6e';
+
+      // ✅ Fetch registered face descriptor
+      const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const descData = await descRes.json();
+      if (descData.face_encoding) {
+        registeredDescriptor = new Float32Array(descData.face_encoding);
+      }
     } else {
       faceStatusBox.innerText = '❌ No face registered';
       faceStatusBox.style.backgroundColor = '#d9534f';
@@ -151,7 +181,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const data = await res.json();
     if (res.ok) {
       alert(data.message);
-      await checkFaceStatus(); // ✅ Update face status box after registration
+      await checkFaceStatus(); // Update face status and registeredDescriptor
     } else {
       alert(data.message || data.error || 'Failed to register face.');
     }
