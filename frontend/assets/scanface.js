@@ -109,8 +109,8 @@ function startDetection() {
           const box = det.detection.box;
 
           // --- Tweak values to adjust rectangle + landmarks ---
-          const offsetX = -10;    // move left/right
-          const offsetY = -20;    // move up/down
+          const offsetX = -30;    // move left/right
+          const offsetY = -40;    // move up/down
           const scaleW = 1.05;    // widen rectangle
           const scaleH = 1.20;    // increase height to cover forehead/chin
 
