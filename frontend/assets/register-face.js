@@ -116,7 +116,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const token = localStorage.getItem('token');
 
   try {
-    const res = await fetch(`${API_URL}/student/face/register`, {
+    const res = await fetch(`${API_URL}/api/student/face/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
