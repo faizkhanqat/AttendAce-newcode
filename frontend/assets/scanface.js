@@ -123,6 +123,7 @@ async function checkAttendanceStatus(class_id) {
 async function markFaceAttendance(class_id) {
   if (hasMarkedAttendance) return;
 
+  hasMarkedAttendance = true;
   const token = localStorage.getItem('token');
 
   try {
@@ -139,7 +140,6 @@ async function markFaceAttendance(class_id) {
 
     if (res.ok) {
       status.innerText = '✅ Attendance marked successfully!';
-      hasMarkedAttendance = true;
     } else if (res.status === 409) {
       status.innerText = '⚠️ Attendance already marked';
       hasMarkedAttendance = true; // prevent further 409 POSTs
