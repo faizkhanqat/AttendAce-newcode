@@ -129,7 +129,7 @@
       try {
         statusEl.innerText = 'Activating class...';
 
-        const res = await fetch('/api/classes/activate', {
+        const res = await fetch('/api/teacher/classes/activate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
