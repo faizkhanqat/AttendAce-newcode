@@ -92,7 +92,7 @@ function startDetection() {
         // ✅ Check if face matches registered face when score >= 0.9
         if (registeredDescriptor && lastScore >= 0.9) {
           const distance = faceapi.euclideanDistance(lastDescriptor, registeredDescriptor);
-          if (distance < 0.6) { // Threshold can be adjusted
+          if (distance < 0.6) {
             matchStatusBox.innerText = '✅ This is the registered face';
             matchStatusBox.style.backgroundColor = '#5f8b6e';
           } else {
@@ -122,28 +122,44 @@ async function checkFaceStatus() {
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
 
+  if (!token) {
+    faceStatusBox.innerText = '⚠️ You are not logged in';
+    faceStatusBox.style.backgroundColor = '#f0ad4e';
+    return;
+  }
+
   try {
     const res = await fetch(`${API_URL}/api/student/face`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status}`);
+    }
+
     const data = await res.json();
 
     if (data.registered) {
       faceStatusBox.innerText = '✅ Face already registered';
       faceStatusBox.style.backgroundColor = '#5f8b6e';
 
-      // ✅ Fetch registered face descriptor
+      // ✅ Fetch registered face descriptor safely
       const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
+
+      if (!descRes.ok) throw new Error(`Failed to fetch face encoding: ${descRes.status}`);
       const descData = await descRes.json();
+
       if (descData.face_encoding) {
         registeredDescriptor = new Float32Array(descData.face_encoding);
       }
+
     } else {
       faceStatusBox.innerText = '❌ No face registered';
       faceStatusBox.style.backgroundColor = '#d9534f';
     }
+
   } catch (err) {
     console.error('Error checking face status:', err);
     faceStatusBox.innerText = '⚠️ Unable to check face status';
@@ -178,13 +194,12 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
       body: JSON.stringify({ face_encoding: faceEncoding })
     });
 
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
     const data = await res.json();
-    if (res.ok) {
-      alert(data.message);
-      await checkFaceStatus(); // Update face status and registeredDescriptor
-    } else {
-      alert(data.message || data.error || 'Failed to register face.');
-    }
+
+    alert(data.message || 'Face registered successfully');
+    await checkFaceStatus(); // Update face status and registeredDescriptor
+
   } catch (err) {
     console.error('❌ Registration error:', err);
     alert('Server error while registering face.');
