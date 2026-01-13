@@ -15,26 +15,26 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Check if there is an active class
+  // Step 1: Check active class
   const activeClass = await getActiveClass();
   if (!activeClass) {
     status.innerText = '⏳ No active class right now';
     return;
   }
 
-  // Check if attendance is already marked
+  // Step 2: Check attendance status
   const attendanceStatus = await checkAttendanceStatus(activeClass.class_id);
   if (attendanceStatus.marked) {
     status.innerText = '⚠️ Attendance already marked';
     hasMarkedAttendance = true;
-    return;
+    return; // ✅ Skip camera and detection
   }
 
-  // Start normal flow if attendance not yet marked
+  // Step 3: Start camera and face detection
   await init();
 });
 
-// ---------- LOAD MODELS ----------
+// ---------- LOAD FACEAPI MODELS ----------
 async function init() {
   try {
     if (!window.faceapi) {
@@ -58,7 +58,7 @@ async function init() {
   }
 }
 
-// ---------- CAMERA ----------
+// ---------- START CAMERA ----------
 async function startVideo() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -88,20 +88,11 @@ async function getActiveClass() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (!res.ok) {
-      console.warn('❌ getActiveClass failed with status:', res.status);
-      return null;
-    }
+    if (!res.ok) return null;
 
-    try {
-      const data = await res.json();
-      console.log('🔍 Scanning for class_id:', data.class_id);
-      return data;
-    } catch (jsonErr) {
-      console.error('❌ getActiveClass invalid JSON:', jsonErr);
-      return null;
-    }
-
+    const data = await res.json();
+    console.log('🔍 Active class_id:', data.class_id);
+    return data; // { class_id, expires_at }
   } catch (err) {
     console.error('❌ Error fetching active class:', err);
     return null;
@@ -118,19 +109,10 @@ async function checkAttendanceStatus(class_id) {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (!res.ok) {
-      console.warn('❌ checkAttendanceStatus failed with status:', res.status);
-      return { marked: false };
-    }
+    if (!res.ok) return { marked: false };
 
-    try {
-      const data = await res.json();
-      return { marked: !!data.marked };
-    } catch (jsonErr) {
-      console.error('❌ checkAttendanceStatus invalid JSON:', jsonErr);
-      return { marked: false };
-    }
-
+    const data = await res.json();
+    return { marked: !!data.marked };
   } catch (err) {
     console.error('❌ Error checking attendance status:', err);
     return { marked: false };
@@ -184,7 +166,10 @@ function startDetection() {
   const displaySize = { width: video.videoWidth, height: video.videoHeight };
   faceapi.matchDimensions(canvas, displaySize);
 
-  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 });
+  const options = new faceapi.TinyFaceDetectorOptions({
+    inputSize: 320,
+    scoreThreshold: 0.9 // ✅ 0.9 threshold
+  });
 
   detectionInterval = setInterval(async () => {
     if (hasMarkedAttendance) return;
