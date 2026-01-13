@@ -68,6 +68,16 @@
       color: white;
       display: inline-block;
     }
+
+    /* --- New match status box --- */
+    #matchStatusBox {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 500;
+      color: white;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -86,8 +96,11 @@
     <br>
     <button id="backDashboardBtn">⬅️ Back to Dashboard</button>
 
-    <!-- ✅ New Face Status Box -->
+    <!-- ✅ Face registered/not registered box -->
     <p id="faceStatusBox">Checking face status...</p>
+
+    <!-- ✅ New: Real-time face match status box -->
+    <p id="matchStatusBox"></p>
   </div>
 
   <!-- Face API -->
