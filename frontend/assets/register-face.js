@@ -122,6 +122,8 @@ async function checkFaceStatus() {
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
 
+  console.log('Token being sent:', token); // ✅ Log token for debugging
+
   if (!token) {
     faceStatusBox.innerText = '⚠️ You are not logged in';
     faceStatusBox.style.backgroundColor = '#f0ad4e';
@@ -183,6 +185,8 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   const faceEncoding = JSON.stringify(Array.from(lastDescriptor));
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
+
+  console.log('Token being sent:', token); // ✅ Log token for debugging
 
   try {
     const res = await fetch(`${API_URL}/api/student/face/register`, {
