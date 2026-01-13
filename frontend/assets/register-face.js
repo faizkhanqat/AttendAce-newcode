@@ -143,7 +143,7 @@ async function checkFaceStatus() {
       faceStatusBox.innerText = '✅ Face already registered';
       faceStatusBox.style.backgroundColor = '#5f8b6e';
 
-      // Fetch encoding safely
+      // ✅ Fetch registered encoding and parse JSON string
       const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -152,7 +152,10 @@ async function checkFaceStatus() {
         throw new Error(`Failed to fetch face encoding: ${descRes.status}`);
       }
       const descData = await descRes.json();
-      if (descData.face_encoding) registeredDescriptor = new Float32Array(descData.face_encoding);
+      if (descData.face_encoding) {
+        const arr = JSON.parse(descData.face_encoding); // parse JSON
+        registeredDescriptor = new Float32Array(arr);    // convert to Float32Array
+      }
 
     } else {
       faceStatusBox.innerText = '❌ No face registered';
