@@ -86,7 +86,6 @@ async function getActiveClass() {
 // ---------- MARK FACE ATTENDANCE ----------
 async function markFaceAttendance(class_id) {
   if (hasMarkedAttendance) return;
-  hasMarkedAttendance = true;
 
   const token = localStorage.getItem('token');
 
@@ -104,16 +103,19 @@ async function markFaceAttendance(class_id) {
 
     if (res.ok) {
       status.innerText = '✅ Attendance marked successfully!';
+      hasMarkedAttendance = true;
     } else if (res.status === 409) {
-      // Already marked
       status.innerText = '⚠️ Attendance already marked';
+      hasMarkedAttendance = true; // ✅ prevent further 409 POSTs
     } else {
       status.innerText = data.message || '❌ Attendance failed';
       hasMarkedAttendance = false;
     }
 
-    // Stop scanning in all cases to prevent repeated 409 errors
-    clearInterval(detectionInterval);
+    // Stop scanning for both success and already marked
+    if (res.ok || res.status === 409) {
+      clearInterval(detectionInterval);
+    }
 
   } catch (err) {
     console.error('❌ Face attendance error:', err);
