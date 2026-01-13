@@ -135,3 +135,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     alert('Server error while registering face.');
   }
 });
+
+document.getElementById('backDashboardBtn').addEventListener('click', () => {
+  window.location.href = 'student-dashboard.html';
+});
