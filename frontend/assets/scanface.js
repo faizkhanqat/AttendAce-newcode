@@ -1,5 +1,3 @@
-// frontend/assets/scanface.js
-
 let video;
 let status;
 let detectionInterval = null;
@@ -71,14 +69,16 @@ async function getActiveClass() {
 
   try {
     const res = await fetch('/api/classes/active', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
+      headers: { 'Authorization': 'Bearer ' + token }
     });
 
     if (!res.ok) return null;
-    return await res.json(); // { class_id, expires_at }
-  } catch {
+
+    const data = await res.json();
+    console.log('🔍 Scanning for class_id:', data.class_id); // ✅ debug log
+    return data; // { class_id, expires_at }
+  } catch (err) {
+    console.error('❌ Error fetching active class:', err);
     return null;
   }
 }
@@ -110,7 +110,7 @@ async function markFaceAttendance(class_id) {
       hasMarkedAttendance = false;
     }
   } catch (err) {
-    console.error(err);
+    console.error('❌ Face attendance error:', err);
     status.innerText = '❌ Server error';
     hasMarkedAttendance = false;
   }
@@ -122,29 +122,18 @@ function startDetection() {
   const canvas = faceapi.createCanvasFromMedia(video);
   container.appendChild(canvas);
 
-  const displaySize = {
-    width: video.videoWidth,
-    height: video.videoHeight
-  };
-
+  const displaySize = { width: video.videoWidth, height: video.videoHeight };
   faceapi.matchDimensions(canvas, displaySize);
 
-  const options = new faceapi.TinyFaceDetectorOptions({
-    inputSize: 320,
-    scoreThreshold: 0.2
-  });
+  const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 });
 
   detectionInterval = setInterval(async () => {
-    const detections = await faceapi
-      .detectAllFaces(video, options)
-      .withFaceLandmarks();
-
+    const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (detections.length > 0) {
       const resized = faceapi.resizeResults(detections, displaySize);
-
       faceapi.draw.drawDetections(canvas, resized);
       faceapi.draw.drawFaceLandmarks(canvas, resized);
 
@@ -157,7 +146,7 @@ function startDetection() {
         return;
       }
 
-      status.innerText = '🧠 Verifying & marking attendance...';
+      status.innerText = `🧠 Verifying & marking attendance for class_id: ${activeClass.class_id}`;
       await markFaceAttendance(activeClass.class_id);
     } else {
       status.innerText = 'No face detected...';
