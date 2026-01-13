@@ -8,13 +8,8 @@ console.log('✅ scanface.js loaded');
 
 // ---------- INIT ----------
 window.addEventListener('DOMContentLoaded', async () => {
-  console.log('✅ DOMContentLoaded');
-
   video = document.getElementById('video');
   status = document.getElementById('status');
-
-  console.log('🎥 video element:', video);
-  console.log('📝 status element:', status);
 
   if (!video || !status) {
     console.error('❌ Required DOM elements missing');
@@ -27,16 +22,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 // ---------- LOAD MODELS ----------
 async function init() {
   try {
-    console.log('⏳ Checking faceapi:', window.faceapi);
-
     if (!window.faceapi) {
       status.innerText = 'FaceAPI not loaded';
-      console.error('❌ faceapi is undefined');
       return;
     }
 
     status.innerText = 'Loading models...';
-    console.log('⏳ Loading models...');
 
     await Promise.all([
       faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
@@ -44,9 +35,7 @@ async function init() {
       faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
     ]);
 
-    console.log('✅ Models loaded');
     status.innerText = 'Models loaded. Starting camera...';
-
     await startVideo();
   } catch (err) {
     console.error('❌ Init failed:', err);
@@ -56,36 +45,35 @@ async function init() {
 
 // ---------- CAMERA ----------
 async function startVideo() {
-  console.log('🎥 Requesting camera access...');
-
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { width: 640, height: 480 }
     });
+
     video.srcObject = stream;
 
     video.onloadedmetadata = () => {
       video.play();
-      console.log('▶️ Video playing');
-      console.log('📐 Video resolution:', video.videoWidth, video.videoHeight);
       status.innerText = 'Align your face in front of the camera';
       startDetection();
     };
   } catch (err) {
-    console.error('❌ Camera access denied:', err);
-    status.innerText = 'Cannot access camera. Please allow permissions.';
+    console.error('❌ Camera error:', err);
+    status.innerText = 'Cannot access camera.';
   }
 }
 
 // ---------- FACE DETECTION ----------
 function startDetection() {
-  console.log('🔍 Starting face detection loop');
-
   const container = document.getElementById('video-container');
   const canvas = faceapi.createCanvasFromMedia(video);
   container.appendChild(canvas);
 
-  const displaySize = { width: video.videoWidth, height: video.videoHeight };
+  const displaySize = {
+    width: video.videoWidth,
+    height: video.videoHeight
+  };
+
   faceapi.matchDimensions(canvas, displaySize);
 
   const options = new faceapi.TinyFaceDetectorOptions({
@@ -94,53 +82,25 @@ function startDetection() {
   });
 
   detectionInterval = setInterval(async () => {
-    try {
-      const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
-      console.log('🔁 Loop running, detections:', detections.length);
+    const detections = await faceapi
+      .detectAllFaces(video, options)
+      .withFaceLandmarks();
 
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      if (detections.length > 0) {
-        const resized = faceapi.resizeResults(detections, displaySize);
+    if (detections.length > 0) {
+      const resized = faceapi.resizeResults(detections, displaySize);
 
-        // --- Rectangle + landmarks tweak ---
-        resized.forEach(det => {
-          const box = det.detection.box;
+      // ✅ Correct bounding boxes
+      faceapi.draw.drawDetections(canvas, resized);
 
-          // --- Tweak values to adjust rectangle + landmarks ---
-          const offsetX = -130;    // move left/right
-          const offsetY = -140;    // move up/down
-          const scaleW = 1.05;    // widen rectangle
-          const scaleH = 1.20;    // increase height to cover forehead/chin
+      // ✅ Correct landmarks
+      faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-          // Draw rectangle
-          ctx.strokeStyle = 'blue';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(
-            box.x + offsetX,
-            box.y + offsetY,
-            box.width * scaleW,
-            box.height * scaleH
-          );
-
-          // Adjust landmarks to stay within rectangle
-          det.landmarks.positions.forEach(point => {
-            point.x += offsetX;
-            point.y += offsetY;
-          });
-        });
-
-        // Draw adjusted landmarks
-        faceapi.draw.drawFaceLandmarks(canvas, resized);
-
-        console.log('🎯 Face detected!');
-        status.innerText = '✅ Face detected!';
-      } else {
-        status.innerText = 'No face detected...';
-      }
-    } catch (err) {
-      console.error('❌ Detection error:', err);
+      status.innerText = '✅ Face detected!';
+    } else {
+      status.innerText = 'No face detected...';
     }
-  }, 1000);
+  }, 300);
 }
