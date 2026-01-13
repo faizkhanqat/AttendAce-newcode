@@ -23,5 +23,8 @@ router.post('/face/register', studentController.registerFace); // Register/updat
 
 // ✅ New route to fetch stored face encoding
 router.get('/face/encoding', studentController.getFaceEncoding);
+//New Route for classes activation
+router.get('/classes/active', studentController.getActiveClass);
+
 
 module.exports = router;

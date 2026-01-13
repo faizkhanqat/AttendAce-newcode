@@ -185,3 +185,32 @@ exports.registerFace = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// ------------------- ACTIVE CLASS -------------------
+// Get the active class (for face attendance)
+exports.getActiveClass = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    // Only consider classes the student is enrolled in
+    const [rows] = await pool.query(
+      `SELECT ac.class_id, ac.expires_at
+       FROM active_classes ac
+       JOIN student_classes sc ON ac.class_id = sc.class_id
+       WHERE sc.student_id = ? AND ac.expires_at >= NOW()
+       ORDER BY ac.expires_at DESC
+       LIMIT 1`,
+      [studentId]
+    );
+
+    if (rows.length === 0) return res.status(404).json({ message: 'No active class' });
+
+    res.json({
+      class_id: rows[0].class_id,
+      expires_at: rows[0].expires_at
+    });
+  } catch (err) {
+    console.error('Error fetching active class:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

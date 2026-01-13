@@ -68,7 +68,7 @@ async function getActiveClass() {
   if (!token) return null;
 
   try {
-    const res = await fetch('/api/classes/active', {
+    const res = await fetch('/api/student/classes/active', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
