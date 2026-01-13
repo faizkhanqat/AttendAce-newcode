@@ -2,6 +2,7 @@ let video;
 let status;
 let detectionInterval = null;
 let lastDescriptor = null;
+let lastScore = 0;
 
 console.log('✅ register-face.js loaded');
 
@@ -63,11 +64,14 @@ function startDetection() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
-      const detections = await faceapi.detectSingleFace(video, options).withFaceLandmarks().withFaceDescriptor();
-      if (detections) {
-        const resized = faceapi.resizeResults(detections, displaySize);
+      const detection = await faceapi.detectSingleFace(video, options)
+        .withFaceLandmarks()
+        .withFaceDescriptor();
 
-        // Draw rectangle
+      if (detection) {
+        const resized = faceapi.resizeResults(detection, displaySize);
+
+        // Draw bounding box
         const box = resized.detection.box;
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
@@ -76,15 +80,15 @@ function startDetection() {
         // Draw landmarks
         faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-        // Store last descriptor
+        // Save descriptor and score
         lastDescriptor = resized.descriptor;
+        lastScore = resized.detection.score;
 
-        // Show score
-        const score = resized.detection.score.toFixed(2);
-        status.innerText = `Face detected! Detection confidence: ${score}`;
+        status.innerText = `Face detected! Confidence: ${lastScore.toFixed(2)}`;
       } else {
-        status.innerText = 'No face detected...';
         lastDescriptor = null;
+        lastScore = 0;
+        status.innerText = 'No face detected...';
       }
     } catch (err) {
       console.error('❌ Detection error:', err);
@@ -99,25 +103,22 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     return;
   }
 
-  // Only register if detection score >= 0.9
   const scoreThreshold = 0.9;
-  if (status.innerText.includes('Detection confidence:')) {
-    const score = parseFloat(status.innerText.split(':')[1]);
-    if (score < scoreThreshold) {
-      alert('Face quality too low. Please adjust your face and try again.');
-      return;
-    }
+  if (lastScore < scoreThreshold) {
+    alert('Face quality too low. Please adjust your face and try again.');
+    return;
   }
 
-  // Convert descriptor (Float32Array) to JSON string for storage
+  // Convert descriptor to JSON
   const faceEncoding = JSON.stringify(Array.from(lastDescriptor));
 
-  // Send to backend
+  const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
+
   try {
-    const res = await fetch('/student/face/register', {
+    const res = await fetch(`${API_URL}/student/face/register`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
@@ -128,7 +129,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     if (res.ok) {
       alert(data.message);
     } else {
-      alert(data.error || 'Failed to register face.');
+      alert(data.message || data.error || 'Failed to register face.');
     }
   } catch (err) {
     console.error('❌ Registration error:', err);
@@ -136,6 +137,10 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
   }
 });
 
-document.getElementById('backDashboardBtn').addEventListener('click', () => {
-  window.location.href = 'student-dashboard.html';
-});
+// ----------------- Back to Dashboard -----------------
+const backBtn = document.getElementById('backDashboardBtn');
+if (backBtn) {
+  backBtn.addEventListener('click', () => {
+    window.location.href = 'student-dashboard.html';
+  });
+}
