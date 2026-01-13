@@ -3,6 +3,7 @@
 let video;
 let status;
 let detectionInterval = null;
+let hasMarkedAttendance = false;
 
 console.log('✅ scanface.js loaded');
 
@@ -63,6 +64,58 @@ async function startVideo() {
   }
 }
 
+// ---------- GET ACTIVE CLASS ----------
+async function getActiveClass() {
+  const token = localStorage.getItem('token');
+  if (!token) return null;
+
+  try {
+    const res = await fetch('/api/classes/active', {
+      headers: {
+        'Authorization': 'Bearer ' + token
+      }
+    });
+
+    if (!res.ok) return null;
+    return await res.json(); // { class_id, expires_at }
+  } catch {
+    return null;
+  }
+}
+
+// ---------- MARK FACE ATTENDANCE ----------
+async function markFaceAttendance(class_id) {
+  if (hasMarkedAttendance) return;
+  hasMarkedAttendance = true;
+
+  const token = localStorage.getItem('token');
+
+  try {
+    const res = await fetch('/api/attendance/face-mark', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ class_id })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      status.innerText = '✅ Attendance marked successfully!';
+      clearInterval(detectionInterval);
+    } else {
+      status.innerText = data.message || '❌ Attendance failed';
+      hasMarkedAttendance = false;
+    }
+  } catch (err) {
+    console.error(err);
+    status.innerText = '❌ Server error';
+    hasMarkedAttendance = false;
+  }
+}
+
 // ---------- FACE DETECTION ----------
 function startDetection() {
   const container = document.getElementById('video-container');
@@ -92,15 +145,22 @@ function startDetection() {
     if (detections.length > 0) {
       const resized = faceapi.resizeResults(detections, displaySize);
 
-      // ✅ Correct bounding boxes
       faceapi.draw.drawDetections(canvas, resized);
-
-      // ✅ Correct landmarks
       faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-      status.innerText = '✅ Face detected!';
+      status.innerText = '✅ Face detected. Checking active class...';
+
+      const activeClass = await getActiveClass();
+
+      if (!activeClass) {
+        status.innerText = '⏳ No active class right now';
+        return;
+      }
+
+      status.innerText = '🧠 Verifying & marking attendance...';
+      await markFaceAttendance(activeClass.class_id);
     } else {
       status.innerText = 'No face detected...';
     }
-  }, 300);
+  }, 400);
 }

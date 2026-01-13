@@ -25,12 +25,27 @@
 │       ├── server.crt
 │       └── server.key
 ├── frontend
-│   ├── analytics.html
+│   ├── analytics-student.html
+│   ├── analytics-teacher.html
 │   ├── assets
+│   │   ├── analytics-student.js
+│   │   ├── analytics-teacher.js
+│   │   ├── models
+│   │   │   ├── face_landmark_68_model-shard1
+│   │   │   ├── face_landmark_68_model-weights_manifest.json
+│   │   │   ├── face_recognition_model-shard1
+│   │   │   ├── face_recognition_model-shard2
+│   │   │   ├── face_recognition_model-weights_manifest.json
+│   │   │   ├── tiny_face_detector_model-shard1
+│   │   │   └── tiny_face_detector_model-weights_manifest.json
+│   │   ├── register-face.js
+│   │   ├── scanface.js
 │   │   ├── scanqr.js
 │   │   ├── student-classes.js
 │   │   └── teacher-qrgenerator.js
 │   ├── login.html
+│   ├── register-face.html
+│   ├── scanface.html
 │   ├── scanqr.html
 │   ├── settings.html
 │   ├── student-classes.html
@@ -41,8 +56,6 @@
 │   └── teacher-qrgenerator.html
 ├── package-lock.json
 ├── package.json
-├── structure.txt
-├── structure2.txt
-└── structure3.txt
+└── structure7.txt
 
-9 directories, 37 files
+10 directories, 49 files

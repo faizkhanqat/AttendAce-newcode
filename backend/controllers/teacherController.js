@@ -1,10 +1,14 @@
-//backend/controllers/teacherController.js
 const db = require('../config/db');
 
+// ==========================
 // Get teacher profile
+// ==========================
 exports.getProfile = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id, name, email, phone, role FROM users WHERE id = ?', [req.user.id]);
+    const [rows] = await db.query(
+      'SELECT id, name, email, phone, role FROM users WHERE id = ?',
+      [req.user.id]
+    );
     res.json(rows[0]);
   } catch (err) {
     console.error(err);
@@ -12,7 +16,9 @@ exports.getProfile = async (req, res) => {
   }
 };
 
+// ==========================
 // Update teacher profile
+// ==========================
 exports.updateProfile = async (req, res) => {
   try {
     const { name, email, phone } = req.body;
@@ -36,10 +42,15 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+// ==========================
 // Get classes
+// ==========================
 exports.getClasses = async (req, res) => {
   try {
-    const [classes] = await db.query('SELECT * FROM classes WHERE teacher_id = ?', [req.user.id]);
+    const [classes] = await db.query(
+      'SELECT * FROM classes WHERE teacher_id = ?',
+      [req.user.id]
+    );
     res.json(classes);
   } catch (err) {
     console.error(err);
@@ -47,25 +58,34 @@ exports.getClasses = async (req, res) => {
   }
 };
 
+// ==========================
 // Add new class
+// ==========================
 exports.addClass = async (req, res) => {
   try {
     const { name, subject } = req.body;
-    if (!name) return res.status(400).json({ message: 'Class name required' });
+    if (!name)
+      return res.status(400).json({ message: 'Class name required' });
 
     const [result] = await db.query(
       'INSERT INTO classes (name, subject, teacher_id) VALUES (?, ?, ?)',
       [name, subject || '', req.user.id]
     );
 
-    res.status(201).json({ id: result.insertId, name, subject: subject || '' });
+    res.status(201).json({
+      id: result.insertId,
+      name,
+      subject: subject || ''
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-// Generate QR
+// ==========================
+// Generate QR (UNCHANGED)
+// ==========================
 exports.generateQR = async (req, res) => {
   try {
     const { class_id, token, duration } = req.body;
@@ -73,14 +93,92 @@ exports.generateQR = async (req, res) => {
       return res.status(400).json({ message: 'Missing data' });
 
     const qrDuration = duration || 15;
+
     await db.query(
       'INSERT INTO qr_tokens (class_id, token, duration, created_at) VALUES (?, ?, ?, NOW())',
       [class_id, token, qrDuration]
     );
 
-    res.status(201).json({ message: 'QR registered', token, class_id, duration: qrDuration });
+    res.status(201).json({
+      message: 'QR registered',
+      token,
+      class_id,
+      duration: qrDuration
+    });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// =====================================================
+// ✅ ACTIVATE CLASS (NEW – for Face Attendance)
+// =====================================================
+exports.activateClass = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const { class_id, minutes } = req.body;
+
+    if (!class_id)
+      return res.status(400).json({ message: 'class_id is required' });
+
+    const activeMinutes = minutes || 3;
+
+    // Verify class belongs to teacher
+    const [classRows] = await db.query(
+      'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
+      [class_id, teacherId]
+    );
+
+    if (classRows.length === 0)
+      return res.status(403).json({ message: 'Unauthorized class access' });
+
+    // Remove old active entry if exists
+    await db.query(
+      'DELETE FROM active_classes WHERE class_id = ?',
+      [class_id]
+    );
+
+    // Activate class
+    await db.query(
+      `INSERT INTO active_classes (class_id, teacher_id, expires_at)
+       VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))`,
+      [class_id, teacherId, activeMinutes]
+    );
+
+    res.json({
+      message: `Class activated for ${activeMinutes} minute(s)`,
+      class_id,
+      expires_in_minutes: activeMinutes
+    });
+  } catch (err) {
+    console.error('❌ Activate class error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// =====================================================
+// ⛔ DEACTIVATE CLASS (OPTIONAL / MANUAL STOP)
+// =====================================================
+exports.deactivateClass = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const { class_id } = req.body;
+
+    if (!class_id)
+      return res.status(400).json({ message: 'class_id is required' });
+
+    await db.query(
+      'DELETE FROM active_classes WHERE class_id = ? AND teacher_id = ?',
+      [class_id, teacherId]
+    );
+
+    res.json({
+      message: 'Class deactivated',
+      class_id
+    });
+  } catch (err) {
+    console.error('❌ Deactivate class error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

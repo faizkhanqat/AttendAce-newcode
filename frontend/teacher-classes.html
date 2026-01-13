@@ -1,4 +1,4 @@
-<!--teacher-classes.html-->
+<!-- teacher-classes.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,15 +39,50 @@
     h1 { color: #5f8b6e; margin: 0; }
 
     .list-container { text-align: left; margin-top: 20px; }
+
     .class-item {
       background: #f5f5f5;
       border: 1px solid #d9e0e6;
       padding: 15px;
       margin-bottom: 12px;
       border-radius: 12px;
+    }
+
+    .class-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    .controls {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    select, button {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    .activate-btn {
+      background: #38b000;
+      color: #fff;
+      border: none;
+    }
+
+    .activate-btn:hover {
+      background: #2d8f00;
+    }
+
+    .status {
+      font-size: 13px;
+      margin-top: 6px;
+      color: #555;
     }
 
     .menu-btn, .add-btn {
@@ -83,12 +118,38 @@
       <p class="loading">Loading classes...</p>
     </div>
 
-    <a href="teacher-dashboard.html" class="menu-btn"><span class="icon">⬅️</span> Back to Dashboard</a>
+    <a href="teacher-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
   </div>
 
   <script>
     const classesList = document.getElementById('classesList');
     const token = localStorage.getItem('token');
+
+    async function activateClass(classId, duration, statusEl) {
+      try {
+        statusEl.innerText = 'Activating class...';
+
+        const res = await fetch('/api/classes/activate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({
+            class_id: classId,
+            duration
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Failed');
+
+        statusEl.innerText = `✅ Class active for ${duration} minutes`;
+      } catch (err) {
+        statusEl.innerText = '❌ Activation failed';
+      }
+    }
 
     async function fetchClasses() {
       try {
@@ -96,10 +157,7 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
 
-        if (!res.ok) {
-          const text = await res.text();
-          throw new Error(text || 'Failed to fetch classes');
-        }
+        if (!res.ok) throw new Error('Failed to fetch classes');
 
         const classes = await res.json();
         classesList.innerHTML = '';
@@ -112,14 +170,39 @@
         classes.forEach(cls => {
           const div = document.createElement('div');
           div.className = 'class-item';
-          div.innerHTML = `<span>${cls.name}</span>
-                           <span>${cls.subject || ''}</span>`;
+
+          div.innerHTML = `
+            <div class="class-header">
+              <span>${cls.name}</span>
+              <span>${cls.subject || ''}</span>
+            </div>
+
+            <div class="controls">
+              <select>
+                <option value="5">5 min</option>
+                <option value="10">10 min</option>
+                <option value="15" selected>15 min</option>
+                <option value="30">30 min</option>
+              </select>
+              <button class="activate-btn">Activate Face</button>
+            </div>
+
+            <div class="status"></div>
+          `;
+
+          const select = div.querySelector('select');
+          const btn = div.querySelector('button');
+          const status = div.querySelector('.status');
+
+          btn.onclick = () => {
+            activateClass(cls.id, select.value, status);
+          };
+
           classesList.appendChild(div);
         });
 
       } catch (err) {
-        console.error(err);
-        classesList.innerHTML = `<p class="loading">Error loading classes: ${err.message}</p>`;
+        classesList.innerHTML = `<p class="loading">Error loading classes</p>`;
       }
     }
 

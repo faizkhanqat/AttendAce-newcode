@@ -2,6 +2,7 @@ const pool = require('../config/db');
 
 /**
  * Mark attendance for a student using a QR token
+ * (UNCHANGED – QR FLOW KEPT INTACT)
  */
 exports.markAttendance = async (req, res) => {
   try {
@@ -41,7 +42,7 @@ exports.markAttendance = async (req, res) => {
       [studentId, class_id, 'present', token, 'qr']
     );
 
-    return res.json({ message: 'Attendance marked successfully', class_id });
+    return res.json({ message: 'Attendance marked successfully (QR)', class_id });
   } catch (err) {
     console.error('❌ Error in markAttendance:', err);
     res.status(500).json({ message: 'Server error' });
@@ -50,7 +51,8 @@ exports.markAttendance = async (req, res) => {
 
 /**
  * Mark attendance using Face Recognition
- * Expects: student_id, class_id (student ID is also from JWT)
+ * ✔ Checks active class
+ * ✔ No QR dependency
  */
 exports.faceMarkAttendance = async (req, res) => {
   try {
@@ -59,6 +61,17 @@ exports.faceMarkAttendance = async (req, res) => {
 
     if (!class_id)
       return res.status(400).json({ message: 'class_id is required' });
+
+    // ✅ Check if class is ACTIVE
+    const [activeRows] = await pool.query(
+      `SELECT * FROM active_classes 
+       WHERE class_id = ? AND expires_at >= NOW() 
+       LIMIT 1`,
+      [class_id]
+    );
+
+    if (activeRows.length === 0)
+      return res.status(403).json({ message: 'Class is not active right now' });
 
     // Check enrollment
     const [enrollRows] = await pool.query(
@@ -76,19 +89,24 @@ exports.faceMarkAttendance = async (req, res) => {
     if (existing.length > 0)
       return res.status(409).json({ message: 'Attendance already marked today' });
 
-    // Mark attendance via face recognition
+    // ✅ Mark attendance via FACE
     await pool.query(
-      'INSERT INTO attendance (student_id, class_id, status, face_match, method, timestamp) VALUES (?, ?, ?, ?, ?, NOW())',
+      `INSERT INTO attendance 
+       (student_id, class_id, status, face_match, method, timestamp) 
+       VALUES (?, ?, ?, ?, ?, NOW())`,
       [studentId, class_id, 'present', true, 'face']
     );
 
-    // Optional: log the action
+    // Optional log
     await pool.query(
       'INSERT INTO attendance_logs (student_id, action, details) VALUES (?, ?, ?)',
-      [studentId, 'face_marked', `Marked attendance for class ${class_id}`]
+      [studentId, 'face_attendance', `Face attendance marked for class ${class_id}`]
     );
 
-    return res.json({ message: 'Face recognition attendance marked', class_id });
+    return res.json({
+      message: 'Face matched ✅ Attendance marked',
+      class_id
+    });
   } catch (err) {
     console.error('❌ Error in faceMarkAttendance:', err);
     res.status(500).json({ message: 'Server error' });
@@ -102,7 +120,6 @@ exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // Fetch classes the student is enrolled in
     const [classes] = await pool.query(
       'SELECT c.id, c.name FROM classes c JOIN student_classes sc ON c.id = sc.class_id WHERE sc.student_id = ?',
       [studentId]
@@ -111,13 +128,11 @@ exports.getStudentAnalytics = async (req, res) => {
     const analytics = [];
 
     for (const cls of classes) {
-      // Total classes held
       const [totalRows] = await pool.query(
         'SELECT COUNT(*) AS total_days FROM attendance WHERE class_id = ?',
         [cls.id]
       );
 
-      // Classes student was present
       const [presentRows] = await pool.query(
         'SELECT COUNT(*) AS present_days FROM attendance WHERE class_id = ? AND student_id = ?',
         [cls.id, studentId]
@@ -145,7 +160,6 @@ exports.getTeacherAnalytics = async (req, res) => {
   try {
     const teacherId = req.user.id;
 
-    // Fetch classes created by the teacher
     const [classes] = await pool.query(
       'SELECT id, name FROM classes WHERE teacher_id = ?',
       [teacherId]
@@ -154,13 +168,11 @@ exports.getTeacherAnalytics = async (req, res) => {
     const analytics = [];
 
     for (const cls of classes) {
-      // Total students in class
       const [totalStudentsRows] = await pool.query(
         'SELECT COUNT(*) AS total_students FROM student_classes WHERE class_id = ?',
         [cls.id]
       );
 
-      // Total attendance entries for class
       const [attendanceRows] = await pool.query(
         'SELECT COUNT(*) AS attended_count FROM attendance WHERE class_id = ?',
         [cls.id]
