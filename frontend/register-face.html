@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Face | AttendAce</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #fefae0;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+    }
+
+    .face-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+    }
+
+    header { margin-bottom: 20px; }
+    header .logo { width: 80px; margin-bottom: 10px; }
+    header h1 { color: #5f8b6e; margin: 0; }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto 20px auto;
+      border: 4px solid #5f8b6e;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    video {
+      width: 100%;
+      display: block;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    #registerBtn {
+      margin-top: 15px;
+      padding: 12px 20px;
+      background: #5f8b6e;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    #registerBtn:hover { background: #497c59; }
+  </style>
+</head>
+<body>
+  <div class="face-container">
+    <header>
+      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
+      <h1>Register / Update Face</h1>
+    </header>
+
+    <div class="video-wrapper" id="video-container">
+      <video id="video" autoplay muted></video>
+    </div>
+
+    <p id="status">Initializing...</p>
+    <button id="registerBtn">Register / Update Face</button>
+  </div>
+
+  <!-- Face API -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="assets/register-face.js"></script>
+</body>
+</html>
