@@ -34,8 +34,13 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/qr', qrRoutes);
 
-// Frontend fallback
-app.get('*', (req, res) => {
+// Unknown API route handler
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// Frontend fallback for non-API routes
+app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(frontendPath, 'login.html'));
 });
 

@@ -88,11 +88,20 @@ async function getActiveClass() {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn('❌ getActiveClass failed with status:', res.status);
+      return null;
+    }
 
-    const data = await res.json();
-    console.log('🔍 Scanning for class_id:', data.class_id);
-    return data; // { class_id, expires_at }
+    try {
+      const data = await res.json();
+      console.log('🔍 Scanning for class_id:', data.class_id);
+      return data;
+    } catch (jsonErr) {
+      console.error('❌ getActiveClass invalid JSON:', jsonErr);
+      return null;
+    }
+
   } catch (err) {
     console.error('❌ Error fetching active class:', err);
     return null;
@@ -109,10 +118,19 @@ async function checkAttendanceStatus(class_id) {
       headers: { 'Authorization': 'Bearer ' + token }
     });
 
-    if (!res.ok) return { marked: false };
+    if (!res.ok) {
+      console.warn('❌ checkAttendanceStatus failed with status:', res.status);
+      return { marked: false };
+    }
 
-    const data = await res.json();
-    return { marked: data.marked }; // backend should return { marked: true/false }
+    try {
+      const data = await res.json();
+      return { marked: !!data.marked };
+    } catch (jsonErr) {
+      console.error('❌ checkAttendanceStatus invalid JSON:', jsonErr);
+      return { marked: false };
+    }
+
   } catch (err) {
     console.error('❌ Error checking attendance status:', err);
     return { marked: false };
