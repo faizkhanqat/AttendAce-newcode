@@ -1,4 +1,4 @@
-//backend//contollers/studentController.js
+//backend/controllers/studentController.js
 const pool = require('../config/db');
 
 // Get student profile
@@ -146,6 +146,23 @@ exports.getFaceStatus = async (req, res) => {
     res.json({ registered: !!rows[0].face_encoding });
   } catch (err) {
     console.error('Error fetching face status:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get face encoding for frontend
+exports.getFaceEncoding = async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      'SELECT face_encoding FROM users WHERE id = ?',
+      [req.user.id]
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ message: 'User not found' });
+
+    res.json({ face_encoding: rows[0].face_encoding || null });
+  } catch (err) {
+    console.error('Error fetching face encoding:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

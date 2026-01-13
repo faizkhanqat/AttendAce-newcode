@@ -21,4 +21,7 @@ router.post('/classes/unenroll', studentController.unenrollFromClass);
 router.get('/face', studentController.getFaceStatus);          // Check if face is registered
 router.post('/face/register', studentController.registerFace); // Register/update face encoding
 
+// ✅ New route to fetch stored face encoding
+router.get('/face/encoding', studentController.getFaceEncoding);
+
 module.exports = router;
