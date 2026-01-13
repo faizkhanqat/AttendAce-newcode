@@ -3,19 +3,22 @@ let status;
 let detectionInterval = null;
 let lastDescriptor = null;
 let lastScore = 0;
+let faceStatusBox;
 
 console.log('✅ register-face.js loaded');
 
 window.addEventListener('DOMContentLoaded', async () => {
   video = document.getElementById('video');
   status = document.getElementById('status');
+  faceStatusBox = document.getElementById('faceStatusBox'); // ✅ New element
 
-  if (!video || !status) {
+  if (!video || !status || !faceStatusBox) {
     console.error('❌ Required DOM elements missing');
     return;
   }
 
   await loadModels();
+  await checkFaceStatus(); // ✅ Check face status on load
 });
 
 async function loadModels() {
@@ -70,17 +73,14 @@ function startDetection() {
 
       if (detection) {
         const resized = faceapi.resizeResults(detection, displaySize);
-
-        // Draw bounding box
         const box = resized.detection.box;
+
+        // Draw rectangle and landmarks
         ctx.strokeStyle = 'blue';
         ctx.lineWidth = 2;
         ctx.strokeRect(box.x, box.y, box.width, box.height);
-
-        // Draw landmarks
         faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-        // Save descriptor and score
         lastDescriptor = resized.descriptor;
         lastScore = resized.detection.score;
 
@@ -96,6 +96,31 @@ function startDetection() {
   }, 500);
 }
 
+// ----------------- Face Status Check -----------------
+async function checkFaceStatus() {
+  const API_URL = 'https://attendace-zjzu.onrender.com';
+  const token = localStorage.getItem('token');
+
+  try {
+    const res = await fetch(`${API_URL}/api/student/face`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.registered) {
+      faceStatusBox.innerText = '✅ Face already registered';
+      faceStatusBox.style.backgroundColor = '#5f8b6e';
+    } else {
+      faceStatusBox.innerText = '❌ No face registered';
+      faceStatusBox.style.backgroundColor = '#d9534f';
+    }
+  } catch (err) {
+    console.error('Error checking face status:', err);
+    faceStatusBox.innerText = '⚠️ Unable to check face status';
+    faceStatusBox.style.backgroundColor = '#f0ad4e';
+  }
+}
+
 // ----------------- Register / Update Face -----------------
 document.getElementById('registerBtn').addEventListener('click', async () => {
   if (!lastDescriptor) {
@@ -109,9 +134,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     return;
   }
 
-  // Convert descriptor to JSON
   const faceEncoding = JSON.stringify(Array.from(lastDescriptor));
-
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
 
@@ -128,6 +151,7 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const data = await res.json();
     if (res.ok) {
       alert(data.message);
+      await checkFaceStatus(); // ✅ Update face status box after registration
     } else {
       alert(data.message || data.error || 'Failed to register face.');
     }
