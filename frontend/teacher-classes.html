@@ -75,8 +75,12 @@
       border: none;
     }
 
+    .activate-btn.deactivate {
+      background: #ff3b3b;
+    }
+
     .activate-btn:hover {
-      background: #2d8f00;
+      opacity: 0.9;
     }
 
     .status {
@@ -125,35 +129,65 @@
     const classesList = document.getElementById('classesList');
     const token = localStorage.getItem('token');
 
-    async function activateClass(classId, duration, statusEl) {
+    async function toggleClass(classId, duration, btn, statusEl) {
       try {
-        statusEl.innerText = 'Activating class...';
+        if (btn.dataset.active === 'true') {
+          // Deactivate immediately
+          btn.disabled = true;
+          statusEl.innerText = 'Deactivating class...';
+          const res = await fetch('/api/teacher/classes/deactivate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ class_id: classId })
+          });
+          if (!res.ok) throw new Error('Failed to deactivate');
+          btn.dataset.active = 'false';
+          btn.innerText = 'Activate';
+          btn.classList.remove('deactivate');
+          statusEl.innerText = '⚠️ Class deactivated';
+          btn.disabled = false;
+        } else {
+          // Activate
+          btn.disabled = true;
+          statusEl.innerText = 'Activating class...';
+          const res = await fetch('/api/teacher/classes/activate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ class_id: classId, duration })
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.message || 'Activation failed');
 
-        const res = await fetch('/api/teacher/classes/activate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({
-            class_id: classId,
-            duration
-          })
-        });
+          btn.dataset.active = 'true';
+          btn.innerText = 'Deactivate';
+          btn.classList.add('deactivate');
+          statusEl.innerText = `✅ Class active for ${duration} min`;
 
-        const data = await res.json();
-
-        if (!res.ok) throw new Error(data.message || 'Failed');
-
-        statusEl.innerText = `✅ Class active for ${duration} minutes`;
+          // Auto deactivate after duration
+          setTimeout(() => {
+            btn.dataset.active = 'false';
+            btn.innerText = 'Activate';
+            btn.classList.remove('deactivate');
+            statusEl.innerText = '⚠️ Class automatically deactivated';
+          }, duration * 60 * 1000);
+          btn.disabled = false;
+        }
       } catch (err) {
-        statusEl.innerText = '❌ Activation failed';
+        console.error(err);
+        statusEl.innerText = '❌ Action failed';
+        btn.disabled = false;
       }
     }
 
     async function fetchClasses() {
       try {
-        const res = await fetch('https://attendace-zjzu.onrender.com/api/teacher/classes', {
+        const res = await fetch('/api/teacher/classes', {
           headers: { 'Authorization': 'Bearer ' + token }
         });
 
@@ -171,6 +205,7 @@
           const div = document.createElement('div');
           div.className = 'class-item';
 
+          const isActive = cls.is_active; // backend should return true/false if class is active
           div.innerHTML = `
             <div class="class-header">
               <span>${cls.name}</span>
@@ -184,18 +219,21 @@
                 <option value="15" selected>15 min</option>
                 <option value="30">30 min</option>
               </select>
-              <button class="activate-btn">Activate Face</button>
+              <button class="activate-btn">${isActive ? 'Deactivate' : 'Activate'}</button>
             </div>
 
-            <div class="status"></div>
+            <div class="status">${isActive ? '✅ Class active' : ''}</div>
           `;
 
           const select = div.querySelector('select');
           const btn = div.querySelector('button');
           const status = div.querySelector('.status');
 
+          if (isActive) btn.dataset.active = 'true';
+          else btn.dataset.active = 'false';
+
           btn.onclick = () => {
-            activateClass(cls.id, select.value, status);
+            toggleClass(cls.id, parseInt(select.value), btn, status);
           };
 
           classesList.appendChild(div);

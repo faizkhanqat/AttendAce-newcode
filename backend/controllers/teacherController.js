@@ -43,12 +43,16 @@ exports.updateProfile = async (req, res) => {
 };
 
 // ==========================
-// Get classes
+// Get classes (with is_active)
 // ==========================
 exports.getClasses = async (req, res) => {
   try {
     const [classes] = await db.query(
-      'SELECT * FROM classes WHERE teacher_id = ?',
+      `SELECT c.*,
+              IF(ac.expires_at >= NOW(), TRUE, FALSE) AS is_active
+       FROM classes c
+       LEFT JOIN active_classes ac ON c.id = ac.class_id
+       WHERE c.teacher_id = ?`,
       [req.user.id]
     );
     res.json(classes);
