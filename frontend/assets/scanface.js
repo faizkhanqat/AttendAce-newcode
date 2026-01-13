@@ -15,13 +15,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  // Check if attendance already marked before starting detection
+  // Check if there is an active class
   const activeClass = await getActiveClass();
   if (!activeClass) {
     status.innerText = '⏳ No active class right now';
     return;
   }
 
+  // Check if attendance is already marked
   const attendanceStatus = await checkAttendanceStatus(activeClass.class_id);
   if (attendanceStatus.marked) {
     status.innerText = '⚠️ Attendance already marked';
@@ -29,6 +30,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Start normal flow if attendance not yet marked
   await init();
 });
 
@@ -140,7 +142,7 @@ async function markFaceAttendance(class_id) {
       hasMarkedAttendance = true;
     } else if (res.status === 409) {
       status.innerText = '⚠️ Attendance already marked';
-      hasMarkedAttendance = true; // ✅ prevent further 409 POSTs
+      hasMarkedAttendance = true; // prevent further 409 POSTs
     } else {
       status.innerText = data.message || '❌ Attendance failed';
       hasMarkedAttendance = false;
