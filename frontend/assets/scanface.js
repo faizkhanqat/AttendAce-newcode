@@ -75,7 +75,7 @@ async function getActiveClass() {
     if (!res.ok) return null;
 
     const data = await res.json();
-    console.log('🔍 Scanning for class_id:', data.class_id); // ✅ debug log
+    console.log('🔍 Scanning for class_id:', data.class_id);
     return data; // { class_id, expires_at }
   } catch (err) {
     console.error('❌ Error fetching active class:', err);
@@ -104,11 +104,17 @@ async function markFaceAttendance(class_id) {
 
     if (res.ok) {
       status.innerText = '✅ Attendance marked successfully!';
-      clearInterval(detectionInterval);
+    } else if (res.status === 409) {
+      // Already marked
+      status.innerText = '⚠️ Attendance already marked';
     } else {
       status.innerText = data.message || '❌ Attendance failed';
       hasMarkedAttendance = false;
     }
+
+    // Stop scanning in all cases to prevent repeated 409 errors
+    clearInterval(detectionInterval);
+
   } catch (err) {
     console.error('❌ Face attendance error:', err);
     status.innerText = '❌ Server error';
