@@ -15,6 +15,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  // Check if attendance already marked before starting detection
+  const activeClass = await getActiveClass();
+  if (!activeClass) {
+    status.innerText = '⏳ No active class right now';
+    return;
+  }
+
+  const attendanceStatus = await checkAttendanceStatus(activeClass.class_id);
+  if (attendanceStatus.marked) {
+    status.innerText = '⚠️ Attendance already marked';
+    hasMarkedAttendance = true;
+    return;
+  }
+
   await init();
 });
 
@@ -83,6 +97,26 @@ async function getActiveClass() {
   }
 }
 
+// ---------- CHECK ATTENDANCE STATUS ----------
+async function checkAttendanceStatus(class_id) {
+  const token = localStorage.getItem('token');
+  if (!token) return { marked: false };
+
+  try {
+    const res = await fetch(`/api/attendance/status?class_id=${class_id}`, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+
+    if (!res.ok) return { marked: false };
+
+    const data = await res.json();
+    return { marked: data.marked }; // backend should return { marked: true/false }
+  } catch (err) {
+    console.error('❌ Error checking attendance status:', err);
+    return { marked: false };
+  }
+}
+
 // ---------- MARK FACE ATTENDANCE ----------
 async function markFaceAttendance(class_id) {
   if (hasMarkedAttendance) return;
@@ -112,10 +146,7 @@ async function markFaceAttendance(class_id) {
       hasMarkedAttendance = false;
     }
 
-    // Stop scanning for both success and already marked
-    if (res.ok || res.status === 409) {
-      clearInterval(detectionInterval);
-    }
+    clearInterval(detectionInterval);
 
   } catch (err) {
     console.error('❌ Face attendance error:', err);
@@ -136,6 +167,8 @@ function startDetection() {
   const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.2 });
 
   detectionInterval = setInterval(async () => {
+    if (hasMarkedAttendance) return;
+
     const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -145,16 +178,15 @@ function startDetection() {
       faceapi.draw.drawDetections(canvas, resized);
       faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-      status.innerText = '✅ Face detected. Checking active class...';
+      status.innerText = '✅ Face detected. Marking attendance...';
 
       const activeClass = await getActiveClass();
-
       if (!activeClass) {
         status.innerText = '⏳ No active class right now';
+        clearInterval(detectionInterval);
         return;
       }
 
-      status.innerText = `🧠 Verifying & marking attendance for class_id: ${activeClass.class_id}`;
       await markFaceAttendance(activeClass.class_id);
     } else {
       status.innerText = 'No face detected...';
