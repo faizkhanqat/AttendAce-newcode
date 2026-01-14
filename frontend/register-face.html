@@ -46,7 +46,9 @@
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
     #status { margin-top: 15px; font-weight: 500; color: #333; }
-    #registerBtn, #backDashboardBtn { 
+
+    #registerBtn,
+    #backDashboardBtn { 
       margin-top: 15px; 
       padding: 12px 20px; 
       border-radius: 12px; 
@@ -54,12 +56,23 @@
       cursor: pointer; 
       font-weight: 500; 
     }
-    #registerBtn { background: #5f8b6e; color: white; transition: 0.3s; }
+
+    #registerBtn {
+      background: #5f8b6e;
+      color: white;
+      transition: 0.3s;
+      display: none; /* ✅ hidden until face scan completes */
+    }
+
     #registerBtn:hover { background: #497c59; }
-    #backDashboardBtn { background: #ccc; color: #333; }
+
+    #backDashboardBtn {
+      background: #ccc;
+      color: #333;
+    }
+
     #backDashboardBtn:hover { opacity: 0.85; }
 
-    /* --- New face status box --- */
     #faceStatusBox {
       margin-top: 15px;
       padding: 10px;
@@ -69,7 +82,6 @@
       display: inline-block;
     }
 
-    /* --- New match status box --- */
     #matchStatusBox {
       margin-top: 10px;
       padding: 10px;
@@ -91,19 +103,17 @@
       <video id="video" autoplay muted></video>
     </div>
 
-    <p id="status">Initializing...</p>
-    <button id="registerBtn">Register / Update Face</button>
+    <p id="status">Initializing camera...</p>
+
+    <!-- ✅ Button stays hidden until JS shows it -->
+    <button id="registerBtn">Update Face</button>
     <br>
     <button id="backDashboardBtn">⬅️ Back to Dashboard</button>
 
-    <!-- ✅ Face registered/not registered box -->
     <p id="faceStatusBox">Checking face status...</p>
-
-    <!-- ✅ New: Real-time face match status box -->
     <p id="matchStatusBox"></p>
   </div>
 
-  <!-- Face API -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <script src="assets/register-face.js"></script>
 </body>

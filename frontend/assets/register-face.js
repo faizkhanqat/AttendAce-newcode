@@ -4,8 +4,10 @@ let detectionInterval = null;
 let lastDescriptor = null;
 let lastScore = 0;
 let faceStatusBox;
-let matchStatusBox; // ✅ New element for match check
-let registeredDescriptor = null; // ✅ Store registered face descriptor
+let matchStatusBox;
+let registeredDescriptor = null;
+
+let scanCompleted = false; // ✅ NEW: stop scanning after 0.9
 
 console.log('✅ register-face.js loaded');
 
@@ -66,48 +68,64 @@ function startDetection() {
   const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
   detectionInterval = setInterval(async () => {
+    if (scanCompleted) return; // ✅ stop further scans
+
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     try {
-      const detection = await faceapi.detectSingleFace(video, options)
+      const detection = await faceapi
+        .detectSingleFace(video, options)
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      if (detection) {
-        const resized = faceapi.resizeResults(detection, displaySize);
-        const box = resized.detection.box;
+      if (!detection) {
+        status.innerText = 'No face detected...';
+        return;
+      }
 
-        ctx.strokeStyle = 'blue';
-        ctx.lineWidth = 2;
-        ctx.strokeRect(box.x, box.y, box.width, box.height);
-        faceapi.draw.drawFaceLandmarks(canvas, resized);
+      const resized = faceapi.resizeResults(detection, displaySize);
+      const box = resized.detection.box;
 
-        lastDescriptor = resized.descriptor;
-        lastScore = resized.detection.score;
-        status.innerText = `Face detected! Confidence: ${lastScore.toFixed(2)}`;
+      ctx.strokeStyle = 'blue';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(box.x, box.y, box.width, box.height);
+      faceapi.draw.drawFaceLandmarks(canvas, resized);
 
-        if (registeredDescriptor && lastScore >= 0.9) {
-          const distance = faceapi.euclideanDistance(lastDescriptor, registeredDescriptor);
+      lastDescriptor = resized.descriptor;
+      lastScore = resized.detection.score;
+
+      status.innerText = `Scanning... Confidence: ${lastScore.toFixed(2)}`;
+
+      // ✅ Stop scanning at 0.9
+      if (lastScore >= 0.9) {
+        scanCompleted = true;
+        clearInterval(detectionInterval);
+
+        status.innerText = 'Face scan completed';
+
+        if (registeredDescriptor) {
+          const distance = faceapi.euclideanDistance(
+            lastDescriptor,
+            registeredDescriptor
+          );
+
           if (distance < 0.6) {
-            matchStatusBox.innerText = '✅ This is the registered face';
+            matchStatusBox.innerText = '✅ This face is already registered';
             matchStatusBox.style.backgroundColor = '#5f8b6e';
           } else {
             matchStatusBox.innerText = '❌ This is NOT the registered face';
             matchStatusBox.style.backgroundColor = '#d9534f';
           }
         } else {
-          matchStatusBox.innerText = '';
-          matchStatusBox.style.backgroundColor = 'transparent';
+          matchStatusBox.innerText = 'ℹ️ No face registered. You can register now.';
+          matchStatusBox.style.backgroundColor = '#5bc0de';
         }
 
-      } else {
-        lastDescriptor = null;
-        lastScore = 0;
-        status.innerText = 'No face detected...';
-        matchStatusBox.innerText = '';
-        matchStatusBox.style.backgroundColor = 'transparent';
+        // ✅ Show update button after scan
+        document.getElementById('registerBtn').style.display = 'inline-block';
       }
+
     } catch (err) {
       console.error('❌ Detection error:', err);
     }
@@ -119,8 +137,6 @@ async function checkFaceStatus() {
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
 
-  console.log('Token being sent:', token);
-
   if (!token) {
     faceStatusBox.innerText = '⚠️ You are not logged in';
     faceStatusBox.style.backgroundColor = '#f0ad4e';
@@ -129,13 +145,8 @@ async function checkFaceStatus() {
 
   try {
     const res = await fetch(`${API_URL}/api/student/face`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` }
     });
-
-    const contentType = res.headers.get('content-type') || '';
-    if (!res.ok || !contentType.includes('application/json')) {
-      throw new Error(`Server returned non-JSON or status ${res.status}`);
-    }
 
     const data = await res.json();
 
@@ -143,27 +154,22 @@ async function checkFaceStatus() {
       faceStatusBox.innerText = '✅ Face already registered';
       faceStatusBox.style.backgroundColor = '#5f8b6e';
 
-      // ✅ Fetch registered encoding and parse JSON string
       const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
-      const descType = descRes.headers.get('content-type') || '';
-      if (!descRes.ok || !descType.includes('application/json')) {
-        throw new Error(`Failed to fetch face encoding: ${descRes.status}`);
-      }
+
       const descData = await descRes.json();
       if (descData.face_encoding) {
-        const arr = JSON.parse(descData.face_encoding); // parse JSON
-        registeredDescriptor = new Float32Array(arr);    // convert to Float32Array
+        registeredDescriptor = new Float32Array(
+          JSON.parse(descData.face_encoding)
+        );
       }
-
     } else {
       faceStatusBox.innerText = '❌ No face registered';
       faceStatusBox.style.backgroundColor = '#d9534f';
     }
-
   } catch (err) {
-    console.error('Error checking face status:', err);
+    console.error(err);
     faceStatusBox.innerText = '⚠️ Unable to check face status';
     faceStatusBox.style.backgroundColor = '#f0ad4e';
   }
@@ -171,38 +177,37 @@ async function checkFaceStatus() {
 
 // ----------------- Register / Update Face -----------------
 document.getElementById('registerBtn').addEventListener('click', async () => {
-  if (!lastDescriptor) return alert('No face detected! Make sure your face is visible.');
-  if (lastScore < 0.9) return alert('Face quality too low. Please adjust and try again.');
+  if (!lastDescriptor || lastScore < 0.9) {
+    alert('Face scan not complete');
+    return;
+  }
 
-  const faceEncoding = JSON.stringify(Array.from(lastDescriptor));
   const API_URL = 'https://attendace-zjzu.onrender.com';
   const token = localStorage.getItem('token');
-  console.log('Token being sent:', token);
 
   try {
     const res = await fetch(`${API_URL}/api/student/face/register`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ face_encoding: faceEncoding })
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        face_encoding: JSON.stringify(Array.from(lastDescriptor))
+      })
     });
 
-    const contentType = res.headers.get('content-type') || '';
-    if (!res.ok || !contentType.includes('application/json')) {
-      throw new Error(`Server returned non-JSON or status ${res.status}`);
-    }
-
     const data = await res.json();
-    alert(data.message || 'Face registered successfully');
-    await checkFaceStatus();
-
+    alert(data.message || 'Face updated successfully');
+    location.reload();
   } catch (err) {
-    console.error('❌ Registration error:', err);
-    alert('Server error or not authorized while registering face.');
+    alert('Error updating face');
   }
 });
 
 // ----------------- Back to Dashboard -----------------
-const backBtn = document.getElementById('backDashboardBtn');
-if (backBtn) {
-  backBtn.addEventListener('click', () => window.location.href = 'student-dashboard.html');
-}
+document
+  .getElementById('backDashboardBtn')
+  .addEventListener('click', () => {
+    window.location.href = 'student-dashboard.html';
+  });
