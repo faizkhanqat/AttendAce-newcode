@@ -34,7 +34,7 @@ app.use('/api/student', studentRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/qr', qrRoutes);
-app.use('/api', contactRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Unknown API route handler
 app.use('/api', (req, res) => {

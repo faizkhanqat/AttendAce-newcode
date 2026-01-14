@@ -6,7 +6,8 @@ const EMAIL_FROM = process.env.EMAIL_FROM;
 const DEV_EMAIL = process.env.DEV_EMAIL;
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-exports.sendFeedback = async (req, res) => {
+// ✅ Send feedback from user to developer
+const sendFeedback = async (req, res) => {
   const { userId, message } = req.body;
 
   if (!userId || !message) {
@@ -14,6 +15,7 @@ exports.sendFeedback = async (req, res) => {
   }
 
   try {
+    // Fetch user info from DB
     const [users] = await db.query('SELECT name, email, role FROM users WHERE id = ?', [userId]);
     if (users.length === 0) {
       return res.status(404).json({ message: 'User not found' });
@@ -21,6 +23,7 @@ exports.sendFeedback = async (req, res) => {
 
     const user = users[0];
 
+    // Send email to developers
     await sgMail.send({
       to: DEV_EMAIL,
       from: EMAIL_FROM,
@@ -51,3 +54,5 @@ ${message}
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+module.exports = { sendFeedback };
