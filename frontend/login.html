@@ -276,11 +276,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email })
         });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.message || 'Error sending OTP');
-        }
-        const data = await res.json();
+        const data = await res.json(); // <--- call once
+        if (!res.ok) throw new Error(data.message || 'Error sending OTP');
+
         otpSent = true;
         resetEmail = email;
         otpGroup.classList.remove('hidden');
