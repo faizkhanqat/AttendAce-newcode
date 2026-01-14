@@ -95,7 +95,7 @@ function startDetection() {
       lastDescriptor = resized.descriptor;
       lastScore = resized.detection.score;
 
-      status.innerText = `Scanning... Confidence: ${lastScore.toFixed(2)}`;
+      status.innerText = `Hey you monkey! Come closer to the camera! Confidence: ${lastScore.toFixed(2)}`;
 
       // ✅ Stop scanning at 0.9
       if (lastScore >= 0.9) {
@@ -111,7 +111,7 @@ function startDetection() {
           );
 
           if (distance < 0.6) {
-            matchStatusBox.innerText = '✅ Correct Monkey Identified';
+            matchStatusBox.innerText = '✅ Yes! You are that monkey!';
             matchStatusBox.style.backgroundColor = '#5f8b6e';
           } else {
             matchStatusBox.innerText = '❌ You are not the right monkey.';
