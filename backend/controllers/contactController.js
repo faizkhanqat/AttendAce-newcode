@@ -1,10 +1,13 @@
 const db = require('../config/db');
+const axios = require('axios');
 const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
 
 const EMAIL_FROM = process.env.EMAIL_FROM;
 const DEV_EMAIL = process.env.DEV_EMAIL;
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const sendFeedback = async (req, res) => {
   const { userId, message } = req.body;
@@ -25,6 +28,7 @@ const sendFeedback = async (req, res) => {
 
     const user = users[0];
 
+    // -------------------- Send Email --------------------
     await sgMail.send({
       to: DEV_EMAIL,
       from: EMAIL_FROM,
@@ -49,6 +53,30 @@ ${message}
       `
     });
 
+    // -------------------- Send Telegram (HTML) --------------------
+    if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID) {
+      const telegramHTML = `
+<b>📢 New Feedback from AttendAce User</b>
+
+<b>Name:</b> ${user.name}
+<b>Email:</b> ${user.email}
+<b>Role:</b> ${user.role}
+
+<b>Message:</b>
+<pre>${message}</pre>
+      `;
+
+      try {
+        await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          chat_id: TELEGRAM_CHAT_ID,
+          text: telegramHTML,
+          parse_mode: "HTML"
+        });
+      } catch (tgErr) {
+        console.error('Telegram send error:', tgErr.message);
+      }
+    }
+
     res.json({ message: 'Message sent! Our team will contact you shortly.' });
   } catch (err) {
     console.error('Send Feedback error:', err);
@@ -56,4 +84,4 @@ ${message}
   }
 };
 
-module.exports = sendFeedback; // ✅ export directly
+module.exports = sendFeedback;
