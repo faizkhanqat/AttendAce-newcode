@@ -6,82 +6,129 @@
   <title>Login / Register | AttendAce</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #fefae0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-    h1 {
-      margin-bottom: 20px;
-      color: #5f8b6e;
-    }
-    .form-group {
-      margin-bottom: 15px;
-      text-align: left;
-    }
-    label {
-      font-weight: 500;
-      display: block;
-      margin-bottom: 5px;
-      color: #333;
-    }
-    input, select {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #d9e0e6;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      background: #5f8b6e;
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    button:hover {
-      background: #497c59;
-    }
-    .message {
-      margin-top: 15px;
-      color: red;
-      font-size: 14px;
-    }
-    .toggle-link {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #5f8b6e;
-      cursor: pointer;
-    }
-    .toggle-link:hover {
-      text-decoration: underline;
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
+body {
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 40px 0;
+  overscroll-behavior: none;
+  overflow-y:auto;
+  background: url('assets/login-background.png')
+              no-repeat center center / cover;
+}
+
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* dark overlay only on background */
+  z-index: 0;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  background: #fff;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* 🔹 Logo + title row */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  transform: scale(1.55);
+}
+
+.header img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 22px;
+  color: #5f8b6e;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+label {
+  font-weight: 500;
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #d9e0e6;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #5f8b6e;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #497c59;
+}
+
+.message {
+  margin-top: 15px;
+  color: red;
+  font-size: 14px;
+}
+
+.toggle-link {
+  margin-top: 15px;
+  font-size: 14px;
+  color: #5f8b6e;
+  cursor: pointer;
+}
+
+.toggle-link:hover {
+  text-decoration: underline;
+}
+
+.hidden {
+  display: none;
+}
+</style>
 </head>
 <body>
+  
   <div class="container">
+    <div class="header">
+    <img src="assets/logo.png" alt="AttendAce Logo">
     <h1 id="formTitle">AttendAce Login</h1>
+  </div>
 
     <form id="authForm">
       <!-- Full Name (for registration) -->
@@ -198,7 +245,7 @@
         genderGroup.classList.add('hidden');
         dobGroup.classList.add('hidden');
       } else {
-        formTitle.textContent = 'AttendAce Register';
+        formTitle.textContent = 'Register Account';
         submitBtn.textContent = 'Register';
         toggleLink.textContent = "Already have an account? Login";
         confirmGroup.classList.remove('hidden');
@@ -208,6 +255,7 @@
       }
       msg.textContent = '';
       msg.style.color = 'red';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
     // Show forgot password
