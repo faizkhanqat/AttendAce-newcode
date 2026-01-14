@@ -1,16 +1,18 @@
 const db = require('../config/db'); // MySQL pool
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
 const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES) || 10;
 
-// For SendGrid
+// SendGrid config
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM;
+
+sgMail.setApiKey(SENDGRID_API_KEY);
 
 // ------------------ REGISTER ------------------
 exports.register = async (req, res) => {
@@ -21,8 +23,13 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const [existing] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (existing.length > 0) return res.status(400).json({ message: 'Email already registered' });
+    const [existing] = await db.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
@@ -47,7 +54,6 @@ exports.register = async (req, res) => {
       token,
       user: newUser[0]
     });
-
   } catch (err) {
     console.error('Register error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -63,16 +69,27 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query('SELECT * FROM users WHERE email = ? AND role = ?', [email, role]);
-    if (users.length === 0) return res.status(400).json({ message: 'Invalid credentials' });
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE email = ? AND role = ?',
+      [email, role]
+    );
+    if (users.length === 0) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
     const user = users[0];
     const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) return res.status(400).json({ message: 'Invalid credentials' });
+    if (!match) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
 
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '8h' });
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
 
-    res.status(200).json({
+    res.json({
       message: 'Login successful',
       token,
       user: {
@@ -84,7 +101,6 @@ exports.login = async (req, res) => {
         dob: user.dob || null
       }
     });
-
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -93,44 +109,38 @@ exports.login = async (req, res) => {
 
 // ------------------ FORGOT PASSWORD / OTP ------------------
 
-// Create Nodemailer transporter for SendGrid
-const transporter = nodemailer.createTransport({
-  host: 'smtp.sendgrid.net',
-  port: 587,
-  secure: false, // true for 465, false for 587
-  auth: {
-    user: 'apikey', // literally the string 'apikey'
-    pass: SENDGRID_API_KEY
-  }
-});
-
 // 1️⃣ Request OTP
 exports.requestOtp = async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email is required' });
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
 
   try {
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (users.length === 0) return res.status(404).json({ message: 'User not found' });
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString(); // 4-digit
-    const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000); // in ms
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
 
     await db.query(
       'UPDATE users SET otp_code = ?, otp_expires = ? WHERE email = ?',
       [otp, expires, email]
     );
 
-    // Send email
-    await transporter.sendMail({
-      from: `"AttendAce" <${EMAIL_FROM}>`,
+    await sgMail.send({
       to: email,
+      from: EMAIL_FROM,
       subject: 'Your AttendAce OTP for Password Reset',
       text: `Your OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`
     });
 
     res.json({ message: 'OTP sent to your email' });
-
   } catch (err) {
     console.error('Request OTP error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -140,19 +150,31 @@ exports.requestOtp = async (req, res) => {
 // 2️⃣ Verify OTP
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
-  if (!email || !otp) return res.status(400).json({ message: 'Email and OTP required' });
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP required' });
+  }
 
   try {
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (users.length === 0) return res.status(404).json({ message: 'User not found' });
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const user = users[0];
-    if (!user.otp_code || !user.otp_expires) return res.status(400).json({ message: 'No OTP requested' });
-    if (user.otp_code !== otp) return res.status(400).json({ message: 'Invalid OTP' });
-    if (new Date(user.otp_expires) < new Date()) return res.status(400).json({ message: 'OTP expired' });
+    if (!user.otp_code || !user.otp_expires) {
+      return res.status(400).json({ message: 'No OTP requested' });
+    }
+    if (user.otp_code !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+    if (new Date(user.otp_expires) < new Date()) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
 
     res.json({ message: 'OTP verified. You can reset your password now.' });
-
   } catch (err) {
     console.error('Verify OTP error:', err);
     res.status(500).json({ message: 'Server error' });
@@ -162,16 +184,31 @@ exports.verifyOtp = async (req, res) => {
 // 3️⃣ Reset Password
 exports.resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
-  if (!email || !otp || !newPassword) return res.status(400).json({ message: 'Email, OTP, and new password required' });
+  if (!email || !otp || !newPassword) {
+    return res.status(400).json({
+      message: 'Email, OTP, and new password required'
+    });
+  }
 
   try {
-    const [users] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
-    if (users.length === 0) return res.status(404).json({ message: 'User not found' });
+    const [users] = await db.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
     const user = users[0];
-    if (!user.otp_code || !user.otp_expires) return res.status(400).json({ message: 'No OTP requested' });
-    if (user.otp_code !== otp) return res.status(400).json({ message: 'Invalid OTP' });
-    if (new Date(user.otp_expires) < new Date()) return res.status(400).json({ message: 'OTP expired' });
+    if (!user.otp_code || !user.otp_expires) {
+      return res.status(400).json({ message: 'No OTP requested' });
+    }
+    if (user.otp_code !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+    if (new Date(user.otp_expires) < new Date()) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
 
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
@@ -180,8 +217,9 @@ exports.resetPassword = async (req, res) => {
       [hashedPassword, email]
     );
 
-    res.json({ message: 'Password reset successful. You can now login with new password.' });
-
+    res.json({
+      message: 'Password reset successful. You can now login with new password.'
+    });
   } catch (err) {
     console.error('Reset Password error:', err);
     res.status(500).json({ message: 'Server error' });
