@@ -187,6 +187,7 @@
       passwordGroup.classList.remove('hidden');
       passwordInput.type = 'password';
       roleGroup.classList.remove('hidden');
+      document.getElementById('role').required = true;
 
       if (isLogin) {
         formTitle.textContent = 'AttendAce Login';
@@ -226,6 +227,7 @@
       newPasswordGroup.classList.add('hidden');
       passwordGroup.classList.add('hidden');
       roleGroup.classList.add('hidden');
+      document.getElementById('role').required = false;  // <--- ADD THIS
       msg.textContent = '';
       msg.style.color = 'red';
     });
