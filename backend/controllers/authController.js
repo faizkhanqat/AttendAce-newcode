@@ -1,4 +1,3 @@
-//backend//controllers/authController.js
 const db = require('../config/db'); // MySQL pool
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -9,7 +8,7 @@ const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
 
 // --- Register ---
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, gender, dob } = req.body;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({ message: 'All fields are required' });
@@ -21,12 +20,16 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
+    // Insert with gender and dob (nullable)
     const [result] = await db.query(
-      'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
-      [name, email, hashedPassword, role]
+      'INSERT INTO users (name, email, password_hash, role, gender, dob) VALUES (?, ?, ?, ?, ?, ?)',
+      [name, email, hashedPassword, role, gender || null, dob || null]
     );
 
-    const [newUser] = await db.query('SELECT id, name, email, role FROM users WHERE id = ?', [result.insertId]);
+    const [newUser] = await db.query(
+      'SELECT id, name, email, role, gender, dob FROM users WHERE id = ?',
+      [result.insertId]
+    );
 
     const token = jwt.sign(
       { id: newUser[0].id, role: newUser[0].role },
@@ -71,7 +74,9 @@ exports.login = async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        gender: user.gender || null,
+        dob: user.dob || null
       }
     });
 
