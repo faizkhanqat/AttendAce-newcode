@@ -6,9 +6,11 @@ require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
-const EMAIL_USER = process.env.EMAIL_USER;
-const EMAIL_PASS = process.env.EMAIL_PASS;
 const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES) || 10;
+
+// For SendGrid
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
+const EMAIL_FROM = process.env.EMAIL_FROM;
 
 // ------------------ REGISTER ------------------
 exports.register = async (req, res) => {
@@ -91,12 +93,10 @@ exports.login = async (req, res) => {
 
 // ------------------ FORGOT PASSWORD / OTP ------------------
 
-// Create Nodemailer transporter
+// Create Nodemailer transporter for SendGrid
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: { user: EMAIL_USER, pass: EMAIL_PASS }
+  service: 'SendGrid',
+  auth: { api_key: SENDGRID_API_KEY }
 });
 
 // 1️⃣ Request OTP
@@ -118,7 +118,7 @@ exports.requestOtp = async (req, res) => {
 
     // Send email
     await transporter.sendMail({
-      from: `"AttendAce" <${EMAIL_USER}>`,
+      from: `"AttendAce" <${EMAIL_FROM}>`,
       to: email,
       subject: 'Your AttendAce OTP for Password Reset',
       text: `Your OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`
