@@ -74,6 +74,9 @@
     .toggle-link:hover {
       text-decoration: underline;
     }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -82,7 +85,7 @@
 
     <form id="authForm">
       <!-- Full Name (for registration) -->
-      <div class="form-group" id="nameGroup" style="display: none;">
+      <div class="form-group hidden" id="nameGroup">
         <label for="name">Full Name</label>
         <input type="text" id="name">
       </div>
@@ -101,29 +104,33 @@
         </select>
       </div>
 
-      <!-- Gender (new) -->
-      <div class="form-group" id="genderGroup" style="display: none;">
+      <!-- Gender (registration) -->
+      <div class="form-group hidden" id="genderGroup">
         <label for="gender">Gender</label>
         <select id="gender">
           <option value="">Select gender</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
-          <option value="info" disabled>YOU CAN ONLY BE A MALE OR FEMALE</option>
         </select>
       </div>
 
-      <!-- DOB (new) -->
-      <div class="form-group" id="dobGroup" style="display: none;">
+      <!-- DOB (registration) -->
+      <div class="form-group hidden" id="dobGroup">
         <label for="dob">Date of Birth</label>
         <input type="date" id="dob">
       </div>
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" required>
+      <div class="form-group hidden" id="otpGroup">
+        <label for="otp">Enter OTP</label>
+        <input type="text" id="otp">
       </div>
 
-      <div class="form-group" id="confirmGroup" style="display: none;">
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password">
+      </div>
+
+      <div class="form-group hidden" id="confirmGroup">
         <label for="confirmPassword">Confirm Password</label>
         <input type="password" id="confirmPassword">
       </div>
@@ -133,40 +140,71 @@
     </form>
 
     <p class="toggle-link" id="toggleLink">Don't have an account? Register</p>
+    <p class="toggle-link" id="forgotLink">Forgot Password?</p>
   </div>
 
   <script>
     let isLogin = true;
+    let isForgot = false;
+    let otpSent = false;
+    let resetEmail = '';
 
     const formTitle = document.getElementById('formTitle');
     const authForm = document.getElementById('authForm');
     const submitBtn = document.getElementById('submitBtn');
     const toggleLink = document.getElementById('toggleLink');
+    const forgotLink = document.getElementById('forgotLink');
     const confirmGroup = document.getElementById('confirmGroup');
     const nameGroup = document.getElementById('nameGroup');
     const genderGroup = document.getElementById('genderGroup');
     const dobGroup = document.getElementById('dobGroup');
+    const otpGroup = document.getElementById('otpGroup');
+    const otpInput = document.getElementById('otp');
+    const passwordInput = document.getElementById('password');
     const msg = document.getElementById('msg');
 
+    // Toggle login/register
     toggleLink.addEventListener('click', () => {
       isLogin = !isLogin;
+      isForgot = false;
+      otpSent = false;
+      resetEmail = '';
+      otpGroup.classList.add('hidden');
+      passwordInput.type = 'password';
       if (isLogin) {
         formTitle.textContent = 'AttendAce Login';
         submitBtn.textContent = 'Login';
         toggleLink.textContent = "Don't have an account? Register";
-        confirmGroup.style.display = 'none';
-        nameGroup.style.display = 'none';
-        genderGroup.style.display = 'none';
-        dobGroup.style.display = 'none';
+        confirmGroup.classList.add('hidden');
+        nameGroup.classList.add('hidden');
+        genderGroup.classList.add('hidden');
+        dobGroup.classList.add('hidden');
       } else {
         formTitle.textContent = 'AttendAce Register';
         submitBtn.textContent = 'Register';
         toggleLink.textContent = "Already have an account? Login";
-        confirmGroup.style.display = 'block';
-        nameGroup.style.display = 'block';
-        genderGroup.style.display = 'block';
-        dobGroup.style.display = 'block';
+        confirmGroup.classList.remove('hidden');
+        nameGroup.classList.remove('hidden');
+        genderGroup.classList.remove('hidden');
+        dobGroup.classList.remove('hidden');
       }
+      msg.textContent = '';
+    });
+
+    // Show forgot password
+    forgotLink.addEventListener('click', () => {
+      isForgot = true;
+      isLogin = false;
+      otpSent = false;
+      resetEmail = '';
+      formTitle.textContent = 'Forgot Password';
+      submitBtn.textContent = 'Send OTP';
+      nameGroup.classList.add('hidden');
+      genderGroup.classList.add('hidden');
+      dobGroup.classList.add('hidden');
+      confirmGroup.classList.add('hidden');
+      otpGroup.classList.add('hidden');
+      passwordInput.type = 'password';
       msg.textContent = '';
     });
 
@@ -178,21 +216,12 @@
           body: JSON.stringify({ email, password, role })
         });
 
-        if (!res.ok) {
-          const error = await res.text();
-          throw new Error(error || 'Login failed');
-        }
+        if (!res.ok) throw new Error(await res.text());
 
         const data = await res.json();
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-
-        if (role === 'student') {
-          window.location.href = 'student-dashboard.html';
-        } else {
-          window.location.href = 'teacher-dashboard.html';
-        }
-
+        window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
       } catch (err) {
         msg.textContent = 'Login failed: ' + err.message;
       }
@@ -205,28 +234,75 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, role, gender, dob })
         });
-
-        if (!res.ok) {
-          const error = await res.text();
-          throw new Error(error || 'Registration failed');
-        }
-
-        const data = await res.json();
+        if (!res.ok) throw new Error(await res.text());
         alert('Registration successful! Please login.');
         toggleLink.click();
-
       } catch (err) {
         msg.textContent = 'Registration failed: ' + err.message;
+      }
+    }
+
+    async function sendOtp(email) {
+      try {
+        const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        otpSent = true;
+        resetEmail = email;
+        otpGroup.classList.remove('hidden');
+        passwordInput.type = 'password';
+        submitBtn.textContent = 'Verify OTP & Reset Password';
+        msg.textContent = 'OTP sent to your email.';
+      } catch (err) {
+        msg.textContent = 'Error sending OTP: ' + err.message;
+      }
+    }
+
+    async function verifyOtpAndReset(email, otp, newPassword) {
+      try {
+        const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp, newPassword })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert('Password reset successful! Please login.');
+        toggleLink.click();
+      } catch (err) {
+        msg.textContent = 'Password reset failed: ' + err.message;
       }
     }
 
     authForm.addEventListener('submit', e => {
       e.preventDefault();
       const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
+      const password = passwordInput.value;
       const role = document.getElementById('role').value;
 
-      if (isLogin) {
+      if (isForgot) {
+        if (!otpSent) {
+          if (!email) {
+            msg.textContent = 'Please enter your email';
+            return;
+          }
+          sendOtp(email);
+        } else {
+          const otp = otpInput.value;
+          const newPassword = passwordInput.value;
+          if (!otp || !newPassword) {
+            msg.textContent = 'Please enter OTP and new password';
+            return;
+          }
+          verifyOtpAndReset(resetEmail, otp, newPassword);
+        }
+      } else if (isLogin) {
+        if (!email || !password || !role) {
+          msg.textContent = 'Please fill all fields';
+          return;
+        }
         login(email, password, role);
       } else {
         const name = document.getElementById('name').value;
@@ -238,13 +314,10 @@
           msg.textContent = 'Please fill all required fields';
           return;
         }
-
         if (password !== confirmPassword) {
           msg.textContent = "Passwords don't match";
           return;
         }
-
-        // gender and dob can be blank (null)
         register(name, email, password, role, gender || null, dob || null);
       }
     });
