@@ -95,7 +95,7 @@
         <input type="email" id="email" required>
       </div>
 
-      <div class="form-group">
+      <div class="form-group" id="roleGroup">
         <label for="role">Role</label>
         <select id="role" required>
           <option value="">Select role</option>
@@ -166,6 +166,7 @@
     const nameGroup = document.getElementById('nameGroup');
     const genderGroup = document.getElementById('genderGroup');
     const dobGroup = document.getElementById('dobGroup');
+    const roleGroup = document.getElementById('roleGroup');
     const otpGroup = document.getElementById('otpGroup');
     const otpInput = document.getElementById('otp');
     const newPasswordGroup = document.getElementById('newPasswordGroup');
@@ -185,6 +186,8 @@
       newPasswordGroup.classList.add('hidden');
       passwordGroup.classList.remove('hidden');
       passwordInput.type = 'password';
+      roleGroup.classList.remove('hidden');
+
       if (isLogin) {
         formTitle.textContent = 'AttendAce Login';
         submitBtn.textContent = 'Login';
@@ -222,6 +225,7 @@
       otpGroup.classList.add('hidden');
       newPasswordGroup.classList.add('hidden');
       passwordGroup.classList.add('hidden');
+      roleGroup.classList.add('hidden');
       msg.textContent = '';
       msg.style.color = 'red';
     });
@@ -239,6 +243,7 @@
         localStorage.setItem('user', JSON.stringify(data.user));
         window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
       } catch (err) {
+        console.error(err);
         msg.style.color = 'red';
         msg.textContent = 'Login failed: ' + err.message;
       }
@@ -256,6 +261,7 @@
         alert('Registration successful! Please login.');
         toggleLink.click();
       } catch (err) {
+        console.error(err);
         msg.style.color = 'red';
         msg.textContent = 'Registration failed: ' + err.message;
       }
@@ -266,10 +272,13 @@
         const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/forgot-password', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email }) // only email
+          body: JSON.stringify({ email })
         });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.message || 'Error sending OTP');
+        }
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Error sending OTP');
         otpSent = true;
         resetEmail = email;
         otpGroup.classList.remove('hidden');
@@ -277,6 +286,7 @@
         msg.style.color = 'green';
         msg.textContent = data.message;
       } catch (err) {
+        console.error(err);
         msg.style.color = 'red';
         msg.textContent = 'Error sending OTP: ' + err.message;
       }
@@ -298,6 +308,7 @@
         msg.style.color = 'green';
         msg.textContent = data.message;
       } catch (err) {
+        console.error(err);
         msg.style.color = 'red';
         msg.textContent = 'OTP verification failed: ' + err.message;
       }
@@ -316,6 +327,7 @@
         alert('Password reset successful! Please login.');
         toggleLink.click();
       } catch (err) {
+        console.error(err);
         msg.style.color = 'red';
         msg.textContent = 'Password reset failed: ' + err.message;
       }
@@ -328,34 +340,22 @@
 
       if (isForgot) {
         if (!otpSent) {
-          if (!email) {
-            msg.style.color = 'red';
-            msg.textContent = 'Please enter email';
-            return;
-          }
+          if (!email) { msg.style.color='red'; msg.textContent='Please enter email'; return; }
           sendOtp(email);
         } else if (!otpVerified) {
           const otp = otpInput.value;
-          if (!otp) {
-            msg.style.color = 'red';
-            msg.textContent = 'Please enter OTP';
-            return;
-          }
+          if (!otp) { msg.style.color='red'; msg.textContent='Please enter OTP'; return; }
           verifyOtp(resetEmail, otp);
         } else {
           const newPassword = newPasswordInput.value;
-          if (!newPassword) {
-            msg.style.color = 'red';
-            msg.textContent = 'Please enter new password';
-            return;
-          }
+          if (!newPassword) { msg.style.color='red'; msg.textContent='Please enter new password'; return; }
           resetPassword(resetEmail, newPassword);
         }
       } else if (isLogin) {
         const password = passwordInput.value;
         if (!email || !password || !role) {
-          msg.style.color = 'red';
-          msg.textContent = 'Please fill all fields';
+          msg.style.color='red';
+          msg.textContent='Please fill all fields';
           return;
         }
         login(email, password, role);
@@ -366,16 +366,16 @@
         const gender = document.getElementById('gender').value;
         const dob = document.getElementById('dob').value;
         if (!name || !email || !password || !role || !confirmPassword) {
-          msg.style.color = 'red';
-          msg.textContent = 'Please fill all required fields';
+          msg.style.color='red';
+          msg.textContent='Please fill all required fields';
           return;
         }
         if (password !== confirmPassword) {
-          msg.style.color = 'red';
-          msg.textContent = "Passwords don't match";
+          msg.style.color='red';
+          msg.textContent="Passwords don't match";
           return;
         }
-        register(name, email, password, role, gender || null, dob || null);
+        register(name,email,password,role,gender||null,dob||null);
       }
     });
   </script>
