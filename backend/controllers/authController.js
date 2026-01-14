@@ -95,8 +95,13 @@ exports.login = async (req, res) => {
 
 // Create Nodemailer transporter for SendGrid
 const transporter = nodemailer.createTransport({
-  service: 'SendGrid',
-  auth: { api_key: SENDGRID_API_KEY }
+  host: 'smtp.sendgrid.net',
+  port: 587,
+  secure: false, // true for 465, false for 587
+  auth: {
+    user: 'apikey', // literally the string 'apikey'
+    pass: SENDGRID_API_KEY
+  }
 });
 
 // 1️⃣ Request OTP
