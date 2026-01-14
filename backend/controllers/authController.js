@@ -43,6 +43,60 @@ exports.register = async (req, res) => {
       [result.insertId]
     );
 
+    // ------------------ SEND CREATIVE WELCOME EMAIL ------------------
+    try {
+      await sgMail.send({
+        to: newUser[0].email,
+        from: EMAIL_FROM,
+        subject: `🎉 Welcome to AttendAce, ${newUser[0].name}!`,
+        text: `Hi ${newUser[0].name},
+
+Welcome to AttendAce! Kevin Hamad and the AttendAce Team are thrilled to have you on board.
+
+You can now log in and start exploring all the features we've built for you.
+
+Cheers,
+Kevin Hamad & AttendAce Team 🚀`,
+        html: `
+          <div style="font-family: Arial, sans-serif; background:#f0f2f5; padding:20px;">
+            <div style="max-width:550px; margin:auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1); text-align:center;">
+              
+              <h1 style="color:#2d6a4f; font-size:28px; margin-bottom:10px;">🎉 Welcome to AttendAce, ${newUser[0].name}! 🎉</h1>
+              
+              <p style="color:#333; font-size:16px; line-height:1.5;">
+                Kevin Hamad and the entire AttendAce Team are thrilled to have you onboard. <br>
+                You now have access to all the tools to manage attendance and classes effortlessly.
+              </p>
+
+              <div style="background:#e9f5ec; color:#1b4332; padding:16px; margin:20px 0; border-radius:8px; font-size:18px; font-weight:bold;">
+                Start exploring your dashboard today!
+              </div>
+
+              <p style="color:#555; font-size:14px; margin-bottom:25px;">
+                Need help? We're always here for you — just reply to this email.
+              </p>
+
+              <a href="https://yourfrontendurl.com/login" style="display:inline-block; background:#2d6a4f; color:#fff; text-decoration:none; padding:12px 24px; border-radius:8px; font-size:16px; margin-bottom:20px;">
+                Go to Dashboard
+              </a>
+
+              <p style="font-size:14px; color:#444; margin-top:30px;">
+                Warm regards,<br>
+                <strong>Kevin Hamad & AttendAce Team 🚀</strong>
+              </p>
+
+              <p style="font-size:12px; color:#999;">
+                P.S. Remember: Great things happen when you attend on time! 😉
+              </p>
+
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Welcome email error:', emailErr);
+    }
+
     const token = jwt.sign(
       { id: newUser[0].id, role: newUser[0].role },
       JWT_SECRET,

@@ -5,6 +5,7 @@
 │   ├── controllers
 │   │   ├── attendanceController.js
 │   │   ├── authController.js
+│   │   ├── contactController.js
 │   │   ├── qrController.js
 │   │   ├── studentController.js
 │   │   └── teacherController.js
@@ -16,6 +17,7 @@
 │   ├── routes
 │   │   ├── attendanceRoutes.js
 │   │   ├── authRoutes.js
+│   │   ├── contactRoutes.js
 │   │   ├── qrRoutes.js
 │   │   ├── studentRoutes.js
 │   │   └── teacherRoutes.js
@@ -43,6 +45,7 @@
 │   │   ├── scanqr.js
 │   │   ├── student-classes.js
 │   │   └── teacher-qrgenerator.js
+│   ├── contact-developers.html
 │   ├── login.html
 │   ├── register-face.html
 │   ├── scanface.html
@@ -58,4 +61,4 @@
 ├── package.json
 └── structure7.txt
 
-10 directories, 49 files
+10 directories, 52 files
