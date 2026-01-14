@@ -48,7 +48,7 @@ async function startVideo() {
     video.srcObject = stream;
     video.onloadedmetadata = () => {
       video.play();
-      status.innerText = 'Align your face in front of the camera';
+      status.innerText = 'Bring your face closer to the camera, you monkey!';
       startDetection();
     };
   } catch (err) {
@@ -102,7 +102,7 @@ function startDetection() {
         scanCompleted = true;
         clearInterval(detectionInterval);
 
-        status.innerText = 'Face scan completed';
+        status.innerText = 'Alright alright, face scanned, move away now.';
 
         if (registeredDescriptor) {
           const distance = faceapi.euclideanDistance(
@@ -111,10 +111,10 @@ function startDetection() {
           );
 
           if (distance < 0.6) {
-            matchStatusBox.innerText = '✅ This face is already registered';
+            matchStatusBox.innerText = '✅ Correct Monkey Identified';
             matchStatusBox.style.backgroundColor = '#5f8b6e';
           } else {
-            matchStatusBox.innerText = '❌ This is NOT the registered face';
+            matchStatusBox.innerText = '❌ You are not the right monkey.';
             matchStatusBox.style.backgroundColor = '#d9534f';
           }
         } else {
@@ -151,7 +151,7 @@ async function checkFaceStatus() {
     const data = await res.json();
 
     if (data.registered) {
-      faceStatusBox.innerText = '✅ Face already registered';
+      faceStatusBox.innerText = '✅ A monkey is already registered for this ID.';
       faceStatusBox.style.backgroundColor = '#5f8b6e';
 
       const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
