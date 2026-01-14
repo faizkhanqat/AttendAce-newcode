@@ -125,6 +125,8 @@ exports.requestOtp = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const user = users[0];
+
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
 
@@ -136,8 +138,63 @@ exports.requestOtp = async (req, res) => {
     await sgMail.send({
       to: email,
       from: EMAIL_FROM,
-      subject: 'Your AttendAce OTP for Password Reset',
-      text: `Your OTP is ${otp}. It is valid for ${OTP_EXPIRY_MINUTES} minutes.`
+      subject: '🤦 Forgot your password… again?',
+      text: `Hey ${user.name},
+
+    Looks like you forgot your password.
+    No worries — it happens to the best of us (and also everyone else).
+
+    Here’s your OTP to reset your AttendAce password:
+    ${otp}
+
+    This OTP is valid for ${OTP_EXPIRY_MINUTES} minutes.
+
+    If you didn’t request this, you can safely ignore this email.
+
+    – Kevin Hamad
+    AttendAce Team`,
+      
+      html: `
+      <div style="font-family: Arial, sans-serif; background:#f9fafb; padding:20px;">
+        <div style="max-width:500px; margin:auto; background:#ffffff; border-radius:12px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+          
+          <h2 style="color:#2d6a4f; margin-top:0;">Hey ${user.name} 👋</h2>
+          
+          <p style="color:#333; font-size:15px;">
+            Looks like you forgot your password.<br>
+            Don’t worry — it happens to literally everyone.
+          </p>
+
+          <p style="color:#333; font-size:15px;">
+            Here’s your OTP to reset your <strong>AttendAce</strong> password:
+          </p>
+
+          <div style="font-size:28px; font-weight:bold; letter-spacing:4px; color:#1b4332; background:#e9f5ec; padding:12px; text-align:center; border-radius:8px; margin:16px 0;">
+            ${otp}
+          </div>
+
+          <p style="font-size:14px; color:#555;">
+            ⏳ This OTP is valid for <strong>${OTP_EXPIRY_MINUTES} minutes</strong>.
+          </p>
+
+          <p style="font-size:13px; color:#777;">
+            Didn’t request this? No action needed — just ignore this email.
+          </p>
+
+          <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+
+          <p style="font-size:14px; color:#444;">
+            With care (and slightly raised eyebrows),<br>
+            <strong>Kevin Hamad</strong><br>
+            AttendAce Team 🚀
+          </p>
+
+          <p style="font-size:12px; color:#999;">
+            P.S. Please remember your new password this time. We believe in you.
+          </p>
+        </div>
+      </div>
+      `
     });
 
     res.json({ message: 'OTP sent to your email' });
