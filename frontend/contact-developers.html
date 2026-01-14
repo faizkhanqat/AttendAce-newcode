@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact Developers - AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css"> <!-- Optional: if you have a global stylesheet -->
+  <link rel="stylesheet" href="assets/styles.css">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -77,8 +77,13 @@
   </div>
 
   <script>
-    // Get user token from localStorage (assuming login saved it)
     const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Redirect to login if not logged in
+    if (!token || !user) {
+      window.location.href = 'login.html';
+    }
 
     const sendBtn = document.getElementById('sendBtn');
     const feedbackMessage = document.getElementById('feedbackMessage');
@@ -91,15 +96,18 @@
         return;
       }
 
+      sendBtn.disabled = true;
+      statusMessage.textContent = 'Sending...';
+
       try {
-        const response = await fetch('/api/contact-developers', {
+        const response = await fetch('/api/contact/contact-developers', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            userId: localStorage.getItem('userId'), // assuming you store user id on login
+            userId: user.id,
             message
           })
         });
@@ -116,6 +124,8 @@
       } catch (err) {
         console.error(err);
         statusMessage.textContent = 'Server error. Please try again later.';
+      } finally {
+        sendBtn.disabled = false;
       }
     });
   </script>
