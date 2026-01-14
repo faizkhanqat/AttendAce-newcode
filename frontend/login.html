@@ -6,26 +6,34 @@
   <title>Login / Register | AttendAce</title>
   <link rel="stylesheet" href="assets/styles.css">
   <style>
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  margin: 0;
-  padding: 40px 0;
-  overscroll-behavior: none;
-  overflow-y:auto;
   background: url('assets/login-background.png')
               no-repeat center center / cover;
 }
 
-body::before {
+.page {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+  position: relative;
+  overflow-y: auto;
+}
+
+.page::before {
   content: '';
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5); /* dark overlay only on background */
+  background: rgba(0,0,0,0.5);
   z-index: 0;
 }
 
@@ -123,78 +131,79 @@ button:hover {
 </style>
 </head>
 <body>
-  
-  <div class="container">
-    <div class="header">
-    <img src="assets/logo.png" alt="AttendAce Logo">
-    <h1 id="formTitle">AttendAce Login</h1>
-  </div>
-
-    <form id="authForm">
-      <!-- Full Name (for registration) -->
-      <div class="form-group hidden" id="nameGroup">
-        <label for="name">Full Name</label>
-        <input type="text" id="name">
+  <div class="page">
+    <div class="container">
+      <div class="header">
+      <img src="assets/logo.png" alt="AttendAce Logo">
+      <h1 id="formTitle">AttendAce Login</h1>
       </div>
 
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" required>
-      </div>
+      <form id="authForm">
+        <!-- Full Name (for registration) -->
+        <div class="form-group hidden" id="nameGroup">
+          <label for="name">Full Name</label>
+          <input type="text" id="name">
+        </div>
 
-      <div class="form-group" id="roleGroup">
-        <label for="role">Role</label>
-        <select id="role" required>
-          <option value="">Select role</option>
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" required>
+        </div>
 
-      <!-- Gender (registration) -->
-      <div class="form-group hidden" id="genderGroup">
-        <label for="gender">Gender</label>
-        <select id="gender">
-          <option value="">Select gender</option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-        </select>
-      </div>
+        <div class="form-group" id="roleGroup">
+          <label for="role">Role</label>
+          <select id="role" required>
+            <option value="">Select role</option>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
 
-      <!-- DOB (registration) -->
-      <div class="form-group hidden" id="dobGroup">
-        <label for="dob">Date of Birth</label>
-        <input type="date" id="dob">
-      </div>
+        <!-- Gender (registration) -->
+        <div class="form-group hidden" id="genderGroup">
+          <label for="gender">Gender</label>
+          <select id="gender">
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
 
-      <!-- OTP input -->
-      <div class="form-group hidden" id="otpGroup">
-        <label for="otp">Enter OTP</label>
-        <input type="text" id="otp">
-      </div>
+        <!-- DOB (registration) -->
+        <div class="form-group hidden" id="dobGroup">
+          <label for="dob">Date of Birth</label>
+          <input type="date" id="dob">
+        </div>
 
-      <!-- New password for reset -->
-      <div class="form-group hidden" id="newPasswordGroup">
-        <label for="newPassword">Enter New Password</label>
-        <input type="password" id="newPassword">
-      </div>
+        <!-- OTP input -->
+        <div class="form-group hidden" id="otpGroup">
+          <label for="otp">Enter OTP</label>
+          <input type="text" id="otp">
+        </div>
 
-      <div class="form-group" id="passwordGroup">
-        <label for="password">Password</label>
-        <input type="password" id="password">
-      </div>
+        <!-- New password for reset -->
+        <div class="form-group hidden" id="newPasswordGroup">
+          <label for="newPassword">Enter New Password</label>
+          <input type="password" id="newPassword">
+        </div>
 
-      <div class="form-group hidden" id="confirmGroup">
-        <label for="confirmPassword">Confirm Password</label>
-        <input type="password" id="confirmPassword">
-      </div>
+        <div class="form-group" id="passwordGroup">
+          <label for="password">Password</label>
+          <input type="password" id="password">
+        </div>
 
-      <button type="submit" id="submitBtn">Login</button>
-      <p class="message" id="msg"></p>
-    </form>
+        <div class="form-group hidden" id="confirmGroup">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword">
+        </div>
 
-    <p class="toggle-link" id="toggleLink">Don't have an account? Register</p>
-    <p class="toggle-link" id="forgotLink">Forgot Password?</p>
+        <button type="submit" id="submitBtn">Login</button>
+        <p class="message" id="msg"></p>
+      </form>
+
+      <p class="toggle-link" id="toggleLink">Don't have an account? Register</p>
+      <p class="toggle-link" id="forgotLink">Forgot Password?</p>
+    </div>
   </div>
 
   <script>
