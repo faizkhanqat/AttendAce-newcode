@@ -1,12 +1,15 @@
-// frontend/assets/student-classes.js
 const token = localStorage.getItem('token');
+
 const myClassesContainer = document.getElementById('myClassesContainer');
 const errorMsg = document.getElementById('errorMsg');
+
 const addClassBtn = document.getElementById('addClassBtn');
 const availableClassesModal = document.getElementById('availableClassesModal');
 const availableClassesContainer = document.getElementById('availableClassesContainer');
 const closeModalBtn = document.getElementById('closeModalBtn');
-const logoutBtn = document.getElementById('logoutBtn');
+const classSearchInput = document.getElementById('classSearchInput');
+
+let allAvailableClasses = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -15,128 +18,168 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = 'login.html';
-  });
-
-  // Load enrolled classes
   await fetchMyClasses();
 
-  // Open modal to add class
   addClassBtn.addEventListener('click', async () => {
     availableClassesModal.style.display = 'flex';
     await fetchAvailableClasses();
   });
 
-  // Close modal
   closeModalBtn.addEventListener('click', () => {
     availableClassesModal.style.display = 'none';
+    classSearchInput.value = '';
   });
+
+  classSearchInput.addEventListener('input', filterAvailableClasses);
 });
 
 async function fetchMyClasses() {
   try {
     const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/my', {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Failed to fetch my classes');
-    }
+
+    if (!res.ok) throw new Error('Failed to fetch classes');
+
     const classes = await res.json();
     myClassesContainer.innerHTML = '';
-    if (!classes || classes.length === 0) {
-      myClassesContainer.innerHTML = '<p style="text-align:center;">No classes enrolled yet.</p>';
+
+    if (!classes.length) {
+      myClassesContainer.innerHTML =
+        '<p class="text-center text-sm text-gray-500">No classes enrolled yet.</p>';
       return;
     }
+
     classes.forEach(cls => {
-      const card = document.createElement('div');
-      card.className = 'class-card';
-      card.innerHTML = `<span>${cls.name} (Teacher: ${cls.teacher_name || cls.teacher_id})</span>
-        <button onclick="unenroll(${cls.id}, this)">Remove</button>`;
-      myClassesContainer.appendChild(card);
+      const row = document.createElement('div');
+      row.className =
+        'grid grid-cols-3 gap-3 items-center bg-white border border-gray-100 rounded-xl px-3 py-2';
+
+      row.innerHTML = `
+        <span class="font-medium">${cls.name}</span>
+        <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
+        <div class="text-right">
+          <button
+            class="px-3 py-1 rounded-lg bg-red-500 text-white text-sm
+                   hover:bg-red-600 hover:shadow-md transition"
+            onclick="unenroll(${cls.id}, this)">
+            Unenroll
+          </button>
+        </div>
+      `;
+      myClassesContainer.appendChild(row);
     });
   } catch (err) {
-    console.error(err);
-    if (errorMsg) errorMsg.textContent = 'Error: ' + err.message;
+    errorMsg.textContent = err.message;
   }
 }
 
 async function fetchAvailableClasses() {
   try {
     const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes', {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { Authorization: 'Bearer ' + token }
     });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Failed to fetch classes');
-    }
-    const classes = await res.json();
-    availableClassesContainer.innerHTML = '';
-    if (!classes || classes.length === 0) {
-      availableClassesContainer.innerHTML = '<p>No classes available.</p>';
-      return;
-    }
-    classes.forEach(cls => {
-      const card = document.createElement('div');
-      card.className = 'class-card';
-      card.innerHTML = `<span>${cls.name} (Teacher: ${cls.teacher_name || cls.teacher_id})</span>
-        <button onclick="enroll(${cls.id}, '${escapeHtml(cls.name)}', '${escapeHtml(cls.teacher_name || cls.teacher_id)}')">Enroll</button>`;
-      availableClassesContainer.appendChild(card);
-    });
+
+    if (!res.ok) throw new Error('Failed to fetch classes');
+
+    allAvailableClasses = await res.json();
+    renderAvailableClasses(allAvailableClasses);
   } catch (err) {
-    console.error(err);
-    availableClassesContainer.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+    availableClassesContainer.innerHTML =
+      `<p class="text-red-500 text-sm">${err.message}</p>`;
   }
+}
+
+function filterAvailableClasses() {
+  const query = classSearchInput.value.toLowerCase();
+  const filtered = allAvailableClasses.filter(cls =>
+    cls.name.toLowerCase().includes(query) ||
+    (cls.teacher_name || cls.teacher_id).toLowerCase().includes(query)
+  );
+  renderAvailableClasses(filtered);
+}
+
+function renderAvailableClasses(classes) {
+  availableClassesContainer.innerHTML = '';
+
+  if (!classes.length) {
+    availableClassesContainer.innerHTML =
+      '<p class="text-sm text-gray-500 text-center">No matching classes.</p>';
+    return;
+  }
+
+  classes.forEach(cls => {
+    const row = document.createElement('div');
+    row.className =
+      'grid grid-cols-3 gap-3 items-center bg-white border border-gray-100 rounded-xl px-3 py-2';
+
+    row.innerHTML = `
+      <span class="font-medium">${cls.name}</span>
+      <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
+      <div class="text-right">
+        <button
+          class="px-3 py-1 rounded-lg bg-[#4b4ddb] text-white text-sm
+                 hover:opacity-90 hover:shadow-md transition"
+          onclick="enroll(${cls.id}, '${escapeHtml(cls.name)}',
+          '${escapeHtml(cls.teacher_name || cls.teacher_id)}')">
+          Enroll
+        </button>
+      </div>
+    `;
+    availableClassesContainer.appendChild(row);
+  });
 }
 
 async function enroll(classId, className, teacherName) {
   try {
-    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/enroll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ class_id: classId })
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Failed to enroll');
-    }
-    // add to UI
-    const card = document.createElement('div');
-    card.className = 'class-card';
-    card.innerHTML = `<span>${className} (Teacher: ${teacherName})</span>
-      <button onclick="unenroll(${classId}, this)">Remove</button>`;
-    myClassesContainer.appendChild(card);
+    const res = await fetch(
+      'https://attendace-zjzu.onrender.com/api/student/classes/enroll',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ class_id: classId })
+      }
+    );
+
+    if (!res.ok) throw new Error('Enroll failed');
+
     availableClassesModal.style.display = 'none';
+    await fetchMyClasses();
   } catch (err) {
-    console.error(err);
-    alert('Error enrolling: ' + err.message);
+    alert(err.message);
   }
 }
 
 async function unenroll(classId, btn) {
   try {
-    const res = await fetch('https://attendace-zjzu.onrender.com/api/student/classes/unenroll', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ class_id: classId })
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.message || 'Failed to unenroll');
+    const res = await fetch(
+      'https://attendace-zjzu.onrender.com/api/student/classes/unenroll',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token
+        },
+        body: JSON.stringify({ class_id: classId })
+      }
+    );
+
+    if (!res.ok) throw new Error('Unenroll failed');
+
+    btn.closest('div.grid').remove();
+
+    if (!myClassesContainer.children.length) {
+      myClassesContainer.innerHTML =
+        '<p class="text-center text-sm text-gray-500">No classes enrolled yet.</p>';
     }
-    // remove from UI
-    if (btn && btn.parentElement) btn.parentElement.remove();
-    if (!myClassesContainer.children.length) myClassesContainer.innerHTML = '<p style="text-align:center;">No classes enrolled yet.</p>';
   } catch (err) {
-    console.error(err);
-    alert('Failed to remove class: ' + err.message);
+    alert(err.message);
   }
 }
 
-// small helper
 function escapeHtml(text) {
-  return text?.replace?.(/'/g, "\\'") || '';
+  return text?.replace(/'/g, "\\'") || '';
 }

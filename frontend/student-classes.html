@@ -14,42 +14,37 @@
 
 <body class="min-h-screen flex justify-center p-4 bg-glow">
 
-  <div class="dashboard-container card p-6 w-full max-w-md">
+  <div class="card p-6 w-full max-w-3xl">
 
     <!-- Header -->
-    <header class="relative text-center mb-6">
+    <header class="text-center mb-6">
       <img src="assets/logo.png" alt="AttendAce Logo" class="mx-auto w-14 h-14 mb-2">
       <h1 class="text-2xl font-bold">My Classes</h1>
-
-      <!-- Logout -->
-      <button id="logoutBtn"
-        class="absolute top-0 right-0 p-2 rounded-xl text-[hsl(var(--muted-fg))]
-               hover:text-red-500 hover:bg-red-500/10 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
-        </svg>
-      </button>
     </header>
 
     <!-- Error -->
-    <div id="errorMsg" class="text-red-500 text-sm text-center mb-3"></div>
+    <div id="errorMsg" class="text-red-500 text-sm text-center mb-4"></div>
 
-    <!-- Classes -->
+    <!-- Enrolled Classes -->
     <section>
-      <h2 class="text-center font-semibold text-[#4b4ddb] mb-4">
+      <h2 class="text-lg font-semibold text-[#4b4ddb] mb-3 text-center">
         Enrolled Classes
       </h2>
 
-      <div id="myClassesContainer" class="space-y-3">
-        <!-- JS injects class cards -->
+      <!-- Table Header -->
+      <div class="grid grid-cols-3 gap-3 text-sm font-semibold text-gray-500 mb-2 px-3">
+        <span>Class</span>
+        <span>Teacher</span>
+        <span class="text-right">Action</span>
       </div>
+
+      <!-- Classes -->
+      <div id="myClassesContainer" class="space-y-2"></div>
 
       <!-- Add Class -->
       <button id="addClassBtn"
-        class="mt-4 w-full bg-[#4b4ddb] text-white py-2 rounded-xl
-               font-medium hover:opacity-90 transition">
+        class="mt-6 w-full bg-[#4b4ddb] text-white py-2 rounded-xl
+               font-medium hover:opacity-90 hover:shadow-lg transition">
         + Add Class
       </button>
     </section>
@@ -59,18 +54,27 @@
   <div id="availableClassesModal"
        class="fixed inset-0 hidden bg-black/50 flex items-center justify-center z-50">
 
-    <div class="card p-6 w-[90%] max-w-sm text-center">
-      <h3 class="text-lg font-semibold text-[#4b4ddb] mb-4">
-        Select Class to Enroll
+    <div class="card p-6 w-[95%] max-w-xl">
+
+      <h3 class="text-lg font-semibold text-[#4b4ddb] mb-4 text-center">
+        Enroll in a Class
       </h3>
 
-      <div id="availableClassesContainer" class="space-y-2 mb-4">
-        <!-- JS injects -->
-      </div>
+      <!-- Search -->
+      <input
+        id="classSearchInput"
+        type="text"
+        placeholder="Search by class or teacher name..."
+        class="w-full mb-4 px-4 py-2 rounded-xl border border-gray-200
+               focus:outline-none focus:ring-2 focus:ring-[#4b4ddb]/30"
+      />
+
+      <!-- Available classes -->
+      <div id="availableClassesContainer" class="space-y-2 max-h-[300px] overflow-y-auto"></div>
 
       <button id="closeModalBtn"
-        class="bg-[#4b4ddb] text-white px-4 py-2 rounded-xl
-               hover:opacity-90 transition">
+        class="mt-4 w-full bg-gray-200 text-gray-700 py-2 rounded-xl
+               hover:bg-gray-300 transition">
         Close
       </button>
     </div>
