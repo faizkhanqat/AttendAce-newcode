@@ -22,8 +22,8 @@
       <button id="logoutBtn" class="absolute top-0 right-0 p-2 rounded-xl text-[hsl(var(--muted-fg))] hover:text-red-500 hover:bg-red-500/10">Logout</button>
     </header>
 
-    <div class="card p-6 flex items-center gap-5">
-      <img src="assets/illustrations/student.png" class="w-20 h-20 rounded-full border-4 border-white/20" />
+    <div class="card p-6 flex items-center gap-5 mb-6">
+      <img src="assets/student.jpg" class="w-20 h-20 rounded-full border-4 border-white/20" />
       <div class="flex-1">
         <h2 id="studentName" class="text-xl font-bold"></h2>
         <p class="text-sm text-[hsl(var(--muted-fg))]">ID: <span id="studentId"></span></p>
@@ -32,13 +32,13 @@
     </div>
 
     <nav class="grid grid-cols-2 gap-4">
-      <a href="analytics-student.html" class="menu-item card flex flex-col items-center justify-center gap-1">📊 <span class="font-semibold">Analytics</span></a>
-      <a href="settings.html" class="menu-item card flex flex-col items-center justify-center gap-1">⚙️ <span class="font-semibold">Settings</span></a>
-      <a href="scanqr.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Scan QR</span></a>
-      <a href="scanface.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Scan Face</span></a>
-      <a href="register-face.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Register Face</span></a>
-      <button id="viewClassesBtn" class="menu-item bg-[hsl(var(--primary))] text-white font-bold">View Classes</button>
-      <a href="contact-developers.html" class="col-span-2 card p-4 text-center font-medium">Contact Developers</a>
+      <a href="analytics-student.html" class="menu-item bg-[#5f8b6e] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 transition">📊 <span class="font-semibold">Analytics</span></a>
+      <a href="settings.html" class="menu-item bg-[#5f8b6e] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 transition">⚙️ <span class="font-semibold">Settings</span></a>
+      <a href="scanqr.html" class="menu-item bg-[#5f8b6e] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 transition">📱 <span class="font-semibold">Scan QR</span></a>
+      <a href="scanface.html" class="menu-item bg-[#5f8b6e] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 transition">📱 <span class="font-semibold">Scan Face</span></a>
+      <a href="register-face.html" class="menu-item bg-[#5f8b6e] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 transition">📱 <span class="font-semibold">Register Face</span></a>
+      <a href="student-classes.html" class="menu-item bg-[#5f8b6e] text-white font-bold flex items-center justify-center hover:opacity-90 transition">📚 View Classes</a>
+      <a href="contact-developers.html" class="col-span-2 menu-item bg-white text-[#5f8b6e] flex items-center justify-center p-3 font-medium hover:bg-[#fefae0] transition rounded-xl">Contact Developers</a>
     </nav>
   </div>
 
@@ -61,11 +61,7 @@
         localStorage.removeItem('user');
         window.location.href = 'login.html';
       });
-
-      // Go to classes page
-      document.getElementById('viewClassesBtn').addEventListener('click', () => {
-        window.location.href = 'student-classes.html';
-      });
+    
     });
   </script>
 </body>
