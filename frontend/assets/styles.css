@@ -21,8 +21,8 @@ body {
 
 .bg-glow {
   background:
-    radial-gradient(700px at top, rgba(250,240,220,0.15), transparent 70%),
-    radial-gradient(600px at bottom, rgba(250,240,220,0.1), transparent 70%);
+    radial-gradient(700px at top, rgba(250,240,220,0.35), transparent 70%),
+    radial-gradient(600px at bottom, rgba(250,240,220,0.3), transparent 70%);
 }
 
 .card {
