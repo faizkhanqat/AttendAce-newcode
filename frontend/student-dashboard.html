@@ -6,32 +6,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Student Dashboard | AttendAce</title>
   <link rel="stylesheet" href="assets/styles.css">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Inter font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="min-h-screen flex justify-center p-4 bg-glow">
   <div class="dashboard-container">
-    <header>
-      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-      <h1>Student Dashboard</h1>
-      <button id="logoutBtn">Logout</button>
+    <header class="relative text-center mb-6">
+      <img src="assets/logo.png" alt="Logo" class="mx-auto w-16 h-16 mb-2">
+      <h1 class="text-3xl font-bold">Student Dashboard</h1>
+      <button id="logoutBtn" class="absolute top-0 right-0 p-2 rounded-xl text-[hsl(var(--muted-fg))] hover:text-red-500 hover:bg-red-500/10">Logout</button>
     </header>
 
-    <div class="profile-card">
-      <img src="assets/illustrations/student.png" alt="Profile Picture" class="profile-pic">
-      <div class="profile-info">
-        <h2 id="studentName"></h2>
-        <p>ID: <span id="studentId"></span></p>
-        <p id="studentDept"></p>
+    <div class="card p-6 flex items-center gap-5">
+      <img src="assets/illustrations/student.png" class="w-20 h-20 rounded-full border-4 border-white/20" />
+      <div class="flex-1">
+        <h2 id="studentName" class="text-xl font-bold"></h2>
+        <p class="text-sm text-[hsl(var(--muted-fg))]">ID: <span id="studentId"></span></p>
+        <p id="studentDept" class="text-sm text-[hsl(var(--muted-fg))]"></p>
       </div>
     </div>
 
-    <nav class="menu-options">
-      <a href="analytics-student.html" class="menu-btn">📊 Analytics</a>
-      <a href="settings.html"><span class="icon">⚙️</span> Settings</a>
-      <a href="scanqr.html" class="primary"><span class="icon">📱</span> Scan QR</a>
-      <a href="scanface.html" class="primary"><span class="icon">📱</span> Scan Face</a>
-      <a href="register-face.html" class="primary"><span class="icon">📱</span> Register/Update Face</a>
-      <a href="contact-developers.html" class="menu-btn">Contact Developers</a>
-      <button id="viewClassesBtn" class="primary"><span class="icon">📚</span> Manage Classes</button>
+    <nav class="grid grid-cols-2 gap-4">
+      <a href="analytics-student.html" class="menu-item card flex flex-col items-center justify-center gap-1">📊 <span class="font-semibold">Analytics</span></a>
+      <a href="settings.html" class="menu-item card flex flex-col items-center justify-center gap-1">⚙️ <span class="font-semibold">Settings</span></a>
+      <a href="scanqr.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Scan QR</span></a>
+      <a href="scanface.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Scan Face</span></a>
+      <a href="register-face.html" class="menu-item bg-[hsl(var(--primary))] text-white flex flex-col items-center justify-center gap-1">📱 <span class="font-semibold">Register Face</span></a>
+      <button id="viewClassesBtn" class="menu-item bg-[hsl(var(--primary))] text-white font-bold">View Classes</button>
+      <a href="contact-developers.html" class="col-span-2 card p-4 text-center font-medium">Contact Developers</a>
     </nav>
   </div>
 
