@@ -32,6 +32,9 @@
 │   ├── assets
 │   │   ├── analytics-student.js
 │   │   ├── analytics-teacher.js
+│   │   ├── image.png
+│   │   ├── login-background.png
+│   │   ├── logo.png
 │   │   ├── models
 │   │   │   ├── face_landmark_68_model-shard1
 │   │   │   ├── face_landmark_68_model-weights_manifest.json
@@ -44,6 +47,8 @@
 │   │   ├── scanface.js
 │   │   ├── scanqr.js
 │   │   ├── student-classes.js
+│   │   ├── student.jpg
+│   │   ├── styles.css
 │   │   └── teacher-qrgenerator.js
 │   ├── contact-developers.html
 │   ├── login.html
@@ -59,6 +64,6 @@
 │   └── teacher-qrgenerator.html
 ├── package-lock.json
 ├── package.json
-└── structure7.txt
+└── structure.txt
 
-10 directories, 52 files
+10 directories, 57 files

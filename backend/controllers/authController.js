@@ -33,15 +33,24 @@ exports.register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
-    const [result] = await db.query(
-      'INSERT INTO users (name, email, password_hash, role, gender, dob) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, hashedPassword, role, gender || null, dob || null]
-    );
+// Insert user with department; aviation_id will be generated after insert
+const [result] = await db.query(
+  'INSERT INTO users (name, email, password_hash, role, gender, dob, department) VALUES (?, ?, ?, ?, ?, ?, ?)',
+  [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null]
+);
 
-    const [newUser] = await db.query(
-      'SELECT id, name, email, role, gender, dob FROM users WHERE id = ?',
-      [result.insertId]
-    );
+// Generate aviation_id
+const aviationId = `${role === 'student' ? 'STD-' : 'TCH-'}${String(result.insertId).padStart(4, '0')}`;
+
+await db.query(
+  'UPDATE users SET aviation_id = ? WHERE id = ?',
+  [aviationId, result.insertId]
+);
+
+const [newUser] = await db.query(
+  'SELECT id, name, email, role, gender, dob, department, aviation_id FROM users WHERE id = ?',
+  [result.insertId]
+);
 
     // ------------------ SEND CREATIVE WELCOME EMAIL ------------------
     try {

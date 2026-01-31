@@ -159,6 +159,19 @@ button:hover {
           </select>
         </div>
 
+        <!-- Department (registration) -->
+        <div class="form-group hidden" id="departmentGroup">
+          <label for="department">Department</label>
+          <select id="department">
+            <option value="" disabled selected>Select department</option>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">Mechanical</option>
+            <option value="CE">Civil</option>
+            <!-- add other departments as needed -->
+          </select>
+        </div>
+
         <!-- Gender (registration) -->
         <div class="form-group hidden" id="genderGroup">
           <label for="gender">Gender</label>
@@ -244,6 +257,7 @@ button:hover {
       passwordInput.type = 'password';
       roleGroup.classList.remove('hidden');
       document.getElementById('role').required = true;
+      departmentGroup.classList.remove('hidden'); // show for registration
 
       if (isLogin) {
         formTitle.textContent = 'AttendAce Login';
@@ -253,6 +267,7 @@ button:hover {
         nameGroup.classList.add('hidden');
         genderGroup.classList.add('hidden');
         dobGroup.classList.add('hidden');
+        departmentGroup.classList.add('hidden'); // hide for login
       } else {
         formTitle.textContent = 'Register Account';
         submitBtn.textContent = 'Register';
@@ -308,12 +323,12 @@ button:hover {
       }
     }
 
-    async function register(name, email, password, role, gender, dob) {
+    async function register(name, email, password, role, gender, dob, department) {
       try {
         const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, role, gender, dob })
+          body: JSON.stringify({ name, email, password, role, gender, dob, department })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Registration failed');
@@ -422,9 +437,15 @@ button:hover {
         const confirmPassword = document.getElementById('confirmPassword').value;
         const gender = document.getElementById('gender').value;
         const dob = document.getElementById('dob').value;
+        const department = document.getElementById('department').value;
         if (!name || !email || !password || !role || !confirmPassword) {
           msg.style.color='red';
           msg.textContent='Please fill all required fields';
+          return;
+        }
+        if(role === 'student' && !department) {
+          msg.style.color='red';
+          msg.textContent='Please select department';
           return;
         }
         if (password !== confirmPassword) {
@@ -432,7 +453,7 @@ button:hover {
           msg.textContent="Passwords don't match";
           return;
         }
-        register(name,email,password,role,gender||null,dob||null);
+        register(name,email,password,role,gender||null,dob||null, department||null);
       }
     });
   </script>
