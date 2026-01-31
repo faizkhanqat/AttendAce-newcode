@@ -348,7 +348,7 @@ button:hover {
             if (updatedDept) payload.department = updatedDept;
 
             try {
-              const res = await fetch(`https://attendace-zjzu.onrender.com/api/student/profile`, {
+              const res = await fetch(`https://attendace-zjzu.onrender.com/api/student/update`, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
