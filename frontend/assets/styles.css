@@ -32,7 +32,7 @@ body {
 
 .bg-photo::before {
   content: '';
-  position: fixed;
+  position: absolute;
   inset: 0;
   background: rgba(0,0,0,0.5); /* same dark overlay */
   z-index: 0;
