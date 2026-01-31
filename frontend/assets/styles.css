@@ -25,18 +25,9 @@ body {
 
 /* Shared photo background (used by login + dashboard) */
 .bg-photo {
-  background: url('assets/login-background.png') no-repeat center center / cover;
+  background: url('login-background.png') no-repeat center center / cover;
   position: relative;
   min-height: 100vh;
-}
-
-.bg-photo::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5); /* same dark overlay */
-  z-index: 0;
-  pointer-events: none;
 }
 
 
