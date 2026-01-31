@@ -23,19 +23,14 @@ body {
   margin: 0;
 }
 
-/* Shared photo background (used by login + dashboard) */
-.bg-photo {
-  background: url('login-background.png') no-repeat center center / cover;
-  position: relative;
+.bg-dashboard {
   min-height: 100vh;
-}
-
-
-.bg-glow {
   background:
     radial-gradient(700px at top, rgba(250,240,220,0.35), transparent 70%),
-    radial-gradient(600px at bottom, rgba(250,240,220,0.3), transparent 70%);
+    radial-gradient(600px at bottom, rgba(250,240,220,0.3), transparent 70%),
+    url('login-background.png') no-repeat center / cover;
 }
+
 
 .card {
   background: hsl(var(--card));
