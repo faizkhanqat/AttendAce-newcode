@@ -15,9 +15,30 @@ html {
   color: hsl(var(--fg));
 }
 
+.dashboard-container {
+  position: relative;
+  z-index: 1;
+}
+
 body {
   margin: 0;
 }
+
+/* Shared photo background (used by login + dashboard) */
+.bg-photo {
+  background: url('assets/login-background.png') no-repeat center center / cover;
+  position: relative;
+}
+
+.bg-photo::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5); /* same dark overlay */
+  z-index: 0;
+  pointer-events: none;
+}
+
 
 .bg-glow {
   background:
