@@ -341,7 +341,12 @@ button:hover {
             const updatedDob = document.getElementById('dob').value;
             const updatedDept = document.getElementById('department').value;
 
-            const payload = {};
+            const payload = {
+  name: document.getElementById('name').value || data.user.name,
+  email: data.user.email,        // always send email
+  gender: document.getElementById('gender').value || data.user.gender,
+  dob: document.getElementById('dob').value || data.user.dob
+};
             if (updatedName) payload.name = updatedName;
             if (updatedGender) payload.gender = updatedGender;
             if (updatedDob) payload.dob = updatedDob;
