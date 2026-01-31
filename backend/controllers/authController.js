@@ -152,6 +152,13 @@ exports.login = async (req, res) => {
       { expiresIn: '8h' }
     );
 
+    // Determine which required fields are missing
+    const missingFields = [];
+    if (!user.name) missingFields.push('name');
+    if (user.role === 'student' && !user.department) missingFields.push('department');
+    if (!user.gender) missingFields.push('gender');
+    if (!user.dob) missingFields.push('dob');
+
     res.json({
       message: 'Login successful',
       token,
@@ -161,8 +168,12 @@ exports.login = async (req, res) => {
         email: user.email,
         role: user.role,
         gender: user.gender || null,
-        dob: user.dob || null
-      }
+        dob: user.dob || null,
+        department: user.department || null,
+        aviation_id: user.aviation_id || null
+      },
+      isComplete: missingFields.length === 0,
+      missingFields
     });
   } catch (err) {
     console.error('Login error:', err);

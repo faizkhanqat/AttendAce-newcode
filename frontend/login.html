@@ -313,9 +313,62 @@ button:hover {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Login failed');
+
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
+
+        if (!data.isComplete) {
+          // Show message and prompt user to fill missing fields
+          msg.style.color = 'orange';
+          msg.textContent = 'Please complete your profile: ' + data.missingFields.join(', ');
+
+          // Optionally, pre-fill the login form with user info and show relevant fields
+          if (data.missingFields.includes('name')) nameGroup.classList.remove('hidden');
+          if (data.missingFields.includes('gender')) genderGroup.classList.remove('hidden');
+          if (data.missingFields.includes('dob')) dobGroup.classList.remove('hidden');
+          if (data.missingFields.includes('department')) departmentGroup.classList.remove('hidden');
+
+          // Hide login fields
+          passwordGroup.classList.add('hidden');
+          submitBtn.textContent = 'Update Profile';
+          toggleLink.classList.add('hidden');
+
+          // Update submit handler for profile completion
+          authForm.onsubmit = async e => {
+            e.preventDefault();
+            const updatedName = document.getElementById('name').value;
+            const updatedGender = document.getElementById('gender').value;
+            const updatedDob = document.getElementById('dob').value;
+            const updatedDept = document.getElementById('department').value;
+
+            const payload = {};
+            if (updatedName) payload.name = updatedName;
+            if (updatedGender) payload.gender = updatedGender;
+            if (updatedDob) payload.dob = updatedDob;
+            if (updatedDept) payload.department = updatedDept;
+
+            try {
+              const res = await fetch(`https://attendace-zjzu.onrender.com/api/student/profile`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': 'Bearer ' + data.token
+                },
+                body: JSON.stringify(payload)
+              });
+              const updatedData = await res.json();
+              if (!res.ok) throw new Error(updatedData.message || 'Update failed');
+              alert('Profile updated! Redirecting...');
+              window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
+            } catch (err) {
+              msg.style.color = 'red';
+              msg.textContent = 'Update failed: ' + err.message;
+            }
+          };
+        } else {
+          // Profile complete: redirect normally
+          window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
+        }
       } catch (err) {
         console.error(err);
         msg.style.color = 'red';
