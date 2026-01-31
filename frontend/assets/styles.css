@@ -27,7 +27,6 @@ body {
   min-height: 100vh;
   background:
     radial-gradient(700px at top, rgba(250,240,220,0.35), transparent 70%),
-    radial-gradient(600px at bottom, rgba(250,240,220,0.3), transparent 70%),
     url('image.png') no-repeat center / cover;
 }
 
