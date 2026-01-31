@@ -11,7 +11,6 @@
 
 html {
   font-family: Inter, system-ui, sans-serif;
-  background: hsl(var(--bg));
   color: hsl(var(--fg));
 }
 
@@ -22,6 +21,7 @@ html {
 
 body {
   margin: 0;
+  background: hsl(var(--bg));
 }
 
 /* Shared photo background (used by login + dashboard) */
