@@ -142,8 +142,16 @@
           if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
 
-          localStorage.setItem('user', JSON.stringify(data.user));
-          alert('Profile updated successfully!');
+          // Check if the response actually has user
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            // Keep the token intact
+            localStorage.setItem('token', token);
+            alert('Profile updated successfully!');
+          } else {
+            alert('Update failed: invalid response from server');
+            console.error('Invalid response:', data);
+          }
         } catch (err) {
           console.error('Update error:', err);
           alert('Could not update profile');
