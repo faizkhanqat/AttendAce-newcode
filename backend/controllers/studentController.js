@@ -44,7 +44,7 @@ exports.updateProfile = async (req, res) => {
       return res.status(400).json({ message: 'Nothing to update' });
     }
 
-    await db.query(
+    await pool.query(
       `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
       [...values, req.user.id]
     );

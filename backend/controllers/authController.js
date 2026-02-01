@@ -27,7 +27,7 @@ exports.register = async (req, res) => {
   }
 
   try {
-    const [existing] = await db.query(
+    const [existing] = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
 // Insert user with department; aviation_id will be generated after insert
-const [result] = await db.query(
+const [result] = await pool.query(
   'INSERT INTO users (name, email, password_hash, role, gender, dob, department) VALUES (?, ?, ?, ?, ?, ?, ?)',
   [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null]
 );
@@ -46,12 +46,12 @@ const [result] = await db.query(
 // Generate aviation_id
 const aviationId = `${role === 'student' ? 'STD-' : 'TCH-'}${String(result.insertId).padStart(4, '0')}`;
 
-await db.query(
+await pool.query(
   'UPDATE users SET aviation_id = ? WHERE id = ?',
   [aviationId, result.insertId]
 );
 
-const [newUser] = await db.query(
+const [newUser] = await pool.query(
   'SELECT id, name, email, role, gender, dob, department, aviation_id FROM users WHERE id = ?',
   [result.insertId]
 );
@@ -136,7 +136,7 @@ exports.login = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query(
+    const [users] = await pool.query(
       'SELECT * FROM users WHERE email = ? AND role = ?',
       [email, role]
     );
@@ -199,7 +199,7 @@ exports.requestOtp = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query(
+    const [users] = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
@@ -212,7 +212,7 @@ exports.requestOtp = async (req, res) => {
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
 
-    await db.query(
+    await pool.query(
       'UPDATE users SET otp_code = ?, otp_expires = ? WHERE email = ?',
       [otp, expires, email]
     );
@@ -294,7 +294,7 @@ exports.verifyOtp = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query(
+    const [users] = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
@@ -330,7 +330,7 @@ exports.resetPassword = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query(
+    const [users] = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
@@ -351,7 +351,7 @@ exports.resetPassword = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
 
-    await db.query(
+    await pool.query(
       'UPDATE users SET password_hash = ?, otp_code = NULL, otp_expires = NULL WHERE email = ?',
       [hashedPassword, email]
     );

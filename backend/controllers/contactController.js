@@ -17,7 +17,7 @@ const sendFeedback = async (req, res) => {
   }
 
   try {
-    const [users] = await db.query(
+    const [users] = await pool.query(
       'SELECT name, email, role FROM users WHERE id = ?',
       [userId]
     );
