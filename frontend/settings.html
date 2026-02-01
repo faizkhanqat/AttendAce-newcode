@@ -142,16 +142,8 @@
           if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
 
-          // Check if the response actually has user
-          if (data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            // Keep the token intact
-            localStorage.setItem('token', token);
-            alert('Profile updated successfully!');
-          } else {
-            alert('Update failed: invalid response from server');
-            console.error('Invalid response:', data);
-          }
+          // Just alert success and keep the old user
+          alert(data.message || 'Profile updated successfully');
         } catch (err) {
           console.error('Update error:', err);
           alert('Could not update profile');
