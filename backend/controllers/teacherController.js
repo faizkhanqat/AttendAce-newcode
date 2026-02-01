@@ -5,7 +5,7 @@ const db = require('../config/db');
 // ==========================
 exports.getProfile = async (req, res) => {
   try {
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
       'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
@@ -25,12 +25,12 @@ exports.updateProfile = async (req, res) => {
     if (!name || !email)
       return res.status(400).json({ message: 'Name and email required' });
 
-    await db.query(
+    await pool.query(
       'UPDATE users SET name = ?, email = ? WHERE id = ?',
       [name, email || null, req.user.id]
     );
 
-    const [updated] = await db.query(
+    const [updated] = await pool.query(
       'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
@@ -47,7 +47,7 @@ exports.updateProfile = async (req, res) => {
 // ==========================
 exports.getClasses = async (req, res) => {
   try {
-    const [classes] = await db.query(
+    const [classes] = await pool.query(
       `SELECT c.*,
               IF(ac.expires_at >= NOW(), TRUE, FALSE) AS is_active
        FROM classes c
@@ -71,7 +71,7 @@ exports.addClass = async (req, res) => {
     if (!name)
       return res.status(400).json({ message: 'Class name required' });
 
-    const [result] = await db.query(
+    const [result] = await pool.query(
       'INSERT INTO classes (name, subject, teacher_id) VALUES (?, ?, ?)',
       [name, subject || '', req.user.id]
     );
@@ -98,7 +98,7 @@ exports.generateQR = async (req, res) => {
 
     const qrDuration = duration || 15;
 
-    await db.query(
+    await pool.query(
       'INSERT INTO qr_tokens (class_id, token, duration, created_at) VALUES (?, ?, ?, NOW())',
       [class_id, token, qrDuration]
     );
@@ -129,7 +129,7 @@ exports.activateClass = async (req, res) => {
     const activeMinutes = minutes || 3;
 
     // Verify class belongs to teacher
-    const [classRows] = await db.query(
+    const [classRows] = await pool.query(
       'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
       [class_id, teacherId]
     );
@@ -138,13 +138,13 @@ exports.activateClass = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized class access' });
 
     // Remove old active entry if exists
-    await db.query(
+    await pool.query(
       'DELETE FROM active_classes WHERE class_id = ?',
       [class_id]
     );
 
     // Activate class
-    await db.query(
+    await pool.query(
       `INSERT INTO active_classes (class_id, teacher_id, expires_at)
        VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))`,
       [class_id, teacherId, activeMinutes]
@@ -172,7 +172,7 @@ exports.deactivateClass = async (req, res) => {
     if (!class_id)
       return res.status(400).json({ message: 'class_id is required' });
 
-    await db.query(
+    await pool.query(
       'DELETE FROM active_classes WHERE class_id = ? AND teacher_id = ?',
       [class_id, teacherId]
     );
