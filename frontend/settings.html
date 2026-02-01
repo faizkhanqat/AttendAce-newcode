@@ -72,11 +72,11 @@
       <div class="form-group" id="departmentGroup">
         <label for="department">Department</label>
         <select id="department" required>
-          <option value="" disabled selected>Select department</option>
           <option value="CSE">CSE</option>
           <option value="ECE">ECE</option>
-          <option value="EEE">EEE</option>
+          <option value="EE">EE</option>
           <option value="ME">ME</option>
+          <option value="CIV">CIV</option>
         </select>
       </div>
     </form>
@@ -119,6 +119,8 @@
         const updatedUser = {
         name: document.getElementById('fullName').value.trim(),
         email: document.getElementById('email').value.trim(),
+        gender: user.gender, // preserve old gender
+        dob: user.dob 
       };
 
       if (user.role === 'student') {
@@ -142,8 +144,10 @@
           if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
 
-          // Just alert success and keep the old user
-          alert(data.message || 'Profile updated successfully');
+          if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user)); // save updated user
+          }
+alert(data.message || 'Profile updated successfully');
         } catch (err) {
           console.error('Update error:', err);
           alert('Could not update profile');
