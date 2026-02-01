@@ -10,7 +10,7 @@ exports.getProfile = async (req, res) => {
     );
     if (rows.length === 0)
       return res.status(404).json({ message: 'User not found' });
-    res.json(rows[0]);
+    res.json({ user: rows[0] });
   } catch (err) {
     console.error('Error fetching student profile:', err);
     res.status(500).json({ message: 'Server error' });
@@ -18,9 +18,10 @@ exports.getProfile = async (req, res) => {
 };
 
 // Update student profile
+// Update student profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, department } = req.body;
+    const { name, email, department, gender, dob } = req.body;
 
     const fields = [];
     const values = [];
@@ -40,16 +41,37 @@ exports.updateProfile = async (req, res) => {
       values.push(department);
     }
 
+    if (gender) {
+      fields.push('gender = ?');
+      values.push(gender);
+    }
+
+    if (dob) {
+      fields.push('dob = ?');
+      values.push(dob);
+    }
+
     if (fields.length === 0) {
       return res.status(400).json({ message: 'Nothing to update' });
     }
 
+    // ✅ Update user
     await pool.query(
       `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
       [...values, req.user.id]
     );
 
-    res.json({ message: 'Profile updated successfully' });
+    // ✅ FETCH UPDATED USER (THIS WAS MISSING)
+    const [updated] = await pool.query(
+      'SELECT id, name, email, role, gender, dob, department, aviation_id FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: updated[0]
+    });
+
   } catch (err) {
     console.error('Update error:', err);
     res.status(500).json({ message: 'Server error' });

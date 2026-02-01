@@ -117,11 +117,11 @@
 
       document.getElementById('saveBtn').addEventListener('click', async () => {
         const updatedUser = {
-        name: document.getElementById('fullName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        gender: user.gender, // preserve old gender
-        dob: user.dob 
-      };
+          name: document.getElementById('fullName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          gender: user.gender || null,
+          dob: user.dob || null
+        };
 
       if (user.role === 'student') {
         updatedUser.department = departmentSelect.value;
