@@ -102,7 +102,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const user = JSON.parse(localStorage.getItem('user'));
+      let user = localStorage.getItem('user');
+        try {
+          user = user && user !== 'undefined' ? JSON.parse(user) : null;
+        } catch {
+          user = null;
+        }
 
       if (!user) {
         window.location.href = 'login.html';
