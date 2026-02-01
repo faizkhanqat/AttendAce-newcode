@@ -101,31 +101,53 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      let user = localStorage.getItem('user');
-        try {
-          user = user && user !== 'undefined' ? JSON.parse(user) : null;
-        } catch {
-          user = null;
+  // 1️⃣ Add fetchProfile function
+  async function fetchProfile() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return null;
+    }
+
+    try {
+      const res = await fetch('https://attendace-zjzu.onrender.com/api/student/me', {
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
         }
-
-      if (!user) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      document.getElementById('studentName').textContent = user.name;
-      document.getElementById('studentId').textContent = user.id || 'N/A';
-      document.getElementById('studentDept').textContent = user.department || 'Department info not set';
-
-      // Logout
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = 'login.html';
       });
-    
+
+      if (!res.ok) throw new Error('Failed to fetch profile');
+
+      const data = await res.json();
+      localStorage.setItem('user', JSON.stringify(data.user)); // update localStorage
+      return data.user;
+    } catch (err) {
+      console.error(err);
+      alert('Could not fetch profile. Please login again.');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
+      return null;
+    }
+  }
+
+  // 2️⃣ Make DOMContentLoaded async
+  document.addEventListener('DOMContentLoaded', async () => {
+    const user = await fetchProfile(); // ✅ now await works
+    if (!user) return; // already redirected if not logged in
+
+    document.getElementById('studentName').textContent = user.name;
+    document.getElementById('studentId').textContent = user.id || 'N/A';
+    document.getElementById('studentDept').textContent = user.department || 'Department info not set';
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'login.html';
     });
-  </script>
+  });
+</script>
 </body>
 </html>

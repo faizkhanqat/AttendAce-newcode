@@ -322,11 +322,22 @@ button:hover {
           msg.style.color = 'orange';
           msg.textContent = 'Please complete your profile: ' + data.missingFields.join(', ');
 
-          // Optionally, pre-fill the login form with user info and show relevant fields
-          if (data.missingFields.includes('name')) nameGroup.classList.remove('hidden');
-          if (data.missingFields.includes('gender')) genderGroup.classList.remove('hidden');
-          if (data.missingFields.includes('dob')) dobGroup.classList.remove('hidden');
-          if (data.missingFields.includes('department')) departmentGroup.classList.remove('hidden');
+          if (data.missingFields.includes('name')) {
+            nameGroup.classList.remove('hidden');
+            document.getElementById('name').value = data.user.name || '';
+          }
+          if (data.missingFields.includes('gender')) {
+            genderGroup.classList.remove('hidden');
+            document.getElementById('gender').value = data.user.gender || '';
+          }
+          if (data.missingFields.includes('dob')) {
+            dobGroup.classList.remove('hidden');
+            document.getElementById('dob').value = data.user.dob || '';
+          }
+          if (data.missingFields.includes('department')) {
+            departmentGroup.classList.remove('hidden');
+            document.getElementById('department').value = data.user.department || '';
+          }
 
           // Hide login fields
           passwordGroup.classList.add('hidden');
