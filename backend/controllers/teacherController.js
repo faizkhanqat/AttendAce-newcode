@@ -6,7 +6,7 @@ const db = require('../config/db');
 exports.getProfile = async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT id, name, email, phone, role FROM users WHERE id = ?',
+      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
     res.json(rows[0]);
@@ -21,17 +21,17 @@ exports.getProfile = async (req, res) => {
 // ==========================
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, phone } = req.body;
+    const { name, email } = req.body;
     if (!name || !email)
       return res.status(400).json({ message: 'Name and email required' });
 
     await db.query(
-      'UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ?',
-      [name, email, phone || null, req.user.id]
+      'UPDATE users SET name = ?, email = ? WHERE id = ?',
+      [name, email || null, req.user.id]
     );
 
     const [updated] = await db.query(
-      'SELECT id, name, email, phone, role FROM users WHERE id = ?',
+      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
 

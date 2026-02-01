@@ -22,6 +22,10 @@ exports.register = async (req, res) => {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
+  if (role === 'student' && !req.body.department) {
+    return res.status(400).json({ message: 'Department required for students' });
+  }
+
   try {
     const [existing] = await db.query(
       'SELECT * FROM users WHERE email = ?',
@@ -152,12 +156,16 @@ exports.login = async (req, res) => {
       { expiresIn: '8h' }
     );
 
-    // Determine which required fields are missing
+    // Determine missing fields
     const missingFields = [];
+
     if (!user.name) missingFields.push('name');
-    if (user.role === 'student' && !user.department) missingFields.push('department');
     if (!user.gender) missingFields.push('gender');
     if (!user.dob) missingFields.push('dob');
+
+    if (user.role === 'student' && !user.department) {
+      missingFields.push('department');
+    }
 
     res.json({
       message: 'Login successful',
@@ -167,10 +175,10 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        gender: user.gender || null,
-        dob: user.dob || null,
-        department: user.department || null,
-        aviation_id: user.aviation_id || null
+        gender: user.gender,
+        dob: user.dob,
+        department: user.department,
+        aviation_id: user.aviation_id
       },
       isComplete: missingFields.length === 0,
       missingFields

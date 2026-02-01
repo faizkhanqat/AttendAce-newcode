@@ -5,7 +5,7 @@ const pool = require('../config/db');
 exports.getProfile = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, phone, role, department, aviation_id FROM users WHERE id = ?',
+      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
     if (rows.length === 0)
@@ -20,24 +20,39 @@ exports.getProfile = async (req, res) => {
 // Update student profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, phone, department } = req.body;
-    if (!name || !email)
-      return res.status(400).json({ message: 'Name and email are required' });
+    const { name, email, department } = req.body;
 
-    await pool.query(
-      'UPDATE users SET name = ?, email = ?, phone = ?, department = ? WHERE id = ?',
-      [name, email, phone || null, department || null, req.user.id]
+    const fields = [];
+    const values = [];
+
+    if (name) {
+      fields.push('name = ?');
+      values.push(name);
+    }
+
+    if (email) {
+      fields.push('email = ?');
+      values.push(email);
+    }
+
+    if (department) {
+      fields.push('department = ?');
+      values.push(department);
+    }
+
+    if (fields.length === 0) {
+      return res.status(400).json({ message: 'Nothing to update' });
+    }
+
+    await db.query(
+      `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+      [...values, req.user.id]
     );
 
-    const [updated] = await pool.query(
-      'SELECT id, name, email, phone, role, department, aviation_id FROM users WHERE id = ?',
-      [req.user.id]
-    );
-
-    res.json({ message: 'Profile updated successfully', user: updated[0] });
+    res.json({ message: 'Profile updated successfully' });
   } catch (err) {
-    console.error('Update error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('Update error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

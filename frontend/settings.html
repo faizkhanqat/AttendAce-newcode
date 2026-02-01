@@ -69,9 +69,15 @@
         <label for="email">Email Address</label>
         <input type="email" id="email" required>
       </div>
-      <div class="form-group">
-        <label for="phone">Phone Number</label>
-        <input type="tel" id="phone">
+      <div class="form-group" id="departmentGroup">
+        <label for="department">Department</label>
+        <select id="department" required>
+          <option value="" disabled selected>Select department</option>
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="EEE">EEE</option>
+          <option value="ME">ME</option>
+        </select>
       </div>
     </form>
 
@@ -92,14 +98,27 @@
       document.getElementById('fullName').value = user.name || '';
       document.getElementById('userId').value = user.id || '';
       document.getElementById('email').value = user.email || '';
-      document.getElementById('phone').value = user.phone || '';
+
+
+      const departmentGroup = document.getElementById('departmentGroup');
+      const departmentSelect = document.getElementById('department');
+
+      if (user.role !== 'student') {
+        departmentGroup.style.display = 'none';
+        departmentSelect.required = false;
+      } else {
+        departmentSelect.value = user.department || '';
+      }
 
       document.getElementById('saveBtn').addEventListener('click', async () => {
         const updatedUser = {
-          name: document.getElementById('fullName').value.trim(),
-          email: document.getElementById('email').value.trim(),
-          phone: document.getElementById('phone').value.trim(),
-        };
+        name: document.getElementById('fullName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+      };
+
+      if (user.role === 'student') {
+        updatedUser.department = departmentSelect.value;
+      }
 
         const endpoint = user.role === 'student'
           ? 'https://attendace-zjzu.onrender.com/api/student/update'
