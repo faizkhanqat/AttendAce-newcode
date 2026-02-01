@@ -90,7 +90,12 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      let user = localStorage.getItem('user');
+      try {
+        user = user && user !== 'undefined' ? JSON.parse(user) : null;
+      } catch {
+        user = null;
+      }
       const token = localStorage.getItem('token');
 
       if (!user || !token) return (window.location.href = 'login.html');
