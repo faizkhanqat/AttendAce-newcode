@@ -1,4 +1,4 @@
-const db = require('../config/db'); // MySQL pool
+const pool = require('../config/db'); // MySQL pool
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sgMail = require('@sendgrid/mail');
