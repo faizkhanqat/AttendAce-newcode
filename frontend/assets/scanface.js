@@ -160,15 +160,25 @@ async function markFaceAttendance(class_id) {
 // ---------- FACE DETECTION ----------
 function startDetection() {
   const container = document.getElementById('video-container');
-  const canvas = faceapi.createCanvasFromMedia(video);
-  container.appendChild(canvas);
+
+  // ✅ Create canvas once
+  let canvas = document.getElementById('overlay');
+  if (!canvas) {
+    canvas = faceapi.createCanvasFromMedia(video);
+    canvas.id = 'overlay';
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.zIndex = '2';
+    container.appendChild(canvas);
+  }
 
   const displaySize = { width: video.videoWidth, height: video.videoHeight };
   faceapi.matchDimensions(canvas, displaySize);
 
   const options = new faceapi.TinyFaceDetectorOptions({
     inputSize: 320,
-    scoreThreshold: 0.9 // ✅ 0.9 threshold
+    scoreThreshold: 0.9
   });
 
   detectionInterval = setInterval(async () => {
@@ -180,8 +190,12 @@ function startDetection() {
 
     if (detections.length > 0) {
       const resized = faceapi.resizeResults(detections, displaySize);
+
+      // ✅ Draw only blue bounding box
       faceapi.draw.drawDetections(canvas, resized);
-      faceapi.draw.drawFaceLandmarks(canvas, resized);
+
+      // ⚠️ Skip pink landmarks
+      // faceapi.draw.drawFaceLandmarks(canvas, resized);
 
       status.innerText = '✅ Face detected. Marking attendance...';
 
