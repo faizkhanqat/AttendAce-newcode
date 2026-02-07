@@ -61,7 +61,7 @@ Html5Qrcode.getCameras()
     }
     html5QrcodeScanner.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
+      { fps: 10, qrbox: auto },
       onScanSuccess,
       onScanFailure
     ).catch(err => {
