@@ -23,7 +23,7 @@
 <div id="bg-anim"></div>
 
 <!-- CLICK SOUND -->
-<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
 
 <!-- HEADER -->
 <header class="p-4 flex justify-between items-center reveal">
@@ -71,8 +71,15 @@
 <script>
 /* CLICK SOUND */
 const clickSound = document.getElementById('clickSound');
-document.querySelectorAll('button').forEach(b => {
-  b.addEventListener('click', () => clickSound.play());
+
+// Play click sound for all buttons and links
+document.querySelectorAll('button, a').forEach(el => {
+  el.addEventListener('click', () => {
+    clickSound.currentTime = 0; // rewind in case still playing
+    clickSound.play().catch(err => {
+      console.log("Click sound blocked by browser:", err);
+    });
+  });
 });
 
 /* THEME TOGGLE */

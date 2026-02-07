@@ -364,7 +364,11 @@ button:hover {
             if (updatedDept) payload.department = updatedDept;
 
             try {
-              const res = await fetch(`https://attendace-zjzu.onrender.com/api/student/update`, {
+              const updateEndpoint = data.user.role === 'student'
+                ? 'https://attendace-zjzu.onrender.com/api/student/update'
+                : 'https://attendace-zjzu.onrender.com/api/teacher/update';
+
+              const res = await fetch(updateEndpoint, {
                 method: 'PUT',
                 headers: {
                   'Content-Type': 'application/json',
