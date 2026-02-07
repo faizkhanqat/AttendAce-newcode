@@ -164,6 +164,17 @@ document.getElementById('studentName').textContent = user.name;
 document.getElementById('studentId').textContent = "ID: " + user.id;
 document.getElementById('studentDept').textContent = "Department: " + (user.department || "--");
 
+// ✅ Set mode from DB
+  if (user.mode === 'gaming') {
+    document.body.classList.add('gaming');
+    toggle.innerText = 'GAMING';
+  } else {
+    document.body.classList.remove('gaming');
+    toggle.innerText = 'OFFICIAL';
+  }
+
+
+
   // Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('token');
