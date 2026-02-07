@@ -53,23 +53,25 @@ function onScanFailure(err) {
 
 // init scanner
 const html5QrcodeScanner = new Html5Qrcode("reader");
-Html5Qrcode.getCameras()
-  .then(cameras => {
-    if (!cameras || cameras.length === 0) {
-      if (errorMsg) errorMsg.textContent = 'No camera found on this device.';
-      return;
-    }
-    html5QrcodeScanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: false },
-      onScanSuccess,
-      onScanFailure
-    ).catch(err => {
-      console.error('Unable to start camera:', err);
-      if (errorMsg) errorMsg.textContent = 'Cannot access camera. Allow permissions.';
-    });
-  })
-  .catch(err => {
-    console.error('Camera error:', err);
-    if (errorMsg) errorMsg.textContent = 'Camera access denied or unavailable: ' + err;
+Html5Qrcode.getCameras().then(cameras => {
+  if (!cameras || cameras.length === 0) {
+    if (errorMsg) errorMsg.textContent = 'No camera found on this device.';
+    return;
+  }
+
+  const videoWidth = document.getElementById('reader').clientWidth;
+  const videoHeight = document.getElementById('reader').clientHeight;
+
+  html5QrcodeScanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: { width: videoWidth, height: videoHeight } // full camera feed
+    },
+    onScanSuccess,
+    onScanFailure
+  ).catch(err => {
+    console.error('Unable to start camera:', err);
+    if (errorMsg) errorMsg.textContent = 'Cannot access camera. Allow permissions.';
   });
+});
