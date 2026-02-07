@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings | AttendAce</title>
   <link rel="stylesheet" href="assets/styles2.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+
+
+
 </head>
 <body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
   <!-- ANIMATED GAMING BACKGROUND -->
@@ -59,6 +65,14 @@
   </div>
 
   <script>
+
+    let user = localStorage.getItem('user');
+    try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
+    catch { user = null; }
+    if (user?.mode === 'gaming') {
+      document.documentElement.classList.add('gaming'); // Adds 'gaming' to <html>
+    }
+    
     const clickSound = document.getElementById('clickSound');
     document.querySelectorAll('button').forEach(b => {
       b.addEventListener('click', () => clickSound.play());

@@ -5,7 +5,7 @@ const pool = require('../config/db');
 exports.getProfile = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
+      'SELECT id, name, email, role, department, aviation_id, mode FROM users WHERE id = ?',
       [req.user.id]
     );
     if (rows.length === 0)
@@ -21,7 +21,7 @@ exports.getProfile = async (req, res) => {
 // Update student profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, department, gender, dob } = req.body;
+    const { name, email, department, gender, dob, mode } = req.body;
 
     const fields = [];
     const values = [];
@@ -51,9 +51,16 @@ exports.updateProfile = async (req, res) => {
       values.push(dob);
     }
 
+    if (mode) {
+  fields.push('mode = ?');
+  values.push(mode);
+}
+
     if (fields.length === 0) {
       return res.status(400).json({ message: 'Nothing to update' });
     }
+
+
 
     // ✅ Update user
     await pool.query(
