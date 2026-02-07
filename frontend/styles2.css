@@ -235,3 +235,17 @@ body {
   height: 100%;
   object-fit: cover; /* fill the container, crop excess */
 }
+
+.page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--bg);
+}
+.container {
+  width: 100%;
+  max-width: 400px;
+  padding: 2rem;
+}
