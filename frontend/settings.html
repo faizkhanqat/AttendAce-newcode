@@ -6,14 +6,20 @@
   <title>Settings | AttendAce</title>
   <link rel="stylesheet" href="assets/styles2.css">
 </head>
-<body>
-  <div class="container glass reveal">
-    <header style="text-align:center;">
-      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-      <h1>Settings</h1>
-    </header>
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
+  <!-- ANIMATED GAMING BACKGROUND -->
+  <div id="bg-anim"></div>
+  <!-- CLICK SOUND -->
+  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
-    <form id="settingsForm" class="details-form">
+  <!-- HEADER -->
+  <header class="p-4 flex justify-between items-center reveal">
+    <h1 class="font-black text-lg tracking-tight">Settings</h1>
+  </header>
+
+  <!-- SETTINGS FORM -->
+  <div class="container glass reveal p-6 flex flex-col gap-4">
+    <form id="settingsForm" class="details-form flex flex-col gap-4">
       <div class="form-group">
         <label for="fullName">Full Name</label>
         <input type="text" id="fullName" class="glass" required>
@@ -45,7 +51,7 @@
       </div>
     </form>
 
-    <div class="menu-options">
+    <div class="menu-options flex flex-col gap-3">
       <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
       <a href="#" class="menu-btn" id="backBtn">⬅️ Back to Dashboard</a>
       <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
@@ -53,18 +59,23 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    const clickSound = document.getElementById('clickSound');
+    document.querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => clickSound.play());
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
       let user = localStorage.getItem('user');
       try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
       catch { user = null; }
       const token = localStorage.getItem('token');
-      if (!user || !token) return (window.location.href = 'login.html');
+      if (!user || !token) return window.location.href = 'login.html';
 
-      // Apply mode class
+      // Apply mode class immediately
       document.body.classList.remove('gaming');
       if (user.mode === 'gaming') document.body.classList.add('gaming');
 
-      // Fill fields
+      // Fill form
       document.getElementById('fullName').value = user.name || '';
       document.getElementById('userId').value = user.id || '';
       document.getElementById('email').value = user.email || '';
@@ -79,7 +90,7 @@
         departmentSelect.value = user.department || '';
       }
 
-      // Save button
+      // Save profile
       document.getElementById('saveBtn').addEventListener('click', async () => {
         const updatedUser = {
           name: document.getElementById('fullName').value.trim(),
@@ -97,15 +108,17 @@
         try {
           const res = await fetch(endpoint, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            headers: { 
+              'Content-Type': 'application/json',
+              Authorization: 'Bearer ' + token 
+            },
             body: JSON.stringify(updatedUser),
           });
-
           if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
           if (data.user) {
             localStorage.setItem('user', JSON.stringify(data.user));
-            // Apply new mode immediately
+            // Apply mode immediately
             document.body.classList.remove('gaming');
             if (data.user.mode === 'gaming') document.body.classList.add('gaming');
           }
@@ -116,12 +129,14 @@
         }
       });
 
+      // Back to dashboard
       document.getElementById('backBtn').addEventListener('click', () => {
         window.location.href = user.role === 'student'
           ? 'student-dashboard.html'
           : 'teacher-dashboard.html';
       });
 
+      // Logout
       document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.clear();
         window.location.href = 'login.html';
