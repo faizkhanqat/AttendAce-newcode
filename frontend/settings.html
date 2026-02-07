@@ -1,20 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Settings | AttendAce</title>
-  <link rel="stylesheet" href="styles2.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings | AttendAce</title>
 
+<!-- Tailwind + Fonts -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
-
+<!-- Local CSS -->
+<link rel="stylesheet" href="styles2.css">
 </head>
+
 <body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
-  <!-- ANIMATED GAMING BACKGROUND -->
+
+  <!-- GAMING BACKGROUND -->
   <div id="bg-anim"></div>
+
   <!-- CLICK SOUND -->
   <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
@@ -30,14 +35,17 @@
         <label for="fullName">Full Name</label>
         <input type="text" id="fullName" class="glass" required>
       </div>
+
       <div class="form-group">
         <label for="userId">ID</label>
         <input type="text" id="userId" class="glass" readonly>
       </div>
+
       <div class="form-group">
         <label for="email">Email Address</label>
         <input type="email" id="email" class="glass" required>
       </div>
+
       <div class="form-group" id="departmentGroup">
         <label for="department">Department</label>
         <select id="department" class="glass" required>
@@ -48,6 +56,7 @@
           <option value="CIV">CIV</option>
         </select>
       </div>
+
       <div class="form-group">
         <label for="mode">Mode</label>
         <select id="mode" class="glass" required>
@@ -65,97 +74,106 @@
   </div>
 
   <script>
+  // -------------------------------
+  // PLAY CLICK SOUND ON BUTTONS
+  // -------------------------------
+  const clickSound = document.getElementById('clickSound');
+  document.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', () => clickSound.play());
+  });
 
-    let user = localStorage.getItem('user');
-    try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
-    catch { user = null; }
-    if (user?.mode === 'gaming') {
-      document.documentElement.classList.add('gaming'); // Adds 'gaming' to <html>
+  // -------------------------------
+  // INIT USER & MODE
+  // -------------------------------
+  let user = localStorage.getItem('user');
+  try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
+  catch { user = null; }
+
+  if (user?.mode === 'gaming') document.body.classList.add('gaming');
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('token');
+    if (!user || !token) return window.location.href = 'login.html';
+
+    // Set body mode
+    document.body.classList.remove('gaming');
+    if (user.mode === 'gaming') document.body.classList.add('gaming');
+
+    // Fill form fields
+    document.getElementById('fullName').value = user.name || '';
+    document.getElementById('userId').value = user.id || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('mode').value = user.mode || 'official';
+
+    const departmentGroup = document.getElementById('departmentGroup');
+    const departmentSelect = document.getElementById('department');
+
+    if (user.role !== 'student') {
+      departmentGroup.style.display = 'none';
+      departmentSelect.required = false;
+    } else {
+      departmentSelect.value = user.department || '';
     }
-    
-    const clickSound = document.getElementById('clickSound');
-    document.querySelectorAll('button').forEach(b => {
-      b.addEventListener('click', () => clickSound.play());
-    });
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      let user = localStorage.getItem('user');
-      try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
-      catch { user = null; }
-      const token = localStorage.getItem('token');
-      if (!user || !token) return window.location.href = 'login.html';
+    // -------------------------------
+    // SAVE CHANGES
+    // -------------------------------
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const updatedUser = {
+        name: document.getElementById('fullName').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        gender: user.gender || null,
+        dob: user.dob || null,
+        mode: document.getElementById('mode').value
+      };
+      if (user.role === 'student') updatedUser.department = departmentSelect.value;
 
-      // Apply mode class immediately
-      document.body.classList.remove('gaming');
-      if (user.mode === 'gaming') document.body.classList.add('gaming');
+      const endpoint = user.role === 'student'
+        ? 'https://attendace-zjzu.onrender.com/api/student/update'
+        : 'https://attendace-zjzu.onrender.com/api/teacher/update';
 
-      // Fill form
-      document.getElementById('fullName').value = user.name || '';
-      document.getElementById('userId').value = user.id || '';
-      document.getElementById('email').value = user.email || '';
-      document.getElementById('mode').value = user.mode || 'official';
-
-      const departmentGroup = document.getElementById('departmentGroup');
-      const departmentSelect = document.getElementById('department');
-      if (user.role !== 'student') {
-        departmentGroup.style.display = 'none';
-        departmentSelect.required = false;
-      } else {
-        departmentSelect.value = user.department || '';
-      }
-
-      // Save profile
-      document.getElementById('saveBtn').addEventListener('click', async () => {
-        const updatedUser = {
-          name: document.getElementById('fullName').value.trim(),
-          email: document.getElementById('email').value.trim(),
-          gender: user.gender || null,
-          dob: user.dob || null,
-          mode: document.getElementById('mode').value
-        };
-        if (user.role === 'student') updatedUser.department = departmentSelect.value;
-
-        const endpoint = user.role === 'student'
-          ? 'https://attendace-zjzu.onrender.com/api/student/update'
-          : 'https://attendace-zjzu.onrender.com/api/teacher/update';
-
-        try {
-          const res = await fetch(endpoint, {
-            method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
-              Authorization: 'Bearer ' + token 
-            },
-            body: JSON.stringify(updatedUser),
-          });
-          if (!res.ok) throw new Error('Update failed');
-          const data = await res.json();
-          if (data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user));
-            // Apply mode immediately
-            document.body.classList.remove('gaming');
-            if (data.user.mode === 'gaming') document.body.classList.add('gaming');
-          }
-          alert(data.message || 'Profile updated successfully');
-        } catch (err) {
-          console.error('Update error:', err);
-          alert('Could not update profile');
+      try {
+        const res = await fetch(endpoint, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + token 
+          },
+          body: JSON.stringify(updatedUser),
+        });
+        if (!res.ok) throw new Error('Update failed');
+        const data = await res.json();
+        if (data.user) {
+          localStorage.setItem('user', JSON.stringify(data.user));
+          document.body.classList.remove('gaming');
+          if (data.user.mode === 'gaming') document.body.classList.add('gaming');
         }
-      });
-
-      // Back to dashboard
-      document.getElementById('backBtn').addEventListener('click', () => {
-        window.location.href = user.role === 'student'
-          ? 'student-dashboard.html'
-          : 'teacher-dashboard.html';
-      });
-
-      // Logout
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.clear();
-        window.location.href = 'login.html';
-      });
+        alert(data.message || 'Profile updated successfully');
+      } catch (err) {
+        console.error('Update error:', err);
+        alert('Could not update profile');
+      }
     });
+
+    // -------------------------------
+    // BACK TO DASHBOARD
+    // -------------------------------
+    document.getElementById('backBtn').addEventListener('click', () => {
+      window.location.href = user.role === 'student'
+        ? 'student-dashboard.html'
+        : 'teacher-dashboard.html';
+    });
+
+    // -------------------------------
+    // LOGOUT
+    // -------------------------------
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    });
+
+  });
   </script>
+
 </body>
 </html>
