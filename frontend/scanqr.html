@@ -1,108 +1,98 @@
-<!--scanqr.html-->
+<!-- scanqr.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Scan QR | AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #fefae0;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 40px 0;
-    }
 
-    .qr-container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-    }
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    .logo {
-      width: 80px;
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      color: #5f8b6e;
-      margin: 0;
-    }
-
-    #reader {
-      width: 100%;
-      margin: 20px auto;
-      border: 4px solid #5f8b6e;
-      border-radius: 12px;
-      background: #000;
-      position: relative;
-      height: 300px;
-    }
-
-    .instructions {
-      margin-top: 15px;
-      font-weight: 500;
-      color: #333;
-    }
-
-    .menu-btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 20px;
-      background: #5f8b6e;
-      color: white;
-      text-decoration: none;
-      border-radius: 12px;
-      transition: 0.3s;
-    }
-
-    .menu-btn:hover {
-      background: #497c59;
-    }
-
-    .error {
-      color: red;
-      font-weight: 500;
-      margin-top: 10px;
-    }
-  </style>
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="styles2.css">
 </head>
-<body>
-  <div class="qr-container">
-    <header>
-      <div style="background:red; color:white; padding:5px; font-weight:bold;">
-      ⚡ TEST: Updated scanqr.html ⚡
+
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
+
+<!-- GAMING BACKGROUND -->
+<div id="bg-anim"></div>
+
+<!-- CLICK SOUND -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+
+<!-- HEADER -->
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+    OFFICIAL
+  </button>
+</header>
+
+<!-- SCAN CARD -->
+<section class="px-5 mt-4 reveal">
+  <div class="glass p-6 relative overflow-hidden text-center">
+
+    <h2 class="text-2xl font-black mb-1">QR Attendance Scan</h2>
+    <p class="text-sm text-[var(--muted)] mb-4">
+      Align the classroom QR code inside the frame
+    </p>
+
+    <!-- QR READER -->
+    <div
+      id="reader"
+      class="w-full h-[300px] rounded-xl overflow-hidden border-4 border-[var(--accent)] bg-black"
+    ></div>
+
+    <p id="errorMsg" class="text-sm text-red-500 mt-3 font-semibold"></p>
+
+    <!-- ACTIONS -->
+    <div class="mt-6 flex flex-col gap-3">
+      <button
+        class="menu-btn press w-full h-[60px] rounded-xl"
+        onclick="window.location.href='student-dashboard.html'">
+        Cancel & Return
+      </button>
     </div>
-    <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-    <h1>Mark Attendance</h1>
-  </header>
 
-    <div id="reader"></div>
-    <p class="instructions">Place the classroom QR code inside the frame</p>
-    <p id="errorMsg" class="error"></p>
-
-    <nav>
-      <a href="student-dashboard.html" class="menu-btn"><span class="icon">❌</span> Cancel</a>
-    </nav>
   </div>
+</section>
 
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <script src="assets/scanqr.js"></script>
+<!-- QR LIB -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<!-- EXISTING QR LOGIC -->
+<script src="assets/scanqr.js"></script>
+
+<script>
+/* CLICK SOUND */
+const clickSound = document.getElementById('clickSound');
+document.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', () => clickSound.play());
+});
+
+/* THEME TOGGLE */
+const toggle = document.getElementById('themeToggle');
+toggle.onclick = () => {
+  document.body.classList.toggle('gaming');
+  toggle.innerText = document.body.classList.contains('gaming')
+    ? 'GAMING'
+    : 'OFFICIAL';
+};
+
+/* REVEAL ANIMATION */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('show');
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
