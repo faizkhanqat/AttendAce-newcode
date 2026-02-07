@@ -25,7 +25,7 @@ exports.updateProfile = async (req, res) => {
     if (!name || !email)
       return res.status(400).json({ message: 'Name and email required' });
 
-    await pool.query(
+    await db.query(
       'UPDATE users SET name = ?, email = ? WHERE id = ?',
       [name, email || null, req.user.id]
     );
