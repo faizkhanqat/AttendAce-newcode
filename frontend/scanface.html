@@ -14,6 +14,19 @@
 
 <!-- Shared UI Styles -->
 <link rel="stylesheet" href="assets/styles2.css">
+<style>
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%);
+  z-index: 50;
+}
+</style>
 </head>
 
 <body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
@@ -27,9 +40,6 @@
 <!-- HEADER -->
 <header class="p-4 flex justify-between items-center reveal">
   <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
-  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
-    OFFICIAL
-  </button>
 </header>
 
 <!-- FACE SCAN CARD -->
@@ -42,10 +52,10 @@
     </p>
 
     <!-- VIDEO WRAPPER -->
-    <div id="video-container" class="w-full relative border-4 border-[var(--accent)] bg-black">
-      <video id="video" autoplay muted playsinline></video>
-      <canvas id="overlay" class="absolute top-0 left-0"></canvas>
-    </div>
+    <div id="video-container" class="w-full relative border-4 border-[var(--accent)] bg-black aspect-[1/1]">
+  <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+  <canvas id="overlay" class="absolute top-0 left-0 w-full h-full"></canvas>
+</div>
 
     <p id="status" class="text-sm text-[var(--muted)] mt-3 font-semibold">Initializing...</p>
 
@@ -75,34 +85,6 @@ document.querySelectorAll('button, a').forEach(el => {
   });
 });
 
-/* THEME TOGGLE – simple & CSS-driven */
-const toggle = document.getElementById('themeToggle');
-
-// Load user mode from DB
-async function loadUserTheme() {
-  try {
-    const res = await fetch('/api/user/theme', { credentials: 'include' });
-    const data = await res.json();
-    const mode = data.mode; // "gaming" or "official"
-
-    if (mode === 'gaming') document.body.classList.add('gaming');
-    toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'OFFICIAL';
-  } catch (err) {
-    console.error('Failed to load user theme, defaulting to OFFICIAL', err);
-    toggle.innerText = 'OFFICIAL';
-  }
-}
-
-// <-- ADD THIS LINE -->
-loadUserTheme();
-
-
-// On click: toggle gaming class and save preference
-toggle.onclick = () => {
-  document.body.classList.toggle('gaming');
-  localStorage.setItem('theme', document.body.classList.contains('gaming') ? 'gaming' : 'official');
-  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'OFFICIAL';
-};
 
 /* REVEAL ANIMATION */
 const observer = new IntersectionObserver(entries => {
