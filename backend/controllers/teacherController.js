@@ -6,10 +6,10 @@ const pool = require('../config/db');
 exports.getProfile = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
-      [req.user.id]
-    );
-    res.json({ user: rows[0] });
+        'SELECT id, name, email, role, department, gender, dob, aviation_id FROM users WHERE id = ?',
+        [req.user.id]
+      );
+      res.json({ user: rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -21,25 +21,35 @@ exports.getProfile = async (req, res) => {
 // ==========================
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email } = req.body;
-    if (!name || !email)
-      return res.status(400).json({ message: 'Name and email required' });
+  const { name, email, department, gender, dob } = req.body;
+
+  const fields = [];
+  const values = [];
+
+  if (name) { fields.push('name = ?'); values.push(name); }
+  if (email) { fields.push('email = ?'); values.push(email); }
+  if (department) { fields.push('department = ?'); values.push(department); }
+  if (gender) { fields.push('gender = ?'); values.push(gender); }
+  if (dob) { fields.push('dob = ?'); values.push(dob); }
+
+  if (fields.length === 0)
+    return res.status(400).json({ message: 'Nothing to update' });
 
   await pool.query(
-      'UPDATE users SET name = ?, email = ? WHERE id = ?',
-      [name, email || null, req.user.id]
-    );
+    `UPDATE users SET ${fields.join(', ')} WHERE id = ?`,
+    [...values, req.user.id]
+  );
 
-    const [updated] = await pool.query(
-      'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
-      [req.user.id]
-    );
+  const [updated] = await pool.query(
+    'SELECT id, name, email, role, department, gender, dob, aviation_id FROM users WHERE id = ?',
+    [req.user.id]
+  );
 
-    res.json({ message: 'Profile updated successfully', user: updated[0] });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Server error' });
-  }
+  res.json({ message: 'Profile updated successfully', user: updated[0] });
+} catch (err) {
+  console.error(err);
+  res.status(500).json({ message: 'Server error' });
+}
 };
 
 // ==========================
