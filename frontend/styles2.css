@@ -245,7 +245,9 @@ body {
   background: var(--bg);
 }
 .container {
+  z-index: 1;
   width: 100%;
   max-width: 400px;
   padding: 2rem;
+  margin-bottom: 2rem; /* prevents buttons sticking to bottom */
 }
