@@ -38,8 +38,10 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
 // Insert user with department; aviation_id will be generated after insert
+const mode = role === 'student' ? 'gaming' : 'official';
+
 const [result] = await pool.query(
-  'INSERT INTO users (name, email, password_hash, role, gender, dob, department) VALUES (?, ?, ?, ?, ?, ?, ?)',
+  'INSERT INTO users (name, email, password_hash, role, gender, dob, department, mode) VALUES (?, ?, ?, ?, ?, ?, ? , ?)',
   [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null]
 );
 

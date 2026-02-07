@@ -5,48 +5,62 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings | AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/styles2.css">
   <style>
     body {
-      background: #fefae0;
+      background: #f4f5f7;
       font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 0;
+      padding: 20px 0;
       display: flex;
       justify-content: center;
-      padding: 20px 0;
     }
     .settings-container {
-      max-width: 500px;
       width: 100%;
+      max-width: 520px;
       background: #fff;
-      border-radius: 25px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
     }
-    header { text-align: center; margin-bottom: 25px; }
-    header .logo { width: 60px; margin-bottom: 10px; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0; color: #333; }
-    .details-form { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    label { font-weight: 500; color: #333; font-size: 14px; }
-    input, button.menu-btn {
-      padding: 12px 15px; font-size: 15px; border-radius: 12px;
-      border: 1px solid #d9e0e6; font-family: 'Poppins', sans-serif;
+    header { text-align: center; }
+    header .logo { width: 70px; margin-bottom: 10px; }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 26px; margin: 0; color: #2c3e50; }
+
+    .details-form { display: flex; flex-direction: column; gap: 18px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-weight: 500; color: #34495e; font-size: 14px; }
+    input, select {
+      padding: 12px 14px;
+      font-size: 15px;
+      border-radius: 12px;
+      border: 1px solid #dfe3e6;
+      font-family: 'Poppins', sans-serif;
+      background: #f9f9f9;
+      transition: 0.3s;
     }
-    button.menu-btn { border: none; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #5f8b6e;
+      box-shadow: 0 0 5px rgba(95,139,110,0.4);
+    }
+
+    .menu-options { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+    button.menu-btn, a.menu-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px 16px; font-size: 15px; font-weight: 500;
+      border-radius: 12px; border: none; cursor: pointer; transition: 0.3s;
+      text-decoration: none; text-align: center;
+    }
     button.primary { background: #5f8b6e; color: #fff; }
     button.primary:hover { background: #497c59; }
     button.danger { background: #e74c3c; color: #fff; }
     button.danger:hover { background: #c0392b; }
-    a.menu-btn {
-      text-align: center; text-decoration: none; display: flex;
-      align-items: center; justify-content: center; gap: 5px;
-      background: #5f8b6e; color: #fff; border-radius: 12px;
-      padding: 12px; font-weight: 500; transition: 0.3s;
-    }
-    a.menu-btn:hover { background: #497c59; }
-    .menu-options { display: flex; flex-direction: column; gap: 10px; }
+    a.menu-btn { background: #3498db; color: #fff; }
+    a.menu-btn:hover { background: #2980b9; }
   </style>
 </head>
 <body>
@@ -79,6 +93,13 @@
           <option value="CIV">CIV</option>
         </select>
       </div>
+      <div class="form-group">
+        <label for="mode">Mode</label>
+        <select id="mode" required>
+          <option value="gaming">Gaming</option>
+          <option value="official">Official</option>
+        </select>
+      </div>
     </form>
 
     <div class="menu-options">
@@ -97,17 +118,15 @@
         user = null;
       }
       const token = localStorage.getItem('token');
-
       if (!user || !token) return (window.location.href = 'login.html');
 
       document.getElementById('fullName').value = user.name || '';
       document.getElementById('userId').value = user.id || '';
       document.getElementById('email').value = user.email || '';
-
+      document.getElementById('mode').value = user.mode || 'official';
 
       const departmentGroup = document.getElementById('departmentGroup');
       const departmentSelect = document.getElementById('department');
-
       if (user.role !== 'student') {
         departmentGroup.style.display = 'none';
         departmentSelect.required = false;
@@ -120,12 +139,12 @@
           name: document.getElementById('fullName').value.trim(),
           email: document.getElementById('email').value.trim(),
           gender: user.gender || null,
-          dob: user.dob || null
+          dob: user.dob || null,
+          mode: document.getElementById('mode').value
         };
-
-      if (user.role === 'student') {
-        updatedUser.department = departmentSelect.value;
-      }
+        if (user.role === 'student') {
+          updatedUser.department = departmentSelect.value;
+        }
 
         const endpoint = user.role === 'student'
           ? 'https://attendace-zjzu.onrender.com/api/student/update'
@@ -143,11 +162,8 @@
 
           if (!res.ok) throw new Error('Update failed');
           const data = await res.json();
-
-          if (data.user) {
-            localStorage.setItem('user', JSON.stringify(data.user)); // save updated user
-          }
-alert(data.message || 'Profile updated successfully');
+          if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+          alert(data.message || 'Profile updated successfully');
         } catch (err) {
           console.error('Update error:', err);
           alert('Could not update profile');
