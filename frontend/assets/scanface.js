@@ -69,6 +69,16 @@ async function startVideo() {
 
     video.onloadedmetadata = () => {
       video.play();
+
+      // Fix canvas size to match actual video size
+  const canvas = document.getElementById('overlay');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Optional: scale video element to fit container without stretching
+  video.style.width = video.videoWidth + 'px';
+  video.style.height = video.videoHeight + 'px';
+
       status.innerText = 'Align your face in front of the camera';
       startDetection();
     };
@@ -160,20 +170,9 @@ async function markFaceAttendance(class_id) {
 // ---------- FACE DETECTION ----------
 function startDetection() {
   const container = document.getElementById('video-container');
+  const canvas = document.getElementById('overlay');
 
-  // ✅ Create canvas once
-  let canvas = document.getElementById('overlay');
-  if (!canvas) {
-    canvas = faceapi.createCanvasFromMedia(video);
-    canvas.id = 'overlay';
-    canvas.style.position = 'absolute';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
-    canvas.style.zIndex = '2';
-    container.appendChild(canvas);
-  }
-
-  const displaySize = { width: video.videoWidth, height: video.videoHeight };
+  const displaySize = { width: container.clientWidth, height: container.clientHeight };
   faceapi.matchDimensions(canvas, displaySize);
 
   const options = new faceapi.TinyFaceDetectorOptions({
@@ -191,11 +190,8 @@ function startDetection() {
     if (detections.length > 0) {
       const resized = faceapi.resizeResults(detections, displaySize);
 
-      // ✅ Draw only blue bounding box
       faceapi.draw.drawDetections(canvas, resized);
-
-      // ⚠️ Skip pink landmarks
-      // faceapi.draw.drawFaceLandmarks(canvas, resized);
+      // faceapi.draw.drawFaceLandmarks(canvas, resized); // enable if needed
 
       status.innerText = '✅ Face detected. Marking attendance...';
 

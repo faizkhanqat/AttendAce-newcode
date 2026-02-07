@@ -42,9 +42,10 @@
     </p>
 
     <!-- VIDEO WRAPPER -->
-    <div id="video-container" class="w-full h-[300px] rounded-xl overflow-hidden border-4 border-[var(--accent)] bg-black relative">
-      <video id="video" autoplay muted></video>
-    </div>
+    <div id="video-container" class="w-full relative border-4 border-[var(--accent)] bg-black">
+  <video id="video" autoplay muted playsinline></video>
+  <canvas id="overlay" class="absolute top-0 left-0"></canvas>
+</div>
 
     <p id="status" class="text-sm text-[var(--muted)] mt-3 font-semibold">Initializing...</p>
 
@@ -74,11 +75,30 @@ document.querySelectorAll('button, a').forEach(el => {
   });
 });
 
-/* THEME TOGGLE */
+/* THEME TOGGLE – updated */
 const toggle = document.getElementById('themeToggle');
+
+function updateToggleButton() {
+  if (document.body.classList.contains('gaming')) {
+    toggle.innerText = 'GAMING';
+    toggle.style.background = '#22c55e';       // green accent
+    toggle.style.color = '#111';               // dark text
+    toggle.style.boxShadow = '0 0 20px rgba(34,197,94,0.5)';
+  } else {
+    toggle.innerText = 'OFFICIAL';
+    toggle.style.background = '#ffffff';       // official white
+    toggle.style.color = '#111827';            // official dark
+    toggle.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)';
+  }
+}
+
+// Initial state
+updateToggleButton();
+
+// On click – toggle class and update button style
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
-  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'OFFICIAL';
+  updateToggleButton();
 };
 
 /* REVEAL ANIMATION */
