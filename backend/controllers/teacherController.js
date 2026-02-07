@@ -9,7 +9,7 @@ exports.getProfile = async (req, res) => {
       'SELECT id, name, email, role, department, aviation_id FROM users WHERE id = ?',
       [req.user.id]
     );
-    res.json(rows[0]);
+    res.json({ user: rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
@@ -25,7 +25,7 @@ exports.updateProfile = async (req, res) => {
     if (!name || !email)
       return res.status(400).json({ message: 'Name and email required' });
 
-  pool.query(
+  await pool.query(
       'UPDATE users SET name = ?, email = ? WHERE id = ?',
       [name, email || null, req.user.id]
     );
