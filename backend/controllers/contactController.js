@@ -1,4 +1,4 @@
-const db = require('../config/db');
+const pool = require('../config/db');
 const axios = require('axios');
 const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
