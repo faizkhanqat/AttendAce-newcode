@@ -11,169 +11,247 @@
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- Local CSS -->
-<link rel="stylesheet" href="styles2.css">
+<style>
+  :root {
+    --accent: #2563eb;
+    --bg-official: #f8fafc;
+    --bg-gaming: radial-gradient(circle at top, #04120a, #020617);
+    --card-official: #ffffff;
+    --card-gaming: rgba(255,255,255,.08);
+    --text-official: #020617;
+    --text-gaming: #ffffff;
+    --muted-official: #64748b;
+    --muted-gaming: #9ca3af;
+    --radius: 1rem;
+  }
+
+  body {
+    font-family: Inter, system-ui, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: var(--bg-official);
+    color: var(--text-official);
+    transition: 0.4s ease;
+    min-height: 100vh;
+  }
+
+  body.gaming {
+    background: var(--bg-gaming);
+    color: var(--text-gaming);
+  }
+
+  /* GLASS CARD */
+  .glass {
+    background: var(--card-official);
+    backdrop-filter: blur(18px);
+    border-radius: 22px;
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    padding: 1.5rem;
+    transition: 0.4s ease;
+  }
+
+  body.gaming .glass {
+    background: var(--card-gaming);
+  }
+
+  /* BUTTONS */
+  .menu-btn {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-family: Roboto, sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s ease;
+    border: none;
+    width: 100%;
+    text-align: center;
+  }
+
+  body.gaming .menu-btn {
+    background: #111214;
+    color: #ffffff;
+    border-left: 4px solid #22c55e;
+    box-shadow: 0 0 10px rgba(34,197,94,0.5);
+  }
+
+  body.gaming .menu-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(34,197,94,0.8);
+  }
+
+  body:not(.gaming) .menu-btn {
+    background: #ffffff;
+    color: #111827;
+    border-left: 4px solid var(--accent);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  body:not(.gaming) .menu-btn:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+
+  /* FORM */
+  input, select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: inherit;
+    color: inherit;
+    outline: none;
+  }
+
+  input:read-only {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  /* HEADER */
+  header {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  /* GAMING BACKGROUND */
+  #bg-anim {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: 0.4s ease;
+  }
+  body.gaming #bg-anim { opacity: 1; }
+  #bg-anim::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(600px circle at 20% 10%, rgba(34,197,94,.18), transparent 40%),
+      radial-gradient(500px circle at 80% 30%, rgba(16,185,129,.14), transparent 45%),
+      radial-gradient(700px circle at 50% 80%, rgba(34,197,94,.12), transparent 50%);
+  }
+  #bg-anim::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(34,197,94,.4) 1px, transparent 1px);
+    background-size: 120px 120px;
+    animation: particles 25s linear infinite;
+    opacity: .4;
+  }
+  @keyframes particles { from { transform: translateY(0); } to { transform: translateY(-200px); } }
+</style>
 </head>
 
 <body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
 
-  <!-- GAMING BACKGROUND -->
-  <div id="bg-anim"></div>
+<div id="bg-anim"></div>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
 
-  <!-- CLICK SOUND -->
-  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<header class="reveal">
+  <h1 class="font-black text-lg tracking-tight">Settings</h1>
+</header>
 
-  <!-- HEADER -->
-  <header class="p-4 flex justify-between items-center reveal">
-    <h1 class="font-black text-lg tracking-tight">Settings</h1>
-  </header>
-
-  <!-- SETTINGS FORM -->
-  <div class="container glass reveal p-6 flex flex-col gap-4">
-    <form id="settingsForm" class="details-form flex flex-col gap-4">
-      <div class="form-group">
-        <label for="fullName">Full Name</label>
-        <input type="text" id="fullName" class="glass" required>
-      </div>
-
-      <div class="form-group">
-        <label for="userId">ID</label>
-        <input type="text" id="userId" class="glass" readonly>
-      </div>
-
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" class="glass" required>
-      </div>
-
-      <div class="form-group" id="departmentGroup">
-        <label for="department">Department</label>
-        <select id="department" class="glass" required>
-          <option value="CSE">CSE</option>
-          <option value="ECE">ECE</option>
-          <option value="EE">EE</option>
-          <option value="ME">ME</option>
-          <option value="CIV">CIV</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="mode">Mode</label>
-        <select id="mode" class="glass" required>
-          <option value="gaming">Gaming</option>
-          <option value="official">Official</option>
-        </select>
-      </div>
-    </form>
-
-    <div class="menu-options flex flex-col gap-3">
-      <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
-      <a href="#" class="menu-btn" id="backBtn">⬅️ Back to Dashboard</a>
-      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
+<div class="container glass reveal flex flex-col gap-4 mt-6">
+  <form id="settingsForm" class="flex flex-col gap-4">
+    <div>
+      <label for="fullName">Full Name</label>
+      <input type="text" id="fullName" required>
     </div>
+    <div>
+      <label for="userId">ID</label>
+      <input type="text" id="userId" readonly>
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" required>
+    </div>
+    <div id="departmentGroup">
+      <label for="department">Department</label>
+      <select id="department" required>
+        <option value="CSE">CSE</option>
+        <option value="ECE">ECE</option>
+        <option value="EE">EE</option>
+        <option value="ME">ME</option>
+        <option value="CIV">CIV</option>
+      </select>
+    </div>
+    <div>
+      <label for="mode">Mode</label>
+      <select id="mode" required>
+        <option value="gaming">Gaming</option>
+        <option value="official">Official</option>
+      </select>
+    </div>
+  </form>
+
+  <div class="flex flex-col gap-3 mt-4">
+    <button type="button" class="menu-btn" id="saveBtn">✔️ Save Changes</button>
+    <button type="button" class="menu-btn" id="backBtn">⬅️ Back to Dashboard</button>
+    <button type="button" class="menu-btn" id="logoutBtn">🚪 Logout</button>
   </div>
+</div>
 
-  <script>
-  // -------------------------------
-  // PLAY CLICK SOUND ON BUTTONS
-  // -------------------------------
-  const clickSound = document.getElementById('clickSound');
-  document.querySelectorAll('button').forEach(b => {
-    b.addEventListener('click', () => clickSound.play());
-  });
+<script>
+const clickSound = document.getElementById('clickSound');
+document.querySelectorAll('button').forEach(b => b.addEventListener('click', () => clickSound.play()));
 
-  // -------------------------------
-  // INIT USER & MODE
-  // -------------------------------
-  let user = localStorage.getItem('user');
-  try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
-  catch { user = null; }
+let user = localStorage.getItem('user');
+try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } catch { user = null; }
 
-  if (user?.mode === 'gaming') document.body.classList.add('gaming');
+document.addEventListener('DOMContentLoaded', () => {
+  if (!user) return;
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('token');
-    if (!user || !token) return window.location.href = 'login.html';
+  document.getElementById('fullName').value = user.name || '';
+  document.getElementById('userId').value = user.id || '';
+  document.getElementById('email').value = user.email || '';
+  document.getElementById('mode').value = user.mode || 'official';
+  document.getElementById('department').value = user.department || '';
 
-    // Set body mode
+  // Set gaming mode
+  if (user.mode === 'gaming') document.body.classList.add('gaming');
+
+  // Save button
+  document.getElementById('saveBtn').onclick = () => {
+    const updatedUser = {
+      ...user,
+      name: document.getElementById('fullName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      department: document.getElementById('department').value,
+      mode: document.getElementById('mode').value
+    };
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+
+    // Apply mode immediately
     document.body.classList.remove('gaming');
-    if (user.mode === 'gaming') document.body.classList.add('gaming');
+    if (updatedUser.mode === 'gaming') document.body.classList.add('gaming');
 
-    // Fill form fields
-    document.getElementById('fullName').value = user.name || '';
-    document.getElementById('userId').value = user.id || '';
-    document.getElementById('email').value = user.email || '';
-    document.getElementById('mode').value = user.mode || 'official';
+    alert('Profile updated!');
+  };
 
-    const departmentGroup = document.getElementById('departmentGroup');
-    const departmentSelect = document.getElementById('department');
+  // Back
+  document.getElementById('backBtn').onclick = () => {
+    window.location.href = 'student-dashboard.html';
+  };
 
-    if (user.role !== 'student') {
-      departmentGroup.style.display = 'none';
-      departmentSelect.required = false;
-    } else {
-      departmentSelect.value = user.department || '';
-    }
-
-    // -------------------------------
-    // SAVE CHANGES
-    // -------------------------------
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-      const updatedUser = {
-        name: document.getElementById('fullName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        gender: user.gender || null,
-        dob: user.dob || null,
-        mode: document.getElementById('mode').value
-      };
-      if (user.role === 'student') updatedUser.department = departmentSelect.value;
-
-      const endpoint = user.role === 'student'
-        ? 'https://attendace-zjzu.onrender.com/api/student/update'
-        : 'https://attendace-zjzu.onrender.com/api/teacher/update';
-
-      try {
-        const res = await fetch(endpoint, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + token 
-          },
-          body: JSON.stringify(updatedUser),
-        });
-        if (!res.ok) throw new Error('Update failed');
-        const data = await res.json();
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          document.body.classList.remove('gaming');
-          if (data.user.mode === 'gaming') document.body.classList.add('gaming');
-        }
-        alert(data.message || 'Profile updated successfully');
-      } catch (err) {
-        console.error('Update error:', err);
-        alert('Could not update profile');
-      }
-    });
-
-    // -------------------------------
-    // BACK TO DASHBOARD
-    // -------------------------------
-    document.getElementById('backBtn').addEventListener('click', () => {
-      window.location.href = user.role === 'student'
-        ? 'student-dashboard.html'
-        : 'teacher-dashboard.html';
-    });
-
-    // -------------------------------
-    // LOGOUT
-    // -------------------------------
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.clear();
-      window.location.href = 'login.html';
-    });
-
-  });
-  </script>
+  // Logout
+  document.getElementById('logoutBtn').onclick = () => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+  };
+});
+</script>
 
 </body>
 </html>
