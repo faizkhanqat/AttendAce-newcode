@@ -41,26 +41,26 @@
     <h2 class="text-2xl font-black mb-4">Settings</h2>
 
     <!-- SETTINGS FORM (from file 2) -->
-    <form id="settingsForm" class="details-form flex flex-col gap-4">
+    <form id="settingsForm" class="details-form flex flex-col gap-6">
       <div class="form-group">
-        <label for="fullName">Full Name</label>
-        <input type="text" id="fullName" class="glass" required>
+        <label for="fullName" class="block text-lg font-semibold mb-1">Full Name</label>
+        <input type="text" id="fullName" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
       </div>
 
       <div class="form-group">
-        <label for="userId">ID</label>
-        <input type="text" id="userId" class="glass" readonly>
+        <label for="userId" class="block text-lg font-semibold mb-1">ID</label>
+        <input type="text" id="userId" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" readonly>
       </div>
 
       <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" class="glass" required>
+        <label for="email" class="block text-lg font-semibold mb-1">Email Address</label>
+        <input type="email" id="email" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
       </div>
 
       <div class="form-group" id="departmentGroup">
-        <label for="department">Department</label>
-        <select id="department" class="glass" required>
-          <option value="CSE">CSE</option>
+        <label for="department" class="block text-lg font-semibold mb-1">Department</label>
+        <select id="department" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
+            <option value="CSE">CSE</option>
           <option value="ECE">ECE</option>
           <option value="EE">EE</option>
           <option value="ME">ME</option>
@@ -69,9 +69,9 @@
       </div>
 
       <div class="form-group">
-        <label for="mode">Mode</label>
-        <select id="mode" class="glass" required>
-          <option value="gaming">Gaming</option>
+        <label for="mode" class="block text-lg font-semibold mb-1">Mode</label>
+        <select id="mode" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
+            <option value="gaming">Gaming</option>
           <option value="official">Official</option>
         </select>
       </div>
@@ -79,8 +79,17 @@
 
     <!-- BUTTONS -->
     <div class="menu-options flex flex-col gap-3 mt-4">
-      <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
-<button class="menu-btn group w-full rounded-xl p-4 flex flex-col items-center"
+      <!-- <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button> -->
+      
+      <button class="menu-btn group w-full rounded-xl p-4 flex flex-col items-center" id="saveBtn">
+        <!-- Main row: Icon + Button name -->
+        <div class="flex items-center gap-3">
+      <img src="assets/save.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
+      <div class="text-lg">Save Changes</div>
+        </div>
+      </button>
+      
+      <button class="menu-btn group w-full rounded-xl p-4 flex flex-col items-center"
               onclick="window.location.href='student-dashboard.html'">
         <!-- Main row: Icon + Button name -->
         <div class="flex items-center gap-3">
@@ -88,7 +97,6 @@
       <div class="text-lg">Return to Dashboard</div>
         </div>
       </button>
-      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
     </div>
 
   </div>
