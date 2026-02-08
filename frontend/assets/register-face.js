@@ -34,8 +34,8 @@ async function loadModels() {
       faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
       faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
     ]);
-    status.innerText = 'Models loaded. Starting camera...';
-    await startVideo();
+    status.innerText = 'Models loaded.';
+    //await startVideo();
   } catch (err) {
     console.error('❌ Model loading error:', err);
     status.innerText = 'Failed to load face detection models.';
@@ -43,7 +43,19 @@ async function loadModels() {
 }
 
 async function startVideo() {
+
+  if (detectionInterval) {
+  clearInterval(detectionInterval);
+  detectionInterval = null;
+}
+if (video.srcObject) {
+  video.srcObject.getTracks().forEach(track => track.stop());
+}
   try {
+    
+    scanCompleted = false;
+lastDescriptor = null;
+lastScore = 0;
     const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
     video.srcObject = stream;
     video.onloadedmetadata = () => {
@@ -55,6 +67,7 @@ async function startVideo() {
     console.error('❌ Camera error:', err);
     status.innerText = 'Cannot access camera.';
   }
+  
 }
 
 function startDetection() {
@@ -156,24 +169,28 @@ async function checkFaceStatus() {
 
     const data = await res.json();
 
+    registeredDescriptor = data.face_encoding
+  ? new Float32Array(JSON.parse(data.face_encoding))
+  : null;
+
     if (data.registered) {
-      faceStatusBox.innerText = '✅ A monkey is already registered for this ID.';
-      faceStatusBox.style.backgroundColor = '#5f8b6e';
+  faceStatusBox.innerText = '✅ Face already registered';
+  faceStatusBox.style.backgroundColor = '#5f8b6e';
 
-      const descRes = await fetch(`${API_URL}/api/student/face/encoding`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+  // show UPDATE button only
+  document.getElementById('registerBtn').style.display = 'inline-block';
 
-      const descData = await descRes.json();
-      if (descData.face_encoding) {
-        registeredDescriptor = new Float32Array(
-          JSON.parse(descData.face_encoding)
-        );
-      }
-    } else {
-      faceStatusBox.innerText = '❌ No face registered';
-      faceStatusBox.style.backgroundColor = '#d9534f';
-    }
+  // ❌ DO NOT start camera
+} else {
+  faceStatusBox.innerText = '❌ No face registered';
+  faceStatusBox.style.backgroundColor = '#d9534f';
+
+  // auto-start camera
+  await startVideo();
+
+  // show REGISTER button only
+  document.getElementById('registerBtn').style.display = 'inline-block';
+}
   } catch (err) {
     console.error(err);
     faceStatusBox.innerText = '⚠️ Unable to check face status';
@@ -183,6 +200,11 @@ async function checkFaceStatus() {
 
 // ----------------- Register / Update Face -----------------
 document.getElementById('registerBtn').addEventListener('click', async () => {
+  if (!video.srcObject) {
+    await startVideo();     // 👈 start camera first
+    return;
+  }
+
   if (!lastDescriptor || lastScore < 0.9) {
     alert('Face scan not complete');
     return;
@@ -206,10 +228,18 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     const data = await res.json();
     alert(data.message || 'Face updated successfully');
     location.reload();
-  } catch (err) {
+  } catch {
     alert('Error updating face');
   }
 });
+
+// document.getElementById('updateBtn').addEventListener('click', async () => {
+//   scanCompleted = false;
+//   lastDescriptor = null;
+//   lastScore = 0;
+
+//   await startVideo();
+// });
 
 // ----------------- Back to Dashboard -----------------
 document
