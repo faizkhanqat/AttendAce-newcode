@@ -83,11 +83,14 @@
     Update Face
   </button>
 
-  <button
-    class="menu-btn press w-full h-[60px] rounded-xl"
-    onclick="window.location.href='student-dashboard.html'">
-    Back to Dashboard
-  </button>
+  <button class="menu-btn group w-full rounded-xl p-4 mt-6 flex flex-col items-center"
+              onclick="window.location.href='student-dashboard.html'">
+        <!-- Main row: Icon + Button name -->
+        <div class="flex items-center gap-3">
+      <img src="assets/back.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
+      <div class="text-lg">Return to Dashboard</div>
+        </div>
+      </button>
 </div>
 
   </div>
@@ -109,6 +112,16 @@ if (cachedUser?.mode === 'gaming') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
   if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
+if (cachedUser?.mode === 'gaming') {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
+} else {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
 }
 
 /* CLICK SOUND */

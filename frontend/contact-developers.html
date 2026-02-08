@@ -59,6 +59,14 @@
 
     <div id="statusMessage" class="mt-2 text-center text-sm text-[var(--muted)]"></div>
 
+    <button class="menu-btn group w-full rounded-xl mt-6 p-4 flex flex-col items-center"
+              onclick="window.location.href='student-dashboard.html'">
+        <!-- Main row: Icon + Button name -->
+        <div class="flex items-center gap-3">
+      <img src="assets/back.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
+      <div class="text-lg">Return to Dashboard</div>
+        </div>
+      </button>
   </div>
 </section>
 
@@ -75,6 +83,16 @@ if (cachedUser?.mode === 'gaming') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
   if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
+if (cachedUser?.mode === 'gaming') {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
+} else {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
 }
 
 /* CLICK SOUND */
