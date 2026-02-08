@@ -9,7 +9,7 @@ exports.markAttendance = async (req, res) => {
     const studentId = req.user.id;
     const { class_id, token } = req.body;
 
-    if (!class_id || !token)
+    if (!class_id || !token) 
       return res.status(400).json({ message: 'class_id and token are required' });
 
     // Check QR validity
@@ -60,14 +60,16 @@ exports.faceMarkAttendance = async (req, res) => {
     const { class_id } = req.body;
 
     // 🔐 Check if face is registered
-const [userRows] = await pool.query(
-  'SELECT face_encoding FROM students WHERE id = ? LIMIT 1',
+const [rows] = await pool.query(
+  'SELECT face_encoding FROM users WHERE id = ? AND role = "student" LIMIT 1',
   [studentId]
 );
-
-if (userRows.length === 0 || !userRows[0].face_encoding) {
-  return res.status(403).json({ message: 'Face not registered' });
+if (!rows.length || !rows[0].face_encoding) {
+  return res.status(400).json({
+    message: 'No registered face found for student'
+  });
 }
+
 
     if (!class_id)
       return res.status(400).json({ message: 'class_id is required' });
