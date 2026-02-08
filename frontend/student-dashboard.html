@@ -61,7 +61,7 @@
 
   <!-- Main row: Icon + Button name -->
   <div class="flex items-center gap-3">
-    <img src="assets/scan-qr.svg" alt="QR Scan" class="w-6 h-6">
+<img id="scanIcon" src="assets/scan-qr.svg" alt="QR Scan" class="w-6 h-6 transition-all duration-300">
     <div class="text-lg font-semibold">QR Attendance Scan</div>
   </div>
 
@@ -118,6 +118,12 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
   document.getElementById('themeToggle').innerText = 'GAMING';
+}
+
+if (cachedUser?.mode === 'gaming') {
+  scanIcon.style.filter = 'invert(1)'; // turns black to white
+} else {
+  scanIcon.style.filter = 'invert(0)';
 }
 
 
