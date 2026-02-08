@@ -73,8 +73,8 @@ classes.forEach(cls => {
     <span class="text-sm">${cls.teacher_name || cls.teacher_id}</span>
     <div class="text-right">
       <button
-        class="px-3 py-1 rounded-lg bg-gray-800 text-white text-sm
-               hover:bg-gray-700 hover:shadow-md transition"
+        class="px-3 py-1 rounded-lg bg-gray-500 text-white text-sm
+               hover:bg-gray-400 hover:shadow-md transition"
         onclick="unenroll(${cls.id}, this)">
         Unenroll
       </button>
@@ -131,7 +131,7 @@ function renderAvailableClasses(classes) {
       <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
       <div class="text-right">
         <button
-          class="px-3 py-1 rounded-lg bg-[#4b4ddb] text-white text-sm
+          class="px-3 py-1 rounded-lg bg-[#5FC26B] text-white text-sm
                  hover:opacity-90 hover:shadow-md transition"
           onclick="enroll(${cls.id}, '${escapeHtml(cls.name)}',
           '${escapeHtml(cls.teacher_name || cls.teacher_id)}')">

@@ -63,12 +63,20 @@
     </div>
   </button>
 
-  <button class="menu-btn group w-full h-[75px] rounded-xl" onclick="window.location.href='analytics-student.html'">
-    <div class="text-lg">Attendance Analytics</div>
+  <button class="menu-btn group w-full h-[75px] rounded-xl flex items-center gap-3 px-4" 
+        onclick="window.location.href='scanqr.html'">
+
+  <!-- SVG Icon -->
+  <img src="assets/scan-qr.svg" alt="QR Scan" class="w-6 h-6">
+
+  <!-- Texts -->
+  <div class="flex flex-col">
+    <div class="text-lg font-semibold">QR Attendance Scan</div>
     <div class="text-xs text-gray-500 mt-1 max-h-0 opacity-0 transition-all duration-300 group-hover:max-h-6 group-hover:opacity-100">
-      View detailed insights and statistics of your attendance records.
+      Scan a valid QR code to securely mark your attendance.
     </div>
-  </button>
+  </div>
+</button>
 
   <button class="menu-btn group w-full h-[75px] rounded-xl" onclick="window.location.href='student-classes.html'">
     <div class="text-lg">Class Management</div>
