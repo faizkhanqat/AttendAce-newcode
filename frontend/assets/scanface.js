@@ -75,9 +75,7 @@ async function startVideo() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
 
-  // Optional: scale video element to fit container without stretching
-  video.style.width = video.videoWidth + 'px';
-  video.style.height = video.videoHeight + 'px';
+
 
       status.innerText = 'Align your face in front of the camera';
       startDetection();
