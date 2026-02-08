@@ -60,8 +60,7 @@
         onclick="window.location.href='scanqr.html'">
   <!-- Main row: Icon + Button name -->
   <div class="flex items-center gap-3">
-<img id="scanIcon" src="assets/scan-qr.svg" alt="QR Scan" class="w-10 h-10 transition-all duration-300">
-    <div class="text-xl font-semibold">QR Attendance Scan</div>
+<img src="assets/scan-qr.svg" alt="QR Scan" class="scan-icon w-10 h-10 transition-all duration-300">    <div class="text-xl font-semibold">QR Attendance Scan</div>
   </div>
   <!-- Hover text below -->
   <div class="text-xs text-gray-500 mt-2 max-h-0 opacity-0 transition-all duration-300 group-hover:max-h-20 group-hover:opacity-100">
@@ -73,8 +72,7 @@
         onclick="window.location.href='analytics-student.html'">
   <!-- Main row: Icon + Button name -->
   <div class="flex items-center gap-3">
-    <img id="scanIcon" src="assets/analytics.svg" alt="QR Scan" class="w-10 h-10 transition-all duration-300">
-    <div class="text-xl font-semibold">Attendance Analytics</div>
+<img src="assets/analytics.svg" alt="Analytics" class="scan-icon w-10 h-10 transition-all duration-300">    <div class="text-xl font-semibold">Attendance Analytics</div>
   </div>
   <!-- Hover text below -->
   <div class="text-xs text-gray-500 mt-2 max-h-0 opacity-0 transition-all duration-300 group-hover:max-h-20 group-hover:opacity-100">
@@ -82,12 +80,18 @@
   </div>
 </button>
 
-  <button class="menu-btn group w-full h-[75px] rounded-xl" onclick="window.location.href='student-classes.html'">
-    <div class="text-lg">Class Management</div>
-    <div class="text-xs text-gray-500 mt-1 max-h-0 opacity-0 transition-all duration-300 group-hover:max-h-6 group-hover:opacity-100">
-      View and manage your enrolled classes efficiently.
-    </div>
-  </button>
+<button class="menu-btn group w-full rounded-xl p-4 flex flex-col items-center"
+        onclick="window.location.href='student-classes.html'">
+  <!-- Main row: Icon + Button name -->
+  <div class="flex items-center gap-3">
+<img src="assets/classes.svg" alt="Classes" class="scan-icon w-10 h-10 transition-all duration-300">    <div class="text-xl font-semibold">Class Management</div>
+  </div>
+  <!-- Hover text below -->
+  <div class="text-xs text-gray-500 mt-2 max-h-0 opacity-0 transition-all duration-300 group-hover:max-h-20 group-hover:opacity-100">
+    View and manage your enrolled classes efficiently.
+  </div>
+</button>
+
 
   <button class="menu-btn group w-full h-[75px] rounded-xl" onclick="window.location.href='settings.html'">
     <div class="text-lg">Account Settings</div>
@@ -124,9 +128,13 @@ if (cachedUser?.mode === 'gaming') {
 }
 
 if (cachedUser?.mode === 'gaming') {
-  scanIcon.style.filter = 'invert(1)'; // turns black to white
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
 } else {
-  scanIcon.style.filter = 'invert(0)';
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
 }
 
 
