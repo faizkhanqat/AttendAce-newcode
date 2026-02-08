@@ -41,16 +41,19 @@
 
     <!-- ⭐ Star rating -->
     <div id="starRating" class="mb-4">
-      <span data-star="1" class="cursor-pointer text-3xl">☆</span>
-      <span data-star="2" class="cursor-pointer text-3xl">☆</span>
-      <span data-star="3" class="cursor-pointer text-3xl">☆</span>
-      <span data-star="4" class="cursor-pointer text-3xl">☆</span>
+      <span data-star="1" class="cursor-pointer text-3xl mr-2">☆</span>
+      <span data-star="2" class="cursor-pointer text-3xl mr-2">☆</span>
+      <span data-star="3" class="cursor-pointer text-3xl mr-2">☆</span>
+      <span data-star="4" class="cursor-pointer text-3xl mr-2">☆</span>
       <span data-star="5" class="cursor-pointer text-3xl">☆</span>
     </div>
 
-    <textarea id="feedbackMessage" placeholder="Optional: Type your message here (max 500 characters)" class="w-full p-3 rounded-lg border"></textarea>
-
-    <button id="sendBtn" class="mt-4 w-full py-3 rounded-lg bg-[var(--accent)] text-white font-bold">
+<textarea id="feedbackMessage" 
+          placeholder="Optional: Type your message here (max 500 characters)"
+          class="w-full p-4 mb-6 rounded-lg border
+                 bg-[var(--card)] text-[var(--text)] 
+                 placeholder:text-[var(--muted)]"></textarea>
+    <button id="sendBtn" class="mt-6 w-full py-3 rounded-lg bg-[var(--accent)] text-white font-bold">
       Send Feedback
     </button>
 
