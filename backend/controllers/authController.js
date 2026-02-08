@@ -42,7 +42,7 @@ const mode = role === 'student' ? 'gaming' : 'official';
 
 const [result] = await pool.query(
   'INSERT INTO users (name, email, password_hash, role, gender, dob, department, mode) VALUES (?, ?, ?, ?, ?, ?, ? , ?)',
-  [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null]
+  [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null, mode]
 );
 
 // Generate aviation_id
