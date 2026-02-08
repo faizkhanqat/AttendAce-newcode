@@ -1,103 +1,122 @@
+<!-- contact-developers.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Developers - AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
 
-    .container {
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      max-width: 500px;
-      width: 100%;
-    }
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    h2 {
-      color: #2d6a4f;
-      margin-bottom: 20px;
-      text-align: center;
-    }
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-    textarea {
-      width: 100%;
-      min-height: 150px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      resize: vertical;
-      font-size: 14px;
-    }
-
-    button {
-      background: #2d6a4f;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 15px;
-      width: 100%;
-      transition: background 0.3s;
-    }
-
-    button:hover {
-      background: #1b4332;
-    }
-
-    .message {
-      margin-top: 15px;
-      font-size: 14px;
-      color: #1b4332;
-      text-align: center;
-    }
-  </style>
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="styles2.css">
 </head>
-<body>
 
-  <div class="container">
-    <h2>Contact Developers</h2>
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
 
-<!-- ⭐ Star rating -->
-<div id="starRating" style="text-align:center; margin-bottom:15px;">
-  <span data-star="1" style="font-size:30px; cursor:pointer;">☆</span>
-  <span data-star="2" style="font-size:30px; cursor:pointer;">☆</span>
-  <span data-star="3" style="font-size:30px; cursor:pointer;">☆</span>
-  <span data-star="4" style="font-size:30px; cursor:pointer;">☆</span>
-  <span data-star="5" style="font-size:30px; cursor:pointer;">☆</span>
-</div>
+<!-- GAMING BACKGROUND -->
+<div id="bg-anim"></div>
 
-<textarea id="feedbackMessage" placeholder="Optional: Type your message here (max 500 characters)..."></textarea>
-<button id="sendBtn">Send Feedback</button>
-<div class="message" id="statusMessage"></div>
+<!-- CLICK SOUND -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
+
+<!-- HEADER -->
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+    OFFICIAL
+  </button>
+</header>
+
+<section class="px-5 mt-4 reveal">
+  <div class="glass p-6 relative overflow-hidden text-center">
+
+    <h2 class="text-2xl font-black mb-1">Contact Developers</h2>
+
+    <!-- ⭐ Star rating -->
+    <div id="starRating" class="mb-4">
+      <span data-star="1" class="cursor-pointer text-3xl">☆</span>
+      <span data-star="2" class="cursor-pointer text-3xl">☆</span>
+      <span data-star="3" class="cursor-pointer text-3xl">☆</span>
+      <span data-star="4" class="cursor-pointer text-3xl">☆</span>
+      <span data-star="5" class="cursor-pointer text-3xl">☆</span>
+    </div>
+
+    <textarea id="feedbackMessage" placeholder="Optional: Type your message here (max 500 characters)" class="w-full p-3 rounded-lg border"></textarea>
+
+    <button id="sendBtn" class="mt-4 w-full py-3 rounded-lg bg-[var(--accent)] text-white font-bold">
+      Send Feedback
+    </button>
+
+    <div id="statusMessage" class="mt-2 text-center text-sm text-[var(--muted)]"></div>
+
   </div>
+</section>
 
-  <script>
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user'));
+<script>
 
-    // Redirect to login if not logged in
-    if (!token || !user) {
-      window.location.href = 'login.html';
-    }
+// ⚡ Apply mode instantly (before render)
+const cachedUser = JSON.parse(localStorage.getItem('user'));
 
-    const sendBtn = document.getElementById('sendBtn');
-    const feedbackMessage = document.getElementById('feedbackMessage');
-    const statusMessage = document.getElementById('statusMessage');
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'GAMING';
+} else if (cachedUser?.mode === 'official') {
+  document.body.classList.remove('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
+/* CLICK SOUND */
+const clickSound = document.getElementById('clickSound');
+
+// Play click sound for all buttons and links
+document.querySelectorAll('button, a').forEach(el => {
+  el.addEventListener('click', () => {
+    clickSound.currentTime = 0; // rewind in case still playing
+    clickSound.play().catch(err => {
+      console.log("Click sound blocked by browser:", err);
+    });
+  });
+});
+
+/* THEME TOGGLE */
+const toggle = document.getElementById('themeToggle');
+toggle.onclick = () => {
+  document.body.classList.toggle('gaming');
+  toggle.innerText = document.body.classList.contains('gaming')
+    ? 'GAMING'
+    : 'OFFICIAL';
+};
+
+/* REVEAL ANIMATION */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('show');
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+
+const token = localStorage.getItem('token');
+const user = JSON.parse(localStorage.getItem('user'));
+
+// Redirect to login if not logged in
+if (!token || !user) {
+  window.location.href = 'login.html';
+}
+
+const sendBtn = document.getElementById('sendBtn');
+const feedbackMessage = document.getElementById('feedbackMessage');
+const statusMessage = document.getElementById('statusMessage');
 
 let selectedRating = 0;
 const stars = document.querySelectorAll('#starRating span');
@@ -151,9 +170,6 @@ sendBtn.addEventListener('click', async () => {
     sendBtn.disabled = false;
   }
 });
-
-  
-  </script>
-
+</script>
 </body>
 </html>
