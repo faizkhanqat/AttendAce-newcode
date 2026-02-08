@@ -2,6 +2,7 @@ let video;
 let status;
 let detectionInterval = null;
 let hasMarkedAttendance = false;
+let registeredDescriptor = null;
 
 console.log('✅ scanface.js loaded');
 
@@ -30,9 +31,30 @@ window.addEventListener('DOMContentLoaded', async () => {
     return; // ✅ Skip camera and detection
   }
 
+  // Step 2.5: Get registered face
+registeredDescriptor = await getRegisteredFace();
+if (!registeredDescriptor) {
+  status.innerText = '❌ No face registered';
+  return; // ❌ do not open camera
+}
+
   // Step 3: Start camera and face detection
   await init();
 });
+
+
+async function getRegisteredFace() {
+  const token = localStorage.getItem('token');
+  const res = await fetch('/api/student/face/encoding', {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  const data = await res.json();
+
+  if (!data.face_encoding) return null;
+  return new Float32Array(JSON.parse(data.face_encoding));
+}
+
+
 
 // ---------- LOAD FACEAPI MODELS ----------
 async function init() {
@@ -181,27 +203,40 @@ function startDetection() {
   detectionInterval = setInterval(async () => {
     if (hasMarkedAttendance) return;
 
-    const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks();
-    const ctx = canvas.getContext('2d');
+const detection = await faceapi
+  .detectSingleFace(video, options)
+  .withFaceLandmarks()
+  .withFaceDescriptor();
+      const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    if (detections.length > 0) {
-      const resized = faceapi.resizeResults(detections, displaySize);
+    if (detection) {
+  const resized = faceapi.resizeResults(detection, displaySize);
+  faceapi.draw.drawDetections(canvas, resized);
 
-      faceapi.draw.drawDetections(canvas, resized);
-      // faceapi.draw.drawFaceLandmarks(canvas, resized); // enable if needed
+  // 🔐 FACE MATCH CHECK (ADD HERE)
+  const distance = faceapi.euclideanDistance(
+    detection.descriptor,
+    registeredDescriptor
+  );
 
-      status.innerText = '✅ Face detected. Marking attendance...';
+  if (distance > 0.6) {
+    status.innerText = '❌ Face does not match registered face';
+    clearInterval(detectionInterval);
+    return;
+  }
 
-      const activeClass = await getActiveClass();
-      if (!activeClass) {
-        status.innerText = '⏳ No active class right now';
-        clearInterval(detectionInterval);
-        return;
-      }
+  status.innerText = '✅ Face matched. Marking attendance...';
 
-      await markFaceAttendance(activeClass.class_id);
-    } else {
+  const activeClass = await getActiveClass();
+  if (!activeClass) {
+    status.innerText = '⏳ No active class right now';
+    clearInterval(detectionInterval);
+    return;
+  }
+
+  await markFaceAttendance(activeClass.class_id);
+} else {
       status.innerText = 'No face detected...';
     }
   }, 400);

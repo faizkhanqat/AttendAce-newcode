@@ -59,6 +59,16 @@ exports.faceMarkAttendance = async (req, res) => {
     const studentId = req.user.id;
     const { class_id } = req.body;
 
+    // 🔐 Check if face is registered
+const [userRows] = await pool.query(
+  'SELECT face_encoding FROM students WHERE id = ? LIMIT 1',
+  [studentId]
+);
+
+if (userRows.length === 0 || !userRows[0].face_encoding) {
+  return res.status(403).json({ message: 'Face not registered' });
+}
+
     if (!class_id)
       return res.status(400).json({ message: 'class_id is required' });
 
