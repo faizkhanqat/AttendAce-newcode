@@ -115,14 +115,6 @@ const observer = new IntersectionObserver(entries => {
 
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-
-const token = localStorage.getItem('token');
-const user = JSON.parse(localStorage.getItem('user'));
-
-// Redirect to login if not logged in
-if (!token || !user) {
-  window.location.href = 'login.html';
-}
 </script>
 <script src="assets/student-classes.js"></script>
 </body>
