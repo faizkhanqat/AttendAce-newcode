@@ -81,6 +81,20 @@
 <script src="assets/scanface.js"></script>
 
 <script>
+
+// ⚡ Apply mode instantly (before render)
+const cachedUser = JSON.parse(localStorage.getItem('user'));
+
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'GAMING';
+} else if (cachedUser?.mode === 'official') {
+  document.body.classList.remove('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
 /* CLICK SOUND */
 const clickSound = document.getElementById('clickSound');
 

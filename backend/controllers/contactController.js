@@ -10,11 +10,19 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 const sendFeedback = async (req, res) => {
-  const { userId, message } = req.body;
+  const { userId, rating, message } = req.body;
 
-  if (!userId || !message) {
-    return res.status(400).json({ message: 'User ID and message are required' });
-  }
+  if (!userId) {
+  return res.status(400).json({ message: 'User ID is required' });
+}
+
+if (!rating || rating < 1 || rating > 5) {
+  return res.status(400).json({ message: 'Please provide a valid star rating (1-5).' });
+}
+
+if (message && message.length > 500) {
+  return res.status(400).json({ message: 'Message too long. Max 500 characters allowed.' });
+}
 
   try {
     const [users] = await pool.query(
@@ -39,18 +47,23 @@ Feedback from AttendAce user:
 Name: ${user.name}
 Email: ${user.email}
 Role: ${user.role}
+Rating: ${rating} ⭐
 
 Message:
-${message}
-      `,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding:20px; background:#f9fafb;">
-          <h2 style="color:#2d6a4f;">New Feedback from ${user.name} (${user.role})</h2>
-          <p><strong>Email:</strong> ${user.email}</p>
-          <p><strong>Message:</strong></p>
-          <div style="padding:12px; background:#fff; border-radius:8px; border:1px solid #ddd;">${message}</div>
-        </div>
-      `
+${message || '(no message provided)'}
+`,
+
+html: `
+<div style="font-family: Arial, sans-serif; padding:20px; background:#f9fafb;">
+  <h2 style="color:#2d6a4f;">New Feedback from ${user.name} (${user.role})</h2>
+  <p><strong>Email:</strong> ${user.email}</p>
+  <p><strong>Rating:</strong> ${rating} ⭐</p>
+  <p><strong>Message:</strong></p>
+  <div style="padding:12px; background:#fff; border-radius:8px; border:1px solid #ddd;">
+    ${message || '(no message provided)'}
+  </div>
+</div>
+`
     });
 
     // -------------------- Send Telegram (HTML) --------------------
@@ -61,10 +74,11 @@ ${message}
 <b>Name:</b> ${user.name}
 <b>Email:</b> ${user.email}
 <b>Role:</b> ${user.role}
+<b>Rating:</b> ${rating} ⭐
 
 <b>Message:</b>
-<pre>${message}</pre>
-      `;
+<pre>${message || '(no message provided)'}</pre>
+`;
 
       try {
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {

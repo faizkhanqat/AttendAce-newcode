@@ -71,9 +71,19 @@
 
   <div class="container">
     <h2>Contact Developers</h2>
-    <textarea id="feedbackMessage" placeholder="Type your message here..."></textarea>
-    <button id="sendBtn">Send Message</button>
-    <div class="message" id="statusMessage"></div>
+
+<!-- ⭐ Star rating -->
+<div id="starRating" style="text-align:center; margin-bottom:15px;">
+  <span data-star="1" style="font-size:30px; cursor:pointer;">☆</span>
+  <span data-star="2" style="font-size:30px; cursor:pointer;">☆</span>
+  <span data-star="3" style="font-size:30px; cursor:pointer;">☆</span>
+  <span data-star="4" style="font-size:30px; cursor:pointer;">☆</span>
+  <span data-star="5" style="font-size:30px; cursor:pointer;">☆</span>
+</div>
+
+<textarea id="feedbackMessage" placeholder="Optional: Type your message here (max 500 characters)..."></textarea>
+<button id="sendBtn">Send Feedback</button>
+<div class="message" id="statusMessage"></div>
   </div>
 
   <script>
@@ -89,45 +99,60 @@
     const feedbackMessage = document.getElementById('feedbackMessage');
     const statusMessage = document.getElementById('statusMessage');
 
-    sendBtn.addEventListener('click', async () => {
-      const message = feedbackMessage.value.trim();
-      if (!message) {
-        statusMessage.textContent = 'Please enter a message before sending.';
-        return;
-      }
+let selectedRating = 0;
+const stars = document.querySelectorAll('#starRating span');
 
-      sendBtn.disabled = true;
-      statusMessage.textContent = 'Sending...';
-
-      try {
-        const response = await fetch('/api/contact/contact-developers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            message
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          statusMessage.textContent = data.message;
-          feedbackMessage.value = '';
-        } else {
-          statusMessage.textContent = data.message || 'Error sending message.';
-        }
-
-      } catch (err) {
-        console.error(err);
-        statusMessage.textContent = 'Server error. Please try again later.';
-      } finally {
-        sendBtn.disabled = false;
-      }
+stars.forEach(star => {
+  star.addEventListener('click', () => {
+    selectedRating = star.dataset.star;
+    stars.forEach(s => {
+      s.textContent = s.dataset.star <= selectedRating ? '⭐' : '☆';
     });
+  });
+});
+
+sendBtn.addEventListener('click', async () => {
+  const message = feedbackMessage.value.trim();
+
+  if (!selectedRating) {
+    statusMessage.textContent = 'Please select a star rating.';
+    return;
+  }
+
+  if (message.length > 500) {
+    statusMessage.textContent = 'Message too long. Max 500 characters allowed.';
+    return;
+  }
+
+  sendBtn.disabled = true;
+  statusMessage.textContent = 'Sending...';
+
+  try {
+    const response = await fetch('/api/contact/contact-developers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        userId: user.id,
+        rating: selectedRating,
+        message
+      })
+    });
+
+    const data = await response.json();
+    statusMessage.textContent = response.ok ? data.message : (data.message || 'Error sending feedback.');
+    if (response.ok) feedbackMessage.value = '';
+  } catch (err) {
+    console.error(err);
+    statusMessage.textContent = 'Server error. Please try again later.';
+  } finally {
+    sendBtn.disabled = false;
+  }
+});
+
+  
   </script>
 
 </body>
