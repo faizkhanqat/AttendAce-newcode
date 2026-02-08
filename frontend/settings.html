@@ -80,11 +80,15 @@
     <!-- BUTTONS -->
     <div class="menu-options flex flex-col gap-3 mt-4">
       <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
-<button class="menu-btn group w-full rounded-xl p-4 flex items-center"
-        onclick="window.location.href='student-dashboard.html'">
-  <img src="assets/back.svg" alt="Back" class="scan-icon w-6 h-6 mr-2">
-  <span class="text-lg">Return to Dashboard</span>
-</button>      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
+<button class="menu-btn group w-full rounded-xl p-4 flex flex-col items-center"
+              onclick="window.location.href='student-dashboard.html'">
+        <!-- Main row: Icon + Button name -->
+        <div class="flex items-center gap-3">
+      <img src="assets/back.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
+      <div class="text-lg">Return to Dashboard</div>
+        </div>
+      </button>
+      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
     </div>
 
   </div>
@@ -99,15 +103,21 @@ if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
   const toggleBtn = document.getElementById('themeToggle');
   if (toggleBtn) toggleBtn.innerText = 'GAMING';
-} else {
+} else if (cachedUser?.mode === 'official') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
   if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
 }
 
-document.querySelectorAll('.scan-icon').forEach(icon => {
-  icon.style.filter = cachedUser?.mode === 'gaming' ? 'invert(1)' : 'invert(0)';
-});
+if (cachedUser?.mode === 'gaming') {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
+} else {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
+}
 
 // -------------------------------
 // CLICK SOUND
