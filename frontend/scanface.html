@@ -98,6 +98,17 @@ if (cachedUser?.mode === 'gaming') {
   if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
 }
 
+if (cachedUser?.mode === 'gaming') {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
+} else {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
+}
+
+
 /* CLICK SOUND */
 const clickSound = document.getElementById('clickSound');
 

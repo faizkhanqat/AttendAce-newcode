@@ -1,102 +1,46 @@
+<!--settings.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Settings | AttendAce</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Developers - AttendAce</title>
 
-<!-- Tailwind + Fonts -->
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<!-- Local CSS -->
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="styles2.css">
 </head>
-
-<style>
-  :root {
-    --accent: #2563eb;
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --text: #020617;
-    --muted: #64748b;
-    --radius: 1rem;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-  }
-
-  .page { width: 100%; max-width: 400px; }
-  .container.glass {
-    background: var(--card);
-    backdrop-filter: blur(18px);
-    border-radius: var(--radius);
-    border: 1px solid rgba(0,0,0,0.08);
-    padding: 2rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-  }
-
-  h1 { text-align: center; margin-bottom: 1rem; font-weight: 700; font-size: 1.5rem; }
-
-  form { display: flex; flex-direction: column; gap: 1rem; }
-
-  .form-group label {
-    display: block;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-  }
-
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 0.6rem 0.8rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 0.5rem;
-    font-size: 1rem;
-  }
-
-  .menu-btn {
-    background: var(--accent);
-    color: #fff;
-    padding: 0.7rem;
-    font-size: 1rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 0.6rem;
-    cursor: pointer;
-    transition: 0.2s ease;
-  }
-
-  .menu-btn:hover { background: #1d4ed8; }
-
-  .hidden { display: none; }
-</style>
 
 <body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
 
-  <!-- GAMING BACKGROUND -->
-  <div id="bg-anim"></div>
+<!-- GAMING BACKGROUND -->
+<div id="bg-anim"></div>
 
-  <!-- CLICK SOUND -->
-  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+<!-- CLICK SOUND -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
 
-  <!-- HEADER -->
-  <header class="p-4 flex justify-between items-center reveal">
-    <h1 class="font-black text-lg tracking-tight">Settings</h1>
-  </header>
+<!-- HEADER -->
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+    OFFICIAL
+  </button>
+</header>
 
-  <!-- SETTINGS FORM -->
-  <div class="container glass reveal p-6 flex flex-col gap-4">
+<section class="px-5 mt-4 reveal">
+  <div class="glass p-6 relative overflow-hidden text-center">
+
+    <!-- Settings Page Title -->
+    <h2 class="text-2xl font-black mb-4">Settings</h2>
+
+    <!-- SETTINGS FORM (from file 2) -->
     <form id="settingsForm" class="details-form flex flex-col gap-4">
       <div class="form-group">
         <label for="fullName">Full Name</label>
@@ -133,114 +77,143 @@
       </div>
     </form>
 
-    <div class="menu-options flex flex-col gap-3">
+    <!-- BUTTONS -->
+    <div class="menu-options flex flex-col gap-3 mt-4">
       <button type="button" class="menu-btn primary" id="saveBtn">✔️ Save Changes</button>
-      <a href="#" class="menu-btn" id="backBtn">⬅️ Back to Dashboard</a>
-      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
+<button class="menu-btn group w-full rounded-xl p-4 flex items-center"
+        onclick="window.location.href='student-dashboard.html'">
+  <img src="assets/back.svg" alt="Back" class="scan-icon w-6 h-6 mr-2">
+  <span class="text-lg">Return to Dashboard</span>
+</button>      <button class="menu-btn danger" id="logoutBtn">🚪 Logout</button>
     </div>
+
   </div>
+</section>
 
-  <script>
-  // -------------------------------
-  // PLAY CLICK SOUND ON BUTTONS
-  // -------------------------------
-  const clickSound = document.getElementById('clickSound');
-  document.querySelectorAll('button').forEach(b => {
-    b.addEventListener('click', () => clickSound.play());
+<script>
+
+// ⚡ Apply mode instantly (before render)
+const cachedUser = JSON.parse(localStorage.getItem('user'));
+
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'GAMING';
+} else {
+  document.body.classList.remove('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
+document.querySelectorAll('.scan-icon').forEach(icon => {
+  icon.style.filter = cachedUser?.mode === 'gaming' ? 'invert(1)' : 'invert(0)';
+});
+
+// -------------------------------
+// CLICK SOUND
+// -------------------------------
+const clickSound = document.getElementById('clickSound');
+document.querySelectorAll('button, a').forEach(el => {
+  el.addEventListener('click', () => {
+    clickSound.currentTime = 0;
+    clickSound.play().catch(err => console.log("Click sound blocked:", err));
   });
+});
+
+// -------------------------------
+// THEME TOGGLE
+// -------------------------------
+const toggle = document.getElementById('themeToggle');
+toggle.onclick = () => {
+  document.body.classList.toggle('gaming');
+  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'OFFICIAL';
+};
+
+// -------------------------------
+// REVEAL ANIMATION
+// -------------------------------
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// -------------------------------
+// INIT USER & FORM
+// -------------------------------
+const token = localStorage.getItem('token');
+let user = JSON.parse(localStorage.getItem('user'));
+
+if (!token || !user) window.location.href = 'login.html';
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Set mode
+  document.body.classList.remove('gaming');
+  if (user.mode === 'gaming') document.body.classList.add('gaming');
+
+  // Fill form
+  document.getElementById('fullName').value = user.name || '';
+  document.getElementById('userId').value = user.id || '';
+  document.getElementById('email').value = user.email || '';
+  document.getElementById('mode').value = user.mode || 'official';
+
+  const departmentGroup = document.getElementById('departmentGroup');
+  const departmentSelect = document.getElementById('department');
+  if (user.role !== 'student') {
+    departmentGroup.style.display = 'none';
+    departmentSelect.required = false;
+  } else {
+    departmentSelect.value = user.department || '';
+  }
 
   // -------------------------------
-  // INIT USER & MODE
+  // SAVE CHANGES
   // -------------------------------
-  let user = localStorage.getItem('user');
-  try { user = user && user !== 'undefined' ? JSON.parse(user) : null; } 
-  catch { user = null; }
+  document.getElementById('saveBtn').addEventListener('click', async () => {
+    const updatedUser = {
+      name: document.getElementById('fullName').value.trim(),
+      email: document.getElementById('email').value.trim(),
+      gender: user.gender || null,
+      dob: user.dob || null,
+      mode: document.getElementById('mode').value
+    };
+    if (user.role === 'student') updatedUser.department = departmentSelect.value;
 
-  if (user?.mode === 'gaming') document.body.classList.add('gaming');
+    const endpoint = user.role === 'student'
+      ? 'https://attendace-zjzu.onrender.com/api/student/update'
+      : 'https://attendace-zjzu.onrender.com/api/teacher/update';
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    const token = localStorage.getItem('token');
-    if (!user || !token) return window.location.href = 'login.html';
-
-    // Set body mode
-    document.body.classList.remove('gaming');
-    if (user.mode === 'gaming') document.body.classList.add('gaming');
-
-    // Fill form fields
-    document.getElementById('fullName').value = user.name || '';
-    document.getElementById('userId').value = user.id || '';
-    document.getElementById('email').value = user.email || '';
-    document.getElementById('mode').value = user.mode || 'official';
-
-    const departmentGroup = document.getElementById('departmentGroup');
-    const departmentSelect = document.getElementById('department');
-
-    if (user.role !== 'student') {
-      departmentGroup.style.display = 'none';
-      departmentSelect.required = false;
-    } else {
-      departmentSelect.value = user.department || '';
-    }
-
-    // -------------------------------
-    // SAVE CHANGES
-    // -------------------------------
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-      const updatedUser = {
-        name: document.getElementById('fullName').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        gender: user.gender || null,
-        dob: user.dob || null,
-        mode: document.getElementById('mode').value
-      };
-      if (user.role === 'student') updatedUser.department = departmentSelect.value;
-
-      const endpoint = user.role === 'student'
-        ? 'https://attendace-zjzu.onrender.com/api/student/update'
-        : 'https://attendace-zjzu.onrender.com/api/teacher/update';
-
-      try {
-        const res = await fetch(endpoint, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            Authorization: 'Bearer ' + token 
-          },
-          body: JSON.stringify(updatedUser),
-        });
-        if (!res.ok) throw new Error('Update failed');
-        const data = await res.json();
-        if (data.user) {
-          localStorage.setItem('user', JSON.stringify(data.user));
-          document.body.classList.remove('gaming');
-          if (data.user.mode === 'gaming') document.body.classList.add('gaming');
-        }
-        alert(data.message || 'Profile updated successfully');
-      } catch (err) {
-        console.error('Update error:', err);
-        alert('Could not update profile');
+    try {
+      const res = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token 
+        },
+        body: JSON.stringify(updatedUser),
+      });
+      if (!res.ok) throw new Error('Update failed');
+      const data = await res.json();
+      if (data.user) {
+        localStorage.setItem('user', JSON.stringify(data.user));
+        document.body.classList.remove('gaming');
+        if (data.user.mode === 'gaming') document.body.classList.add('gaming');
       }
-    });
-
-    // -------------------------------
-    // BACK TO DASHBOARD
-    // -------------------------------
-    document.getElementById('backBtn').addEventListener('click', () => {
-      window.location.href = user.role === 'student'
-        ? 'student-dashboard.html'
-        : 'teacher-dashboard.html';
-    });
-
-    // -------------------------------
-    // LOGOUT
-    // -------------------------------
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      localStorage.clear();
-      window.location.href = 'login.html';
-    });
-
+      alert(data.message || 'Profile updated successfully');
+    } catch (err) {
+      console.error('Update error:', err);
+      alert('Could not update profile');
+    }
   });
-  </script>
 
+  // -------------------------------
+  // LOGOUT
+  // -------------------------------
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.clear();
+    window.location.href = 'login.html';
+  });
+});
+</script>
 </body>
 </html>
