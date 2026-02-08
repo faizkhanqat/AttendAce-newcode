@@ -59,11 +59,18 @@ async function startVideo() {
 
 function startDetection() {
   const container = document.getElementById('video-container');
-  const canvas = faceapi.createCanvasFromMedia(video);
-  container.appendChild(canvas);
+  const canvas = document.getElementById('overlay');
 
-  const displaySize = { width: video.videoWidth, height: video.videoHeight };
-  faceapi.matchDimensions(canvas, displaySize);
+
+  const displaySize = {
+  width: container.clientWidth,
+  height: container.clientHeight
+};
+
+canvas.width = displaySize.width;
+canvas.height = displaySize.height;
+
+faceapi.matchDimensions(canvas, displaySize);
 
   const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 });
 
@@ -87,10 +94,9 @@ function startDetection() {
       const resized = faceapi.resizeResults(detection, displaySize);
       const box = resized.detection.box;
 
-      ctx.strokeStyle = 'blue';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(box.x, box.y, box.width, box.height);
-      faceapi.draw.drawFaceLandmarks(canvas, resized);
+    
+      faceapi.draw.drawDetections(canvas, resized);
+// faceapi.draw.drawFaceLandmarks(canvas, resized);
 
       lastDescriptor = resized.descriptor;
       lastScore = resized.detection.score;
