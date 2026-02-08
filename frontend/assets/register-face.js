@@ -129,16 +129,16 @@ faceapi.matchDimensions(canvas, displaySize);
             registeredDescriptor
           );
 
-          if (distance < 0.6) {
-            matchStatusBox.innerText = '✅ Yes! You are that monkey!';
-            matchStatusBox.style.backgroundColor = '#5f8b6e';
-          } else {
-            matchStatusBox.innerText = '❌ You are not the right monkey.';
-            matchStatusBox.style.backgroundColor = '#d9534f';
-          }
+          // if (distance < 0.6) {
+          //   matchStatusBox.innerText = '✅ Yes! You are that monkey!';
+          //   matchStatusBox.style.backgroundColor = '#5f8b6e';
+          // } else {
+          //   matchStatusBox.innerText = '❌ You are not the right monkey.';
+          //   matchStatusBox.style.backgroundColor = '#d9534f';
+          // }
         } else {
-          matchStatusBox.innerText = 'ℹ️ No face registered. You can register now.';
-          matchStatusBox.style.backgroundColor = '#5bc0de';
+          matchStatusBox.innerText = 'New Face Captured!. Click on Update Face to save it.';
+          matchStatusBox.style.backgroundColor = '#000000ff';
         }
 
         // ✅ Show update button after scan
@@ -174,7 +174,7 @@ async function checkFaceStatus() {
   : null;
 
     if (data.registered) {
-  faceStatusBox.innerText = '✅ Face already registered';
+  faceStatusBox.innerText = '✅ A face is already registered. Click on the button below to register new face.';
   faceStatusBox.style.backgroundColor = '#5f8b6e';
 
   // show UPDATE button only
