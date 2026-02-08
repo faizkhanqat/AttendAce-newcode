@@ -42,33 +42,46 @@ async function fetchMyClasses() {
     if (!res.ok) throw new Error('Failed to fetch classes');
 
     const classes = await res.json();
-    myClassesContainer.innerHTML = '';
 
-    if (!classes.length) {
-      myClassesContainer.innerHTML =
-        '<p class="text-center text-sm text-gray-500">No classes enrolled yet.</p>';
-      return;
-    }
 
-    classes.forEach(cls => {
-      const row = document.createElement('div');
-      row.className =
-        'grid grid-cols-3 gap-3 items-center bg-white border border-gray-100 rounded-xl px-3 py-2';
+// Clear container first
+myClassesContainer.innerHTML = '';
 
-      row.innerHTML = `
-        <span class="font-medium">${cls.name}</span>
-        <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
-        <div class="text-right">
-          <button
-            class="px-3 py-1 rounded-lg bg-red-500 text-white text-sm
-                   hover:bg-red-600 hover:shadow-md transition"
-            onclick="unenroll(${cls.id}, this)">
-            Unenroll
-          </button>
-        </div>
-      `;
-      myClassesContainer.appendChild(row);
-    });
+// If no classes
+if (!classes.length) {
+  myClassesContainer.innerHTML =
+    '<p class="text-center text-sm text-gray-500">No classes enrolled yet.</p>';
+  return;
+}
+
+// Add column headers
+myClassesContainer.innerHTML += `
+  <div class="grid grid-cols-3 gap-3 font-bold text-sm text-gray-500 px-3 py-2">
+    <span>Subject Code</span>
+    <span>Teacher</span>
+    <span></span>
+  </div>
+`;
+
+classes.forEach(cls => {
+  const row = document.createElement('div');
+  row.className =
+    'grid grid-cols-3 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
+
+  row.innerHTML = `
+    <span class="font-medium">${cls.name}</span>
+    <span class="text-sm">${cls.teacher_name || cls.teacher_id}</span>
+    <div class="text-right">
+      <button
+        class="px-3 py-1 rounded-lg bg-gray-800 text-white text-sm
+               hover:bg-gray-700 hover:shadow-md transition"
+        onclick="unenroll(${cls.id}, this)">
+        Unenroll
+      </button>
+    </div>
+  `;
+  myClassesContainer.appendChild(row);
+});
   } catch (err) {
     errorMsg.textContent = err.message;
   }
@@ -111,7 +124,7 @@ function renderAvailableClasses(classes) {
   classes.forEach(cls => {
     const row = document.createElement('div');
     row.className =
-      'grid grid-cols-3 gap-3 items-center bg-white border border-gray-100 rounded-xl px-3 py-2';
+  'grid grid-cols-3 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
 
     row.innerHTML = `
       <span class="font-medium">${cls.name}</span>
