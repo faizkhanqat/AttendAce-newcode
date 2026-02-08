@@ -103,6 +103,15 @@
 </section>
 
 <script>
+// ⚡ Apply mode instantly (before render)
+const cachedUser = JSON.parse(localStorage.getItem('user'));
+
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  document.getElementById('themeToggle').innerText = 'GAMING';
+}
+
+
 /* THEME TOGGLE */
 const toggle = document.getElementById('themeToggle');
 const clickSound = document.getElementById('clickSound');
