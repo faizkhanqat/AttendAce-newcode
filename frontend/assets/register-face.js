@@ -226,6 +226,16 @@ document.getElementById('registerBtn').addEventListener('click', async () => {
     });
 
     const data = await res.json();
+
+    if (!res.ok && data.error === 'FACE_COOLDOWN') {
+      const ms = data.remainingMs;
+      const hours = Math.floor(ms / (1000 * 60 * 60));
+      const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+
+      alert(`⏳ You can update your face again in ${hours}h ${minutes}m`);
+      return;
+    }
+
     alert(data.message || 'Face updated successfully');
     location.reload();
   } catch {

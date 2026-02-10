@@ -218,12 +218,37 @@ exports.registerFace = async (req, res) => {
     if (!face_encoding)
       return res.status(400).json({ message: 'face_encoding is required' });
 
+    // 1️⃣ Fetch last update time
+    const [rows] = await pool.query(
+      'SELECT face_updated_at FROM users WHERE id = ?',
+      [req.user.id]
+    );
+
+    const lastUpdate = rows[0]?.face_updated_at;
+
+    // 2️⃣ Enforce 24h cooldown
+    if (lastUpdate) {
+      const diffMs = Date.now() - new Date(lastUpdate).getTime();
+      const diffHours = diffMs / (1000 * 60 * 60);
+
+      if (diffHours < 24) {
+        const remainingMs = (24 * 60 * 60 * 1000) - diffMs;
+
+        return res.status(429).json({
+          error: 'FACE_COOLDOWN',
+          remainingMs
+        });
+      }
+    }
+
+    // 3️⃣ Save face + timestamp
     await pool.query(
-      'UPDATE users SET face_encoding = ? WHERE id = ?',
+      'UPDATE users SET face_encoding = ?, face_updated_at = NOW() WHERE id = ?',
       [face_encoding, req.user.id]
     );
 
-    res.json({ message: 'Face registered/updated successfully' });
+    res.json({ message: 'Face registered successfully' });
+
   } catch (err) {
     console.error('Error registering face:', err);
     res.status(500).json({ message: 'Server error' });
