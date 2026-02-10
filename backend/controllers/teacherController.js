@@ -160,7 +160,7 @@ exports.activateClass = async (req, res) => {
     // Activate class
     await pool.query(
       `INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on)
-       VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE, CURDATE()))`,
+VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), CURDATE())`,
       [class_id, teacherId, activeMinutes]
     );
 
