@@ -139,7 +139,7 @@ exports.getStudentAnalytics = async (req, res) => {
       `
       SELECT 
         COUNT(DISTINCT DATE(timestamp)) AS total,
-        COUNT(*) AS present
+        COUNT(DISTINCT DATE(timestamp)) AS present
       FROM attendance
       WHERE student_id = ?
       `,
@@ -153,13 +153,14 @@ exports.getStudentAnalytics = async (req, res) => {
         c.id,
         c.name,
         COUNT(DISTINCT DATE(a.timestamp)) AS total,
-        COUNT(a.id) AS present
+        COUNT(DISTINCT DATE(a.timestamp)) AS present
       FROM classes c
       JOIN student_classes sc ON sc.class_id = c.id
       LEFT JOIN attendance a 
         ON a.class_id = c.id 
         AND a.student_id = ?
       GROUP BY c.id
+      HAVING total > 0
       `,
       [studentId]
     );
@@ -181,11 +182,10 @@ exports.getStudentAnalytics = async (req, res) => {
 
     // 4️⃣ Risk subjects (< 75%)
     const risk = byClass
+      .filter(c => c.total > 0)   // 🚨 THIS LINE
       .map(c => ({
         name: c.name,
-        percentage: c.total
-          ? Math.round((c.present / c.total) * 100)
-          : 0
+        percentage: Math.round((c.present / c.total) * 100)
       }))
       .filter(c => c.percentage < 75);
 
