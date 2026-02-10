@@ -1,50 +1,119 @@
-// frontend/assets/analytics.js
-
 const token = localStorage.getItem('token');
-const chartsContainer = document.getElementById('charts');
+const API_URL = 'https://attendace-zjzu.onrender.com';
 
 if (!token) {
-  chartsContainer.innerHTML = '<p>You must be logged in to view analytics.</p>';
-  throw new Error('No JWT token found');
+  alert('You must be logged in');
+  window.location.href = 'login.html';
 }
 
-async function fetchStudentAnalytics() {
-  try {
-    const res = await fetch('https://attendace-zjzu.onrender.com/api/attendance/analytics/student', {
-      headers: { Authorization: 'Bearer ' + token },
-    });
-    if (!res.ok) throw new Error('Failed to fetch analytics');
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    chartsContainer.innerHTML = `<p>Error loading analytics: ${err.message}</p>`;
-    return null;
-  }
+// Elements
+const overallPercent = document.getElementById('overallPercent');
+const presentCount = document.getElementById('presentCount');
+const missedCount = document.getElementById('missedCount');
+const riskList = document.getElementById('riskList');
+
+// Fetch analytics
+async function fetchAnalytics() {
+  const res = await fetch(`${API_URL}/api/attendance/analytics/student`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) throw new Error('Failed to load analytics');
+  return res.json();
 }
 
-async function renderStudentAnalytics() {
-  const data = await fetchStudentAnalytics();
-  if (!data) return;
+function renderKPIs(data) {
+  const total = data.overall?.total || 0;
+  const present = data.overall?.present || 0;
+  const missed = total - present;
+  const percent = total ? Math.round((present / total) * 100) : 0;
 
-  if (data.classes.length === 0) {
-    chartsContainer.innerHTML = '<p>No classes enrolled yet.</p>';
-    return;
-  }
+  overallPercent.innerText = `${percent}%`;
+  presentCount.innerText = present;
+  missedCount.innerText = missed;
+}
 
-  chartsContainer.innerHTML = '<canvas id="attendanceChart" width="400" height="300"></canvas>';
-  const ctx = document.getElementById('attendanceChart').getContext('2d');
+function renderSubjectChart(data) {
+  const ctx = document.getElementById('subjectChart');
 
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.classes.map(c => c.name),
+      labels: data.byClass.map(c => c.name),
       datasets: [
-        { label: 'Days Present', data: data.classes.map(c => c.present_days), backgroundColor: '#5f8b6e' },
-        { label: 'Total Classes', data: data.classes.map(c => c.total_days), backgroundColor: '#a7c4a0' },
-      ],
+        {
+          label: 'Present',
+          data: data.byClass.map(c => c.present),
+          backgroundColor: '#10b981'
+        },
+        {
+          label: 'Total',
+          data: data.byClass.map(c => c.total),
+          backgroundColor: '#cbd5e1'
+        }
+      ]
     },
-    options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, stepSize: 1 } } },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { beginAtZero: true } }
+    }
   });
 }
 
-renderStudentAnalytics();
+function renderTrendChart(data) {
+  const ctx = document.getElementById('trendChart');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.trend.map(d => d.day),
+      datasets: [{
+        label: 'Present',
+        data: data.trend.map(d => d.present),
+        borderColor: '#0f766e',
+        tension: 0.4,
+        fill: false
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+
+function renderRisk(data) {
+  if (!data.risk || data.risk.length === 0) {
+    riskList.innerHTML = `<p class="text-emerald-600">✅ No subjects at risk</p>`;
+    return;
+  }
+
+  riskList.innerHTML = '';
+  data.risk.forEach(r => {
+    const div = document.createElement('div');
+    div.className = 'flex justify-between items-center bg-rose-50 border border-rose-200 rounded-lg px-4 py-2';
+
+    div.innerHTML = `
+      <span class="font-medium">${r.name}</span>
+      <span class="text-rose-600 font-semibold">${r.percentage}%</span>
+    `;
+
+    riskList.appendChild(div);
+  });
+}
+
+// Init
+(async function init() {
+  try {
+    const data = await fetchAnalytics();
+    renderKPIs(data);
+    renderSubjectChart(data);
+    renderTrendChart(data);
+    renderRisk(data);
+  } catch (err) {
+    console.error(err);
+    alert('Failed to load analytics');
+  }
+})();

@@ -1,36 +1,88 @@
-<!--analytics-student.html-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Analytics | AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attendance Analytics · AttendAce</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    body { background: #fefae0; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px 0; display: flex; justify-content: center; }
-    .analytics-container { max-width: 500px; width: 100%; background: #fff; border-radius: 25px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); padding: 25px; box-sizing: border-box; margin-bottom: 20px; }
-    header { text-align: center; margin-bottom: 25px; position: relative; }
-    header .logo { width: 60px; margin-bottom: 10px; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0; color: #333; }
-    #charts { padding: 20px; border-radius: 15px; background: #f5f7f8; text-align: center; min-height: 250px; display: flex; justify-content: center; align-items: center; font-size: 16px; color: #333; flex-direction: column; }
-    .menu-btn { display: block; width: 100%; text-align: center; margin-top: 20px; padding: 12px; border-radius: 12px; font-weight: 500; text-decoration: none; background: #5f8b6e; color: #fff; transition: all 0.3s ease; }
-    .menu-btn:hover { background: #497c59; }
+    body { font-family: Inter, system-ui, sans-serif; }
   </style>
 </head>
-<body>
-  <div class="analytics-container">
-    <header>
-      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-      <h1>Student Analytics</h1>
-    </header>
 
-    <div id="charts">
-      <p>Loading attendance analytics...</p>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="assets/logo.png" class="w-9 h-9" />
+        <h1 class="font-extrabold text-lg tracking-tight">Attendance Analytics</h1>
+      </div>
+
+      <a href="student-dashboard.html"
+         class="text-sm font-medium text-slate-600 hover:text-slate-900">
+        ← Back to Dashboard
+      </a>
     </div>
+  </header>
 
-    <a href="student-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
-  </div>
+  <!-- Main -->
+  <main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
+
+    <!-- KPI Cards -->
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Overall Attendance</p>
+        <p id="overallPercent" class="mt-2 text-4xl font-extrabold text-emerald-600">--%</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Classes Attended</p>
+        <p id="presentCount" class="mt-2 text-4xl font-extrabold">--</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <p class="text-sm text-slate-500">Classes Missed</p>
+        <p id="missedCount" class="mt-2 text-4xl font-extrabold text-rose-500">--</p>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- By Subject -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <h2 class="font-semibold mb-4">Attendance by Subject</h2>
+        <canvas id="subjectChart" height="220"></canvas>
+      </div>
+
+      <!-- Trend -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm">
+        <h2 class="font-semibold mb-4">Last 30 Days Trend</h2>
+        <canvas id="trendChart" height="220"></canvas>
+      </div>
+
+    </section>
+
+    <!-- Risk Section -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm">
+      <h2 class="font-semibold mb-4">Subjects at Risk</h2>
+      <div id="riskList" class="space-y-3 text-sm text-slate-600">
+        <p class="text-slate-400">Loading…</p>
+      </div>
+    </section>
+
+  </main>
 
   <script src="assets/analytics-student.js"></script>
 </body>
