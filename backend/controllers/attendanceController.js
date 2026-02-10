@@ -152,13 +152,21 @@ exports.getStudentAnalytics = async (req, res) => {
       SELECT 
         c.id,
         c.name,
-        COUNT(DISTINCT DATE(a.timestamp)) AS total,
+
+        (
+          SELECT COUNT(DISTINCT DATE(a2.timestamp))
+          FROM attendance a2
+          WHERE a2.class_id = c.id
+        ) AS total,
+
         COUNT(DISTINCT DATE(a.timestamp)) AS present
+
       FROM classes c
       JOIN student_classes sc ON sc.class_id = c.id
       LEFT JOIN attendance a 
         ON a.class_id = c.id 
         AND a.student_id = ?
+
       GROUP BY c.id
       HAVING total > 0
       `,
