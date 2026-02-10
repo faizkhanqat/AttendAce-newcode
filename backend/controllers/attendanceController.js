@@ -134,17 +134,9 @@ exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // 1️⃣ Overall attendance
-    const [[overall]] = await pool.query(
-      `
-      SELECT 
-        COUNT(DISTINCT DATE(timestamp)) AS total,
-        COUNT(DISTINCT DATE(timestamp)) AS present
-      FROM attendance
-      WHERE student_id = ?
-      `,
-      [studentId]
-    );
+    
+
+    
 
     // 2️⃣ Subject/Class-wise attendance
     const [byClass] = await pool.query(
@@ -153,24 +145,41 @@ exports.getStudentAnalytics = async (req, res) => {
         c.id,
         c.name,
 
-        (
-          SELECT COUNT(DISTINCT DATE(a2.timestamp))
-          FROM attendance a2
-          WHERE a2.class_id = c.id
-        ) AS total,
+        -- total days class was conducted (not activations)
+        COUNT(DISTINCT DATE(ac.expires_at)) AS total,
 
+        -- days student attended
         COUNT(DISTINCT DATE(a.timestamp)) AS present
 
-      FROM classes c
-      JOIN student_classes sc ON sc.class_id = c.id
-      LEFT JOIN attendance a 
-        ON a.class_id = c.id 
+      FROM student_classes sc
+      JOIN classes c 
+        ON c.id = sc.class_id
+
+      LEFT JOIN active_classes ac
+        ON ac.class_id = c.id
+        AND ac.expires_at < NOW()
+
+      LEFT JOIN attendance a
+        ON a.class_id = c.id
         AND a.student_id = ?
+        AND DATE(a.timestamp) = DATE(ac.expires_at)
+
+      WHERE sc.student_id = ?
 
       GROUP BY c.id
       HAVING total > 0
       `,
-      [studentId]
+      [studentId, studentId]
+    );
+
+    // 1️⃣ Overall attendance
+    const overall = byClass.reduce(
+      (acc, c) => {
+        acc.total += c.total;
+        acc.present += c.present;
+        return acc;
+      },
+      { total: 0, present: 0 }
     );
 
     // 3️⃣ Attendance trend (last 14 days)
@@ -188,12 +197,13 @@ exports.getStudentAnalytics = async (req, res) => {
       [studentId]
     );
 
+    
     // 4️⃣ Risk subjects (< 75%)
     const risk = byClass
-      .filter(c => c.total > 0)   // 🚨 THIS LINE
       .map(c => ({
         name: c.name,
-        percentage: Math.round((c.present / c.total) * 100)
+        percentage: Math.round((c.present / c.total) * 100),
+        missed: c.total - c.present
       }))
       .filter(c => c.percentage < 75);
 
