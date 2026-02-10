@@ -145,10 +145,7 @@ exports.getStudentAnalytics = async (req, res) => {
         c.id,
         c.name,
 
-        -- days class actually happened (derived from attendance)
-        COUNT(DISTINCT DATE(a.timestamp)) AS total,
-
-        -- days student attended
+        COUNT(DISTINCT ac.conducted_on) AS total,
         COUNT(DISTINCT DATE(a.timestamp)) AS present
 
       FROM student_classes sc
@@ -158,6 +155,7 @@ exports.getStudentAnalytics = async (req, res) => {
       LEFT JOIN attendance a
         ON a.class_id = c.id
         AND a.student_id = ?
+        AND DATE(a.timestamp) = ac.conducted_on
 
       WHERE sc.student_id = ?
 
