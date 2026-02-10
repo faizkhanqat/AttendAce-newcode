@@ -139,34 +139,28 @@ exports.getStudentAnalytics = async (req, res) => {
     
 
     // 2️⃣ Subject/Class-wise attendance
-    const [byClass] = await pool.query(
-      `
-      SELECT 
-        c.id,
-        c.name,
-
-        COUNT(DISTINCT ac.conducted_on) AS total,
-        COUNT(DISTINCT DATE(a.timestamp)) AS present
-
-      FROM student_classes sc
-      JOIN classes c 
-        ON c.id = sc.class_id
-
-      LEFT JOIN active_classes ac
-        ON ac.class_id = c.id
-
-      LEFT JOIN attendance a
-        ON a.class_id = c.id
-        AND a.student_id = ?
-        AND DATE(a.timestamp) = ac.conducted_on
-
-      WHERE sc.student_id = ?
-
-      GROUP BY c.id
-      HAVING total > 0
-      `,
-      [studentId, studentId]
-    );
+   const [byClass] = await pool.query(
+  `
+  SELECT 
+    c.id,
+    c.name,
+    COUNT(DISTINCT ac.id) AS total,           -- total number of past active class sessions
+    COUNT(DISTINCT a.id) AS present          -- attendance marked
+  FROM student_classes sc
+  JOIN classes c
+    ON c.id = sc.class_id
+  LEFT JOIN active_classes ac
+    ON ac.class_id = c.id
+    AND ac.conducted_on <= CURDATE()          -- only include sessions that “happened”
+  LEFT JOIN attendance a
+    ON a.class_id = c.id
+    AND a.student_id = ?
+    AND DATE(a.timestamp) = ac.conducted_on
+  WHERE sc.student_id = ?
+  GROUP BY c.id
+  `,
+  [studentId, studentId]
+);
 
     // 1️⃣ Overall attendance
     const overall = byClass.reduce(
