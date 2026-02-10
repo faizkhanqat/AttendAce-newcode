@@ -34,6 +34,16 @@ function renderKPIs(data) {
 }
 
 function renderSubjectChart(data) {
+  if (!Array.isArray(data.byClass) || data.byClass.length === 0) {
+    document.getElementById('subjectChart').replaceWith(
+      Object.assign(document.createElement('p'), {
+        className: 'text-slate-400 text-sm',
+        innerText: 'No subject-wise data available'
+      })
+    );
+    return;
+  }
+
   const ctx = document.getElementById('subjectChart');
 
   new Chart(ctx, {
@@ -62,6 +72,16 @@ function renderSubjectChart(data) {
 }
 
 function renderTrendChart(data) {
+  if (!Array.isArray(data.trend) || data.trend.length === 0) {
+    document.getElementById('trendChart').replaceWith(
+      Object.assign(document.createElement('p'), {
+        className: 'text-slate-400 text-sm',
+        innerText: 'Attendance trend unavailable'
+      })
+    );
+    return;
+  }
+
   const ctx = document.getElementById('trendChart');
 
   new Chart(ctx, {
@@ -69,11 +89,9 @@ function renderTrendChart(data) {
     data: {
       labels: data.trend.map(d => d.day),
       datasets: [{
-        label: 'Present',
         data: data.trend.map(d => d.present),
         borderColor: '#0f766e',
-        tension: 0.4,
-        fill: false
+        tension: 0.4
       }]
     },
     options: {
@@ -108,6 +126,7 @@ function renderRisk(data) {
 (async function init() {
   try {
     const data = await fetchAnalytics();
+    console.log('📊 Analytics response:', data);
     renderKPIs(data);
     renderSubjectChart(data);
     renderTrendChart(data);
