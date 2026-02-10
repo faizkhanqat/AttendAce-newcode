@@ -134,82 +134,60 @@ exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // 1️⃣ Overall
+    // 1️⃣ Overall attendance
     const [[overall]] = await pool.query(
       `
       SELECT 
-        COUNT(ac.id) AS total,
-        COUNT(a.id) AS present
-      FROM active_classes ac
-      JOIN student_classes sc ON ac.class_id = sc.class_id
-      LEFT JOIN attendance a 
-        ON a.class_id = ac.class_id 
-        AND a.student_id = ?
-        AND DATE(a.timestamp) = DATE(ac.expires_at)
-      WHERE sc.student_id = ?
+        COUNT(DISTINCT DATE(timestamp)) AS total,
+        COUNT(*) AS present
+      FROM attendance
+      WHERE student_id = ?
       `,
-      [studentId, studentId]
+      [studentId]
     );
 
-    // 2️⃣ Subject-wise
+    // 2️⃣ Subject/Class-wise attendance
     const [byClass] = await pool.query(
       `
       SELECT 
+        c.id,
         c.name,
-        COUNT(ac.id) AS total,
+        COUNT(DISTINCT DATE(a.timestamp)) AS total,
         COUNT(a.id) AS present
       FROM classes c
-      JOIN student_classes sc ON c.id = sc.class_id
-      JOIN active_classes ac ON ac.class_id = c.id
+      JOIN student_classes sc ON sc.class_id = c.id
       LEFT JOIN attendance a 
         ON a.class_id = c.id 
         AND a.student_id = ?
-        AND DATE(a.timestamp) = DATE(ac.expires_at)
-      WHERE sc.student_id = ?
       GROUP BY c.id
       `,
-      [studentId, studentId]
+      [studentId]
     );
 
-    // 3️⃣ Last 7 sessions trend
+    // 3️⃣ Attendance trend (last 14 days)
     const [trend] = await pool.query(
       `
       SELECT 
-        DATE(ac.expires_at) AS day,
-        COUNT(a.id) AS present
-      FROM active_classes ac
-      JOIN student_classes sc ON ac.class_id = sc.class_id
-      LEFT JOIN attendance a 
-        ON a.class_id = ac.class_id 
-        AND a.student_id = ?
-        AND DATE(a.timestamp) = DATE(ac.expires_at)
-      WHERE sc.student_id = ?
-      GROUP BY day
+        DATE(timestamp) AS day,
+        COUNT(*) AS present
+      FROM attendance
+      WHERE student_id = ?
+      GROUP BY DATE(timestamp)
       ORDER BY day DESC
-      LIMIT 7
+      LIMIT 14
       `,
-      [studentId, studentId]
+      [studentId]
     );
 
-    // 4️⃣ Risk (<75%)
-    const [risk] = await pool.query(
-      `
-      SELECT 
-        c.name,
-        ROUND((COUNT(a.id) / COUNT(ac.id)) * 100) AS percentage
-      FROM classes c
-      JOIN student_classes sc ON c.id = sc.class_id
-      JOIN active_classes ac ON ac.class_id = c.id
-      LEFT JOIN attendance a 
-        ON a.class_id = c.id 
-        AND a.student_id = ?
-        AND DATE(a.timestamp) = DATE(ac.expires_at)
-      WHERE sc.student_id = ?
-      GROUP BY c.id
-      HAVING percentage < 75
-      `,
-      [studentId, studentId]
-    );
+    // 4️⃣ Risk subjects (< 75%)
+    const risk = byClass
+      .map(c => ({
+        name: c.name,
+        percentage: c.total
+          ? Math.round((c.present / c.total) * 100)
+          : 0
+      }))
+      .filter(c => c.percentage < 75);
 
     res.json({
       overall,
@@ -217,10 +195,9 @@ exports.getStudentAnalytics = async (req, res) => {
       trend: trend.reverse(),
       risk
     });
-
   } catch (err) {
-    console.error('❌ Student analytics error:', err);
-    res.status(500).json({ message: 'Analytics failed' });
+    console.error('❌ Analytics error:', err);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
