@@ -152,6 +152,9 @@ exports.getStudentAnalytics = async (req, res) => {
       JOIN classes c 
         ON c.id = sc.class_id
 
+      LEFT JOIN active_classes ac
+        ON ac.class_id = c.id
+
       LEFT JOIN attendance a
         ON a.class_id = c.id
         AND a.student_id = ?
