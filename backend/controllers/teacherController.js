@@ -147,7 +147,6 @@ exports.activateClass = async (req, res) => {
       'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
       [class_id, teacherId]
     );
-
     if (classRows.length === 0)
       return res.status(403).json({ message: 'Unauthorized class access' });
 
@@ -157,11 +156,15 @@ exports.activateClass = async (req, res) => {
       [class_id]
     );
 
-    // Activate class
+    // Calculate JS-based dates to avoid DB function issues
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + activeMinutes * 60000); // add minutes
+    const conductedOn = now.toISOString().split('T')[0]; // YYYY-MM-DD
+
     await pool.query(
       `INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on)
-VALUES (?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE), CURDATE())`,
-      [class_id, teacherId, activeMinutes]
+       VALUES (?, ?, ?, ?)`,
+      [class_id, teacherId, expiresAt, conductedOn]
     );
 
     res.json({

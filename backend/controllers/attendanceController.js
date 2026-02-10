@@ -134,45 +134,46 @@ exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    
-
-    
-
-    // 2️⃣ Subject/Class-wise attendance
-   const [byClass] = await pool.query(
-  `
-  SELECT 
-    c.id,
-    c.name,
-    COUNT(DISTINCT ac.id) AS total,           -- total number of past active class sessions
-    COUNT(DISTINCT a.id) AS present          -- attendance marked
-  FROM student_classes sc
-  JOIN classes c
-    ON c.id = sc.class_id
-  LEFT JOIN active_classes ac
-    ON ac.class_id = c.id
-    AND ac.conducted_on <= CURDATE()          -- only include sessions that “happened”
-  LEFT JOIN attendance a
-    ON a.class_id = c.id
-    AND a.student_id = ?
-    AND DATE(a.timestamp) = ac.conducted_on
-  WHERE sc.student_id = ?
-  GROUP BY c.id
-  `,
-  [studentId, studentId]
-);
-
-    // 1️⃣ Overall attendance
-    const overall = byClass.reduce(
-      (acc, c) => {
-        acc.total += c.total;
-        acc.present += c.present;
-        return acc;
-      },
-      { total: 0, present: 0 }
+    // Subject/Class-wise attendance
+    const [byClass] = await pool.query(
+      `
+      SELECT 
+        c.id,
+        c.name,
+        COUNT(DISTINCT ac.id) AS total,
+        COUNT(DISTINCT a.id) AS present
+      FROM student_classes sc
+      JOIN classes c ON c.id = sc.class_id
+      LEFT JOIN active_classes ac 
+        ON ac.class_id = c.id
+        AND ac.conducted_on <= CURDATE()
+      LEFT JOIN attendance a
+        ON a.class_id = c.id
+        AND a.student_id = ?
+        AND DATE(a.timestamp) = ac.conducted_on
+      WHERE sc.student_id = ?
+      GROUP BY c.id
+      `,
+      [studentId, studentId]
     );
 
-    // 3️⃣ Attendance trend (last 14 days)
+    // Overall
+    const overall = byClass.reduce((acc, c) => {
+      acc.total += c.total;
+      acc.present += c.present;
+      return acc;
+    }, { total: 0, present: 0 });
+
+    // Risk (< 75%)
+    const risk = byClass
+      .map(c => ({
+        name: c.name,
+        percentage: c.total ? Math.round((c.present / c.total) * 100) : 0,
+        missed: c.total - c.present
+      }))
+      .filter(c => c.percentage < 75);
+
+    // Attendance trend (last 14 days)
     const [trend] = await pool.query(
       `
       SELECT 
@@ -187,22 +188,13 @@ exports.getStudentAnalytics = async (req, res) => {
       [studentId]
     );
 
-    
-    // 4️⃣ Risk subjects (< 75%)
-    const risk = byClass
-      .map(c => ({
-        name: c.name,
-        percentage: Math.round((c.present / c.total) * 100),
-        missed: c.total - c.present
-      }))
-      .filter(c => c.percentage < 75);
-
     res.json({
       overall,
       byClass,
       trend: trend.reverse(),
       risk
     });
+
   } catch (err) {
     console.error('❌ Analytics error:', err);
     res.status(500).json({ message: 'Server error' });
