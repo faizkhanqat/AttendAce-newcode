@@ -29,8 +29,11 @@ exports.updateProfile = async (req, res) => {
   if (name) { fields.push('name = ?'); values.push(name); }
   if (department) { fields.push('department = ?'); values.push(department); }
   if (gender) { fields.push('gender = ?'); values.push(gender); }
-  if (dob) { fields.push('dob = ?'); values.push(dob); }
-  if (mode) {
+if (dob) {
+  const formattedDob = new Date(dob).toISOString().split('T')[0];
+  fields.push('dob = ?');
+  values.push(formattedDob);
+}  if (mode) {
   fields.push('mode = ?');
   values.push(mode);
 }
