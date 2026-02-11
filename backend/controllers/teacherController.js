@@ -21,13 +21,12 @@ exports.getProfile = async (req, res) => {
 // ==========================
 exports.updateProfile = async (req, res) => {
   try {
-  const { name, email, department, gender, dob, mode} = req.body;
+  const { name, department, gender, dob, mode} = req.body;
 
   const fields = [];
   const values = [];
 
   if (name) { fields.push('name = ?'); values.push(name); }
-  if (email) { fields.push('email = ?'); values.push(email); }
   if (department) { fields.push('department = ?'); values.push(department); }
   if (gender) { fields.push('gender = ?'); values.push(gender); }
   if (dob) { fields.push('dob = ?'); values.push(dob); }
@@ -45,7 +44,7 @@ exports.updateProfile = async (req, res) => {
   );
 
   const [updated] = await pool.query(
-    'SELECT id, name, email, role, department, gender, dob, aviation_id FROM users WHERE id = ?',
+    'SELECT id, name, email, role, department, gender, dob, aviation_id, mode FROM users WHERE id = ?',
     [req.user.id]
   );
 
@@ -63,7 +62,7 @@ exports.getClasses = async (req, res) => {
   try {
     const [classes] = await pool.query(
       `SELECT c.*,
-              IF(ac.expires_at >= NOW(), TRUE, FALSE) AS is_active
+              IF(ac.expires_at IS NOT NULL AND ac.expires_at >= NOW(), TRUE, FALSE) AS is_active
        FROM classes c
        LEFT JOIN active_classes ac ON c.id = ac.class_id
        WHERE c.teacher_id = ?`,
@@ -112,6 +111,14 @@ exports.generateQR = async (req, res) => {
 
     const qrDuration = duration || 15;
 
+    const [classRows] = await pool.query(
+      'SELECT id FROM classes WHERE id = ? AND teacher_id = ?',
+      [class_id, req.user.id]
+    );
+
+if (classRows.length === 0)
+  return res.status(403).json({ message: 'Unauthorized class access' });
+
     await pool.query(
       'INSERT INTO qr_tokens (class_id, token, duration, created_at) VALUES (?, ?, ?, NOW())',
       [class_id, token, qrDuration]
@@ -140,8 +147,7 @@ exports.activateClass = async (req, res) => {
     if (!class_id)
       return res.status(400).json({ message: 'class_id is required' });
 
-    const activeMinutes = minutes || 3;
-
+      const activeMinutes = minutes && minutes > 0 ? minutes : 3;
     // Verify class belongs to teacher
     const [classRows] = await pool.query(
       'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',

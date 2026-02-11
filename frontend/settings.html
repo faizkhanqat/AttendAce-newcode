@@ -89,8 +89,7 @@
         </div>
       </button>
       
-      <button class="menu-btn group w-full border gray-800 mt-4 rounded-xl p-4 flex flex-col items-center"
-              onclick="window.location.href='student-dashboard.html'">
+      <button id = "returnDashboardBtn" class="menu-btn group w-full border gray-800 mt-4 rounded-xl p-4 flex flex-col items-center">
         <!-- Main row: Icon + Button name -->
         <div class="flex items-center gap-3">
       <img src="assets/back.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
@@ -177,12 +176,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const departmentGroup = document.getElementById('departmentGroup');
   const departmentSelect = document.getElementById('department');
-  if (user.role !== 'student') {
-    departmentGroup.style.display = 'none';
-    departmentSelect.required = false;
-  } else {
-    departmentSelect.value = user.department || '';
-  }
+
+  departmentSelect.value = user.department || '';
 
   // -------------------------------
   // SAVE CHANGES
@@ -195,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dob: user.dob || null,
       mode: document.getElementById('mode').value
     };
-    if (user.role === 'student') updatedUser.department = departmentSelect.value;
+    updatedUser.department = departmentSelect.value;
 
     const endpoint = user.role === 'student'
       ? 'https://attendace-zjzu.onrender.com/api/student/update'
@@ -223,6 +218,15 @@ document.addEventListener('DOMContentLoaded', () => {
       alert('Could not update profile');
     }
   });
+
+
+  document.getElementById('returnDashboardBtn').addEventListener('click', () => {
+  if (user.role === 'teacher') {
+    window.location.href = 'teacher-dashboard.html';
+  } else {
+    window.location.href = 'student-dashboard.html';
+  }
+});
 
   // -------------------------------
   // LOGOUT
