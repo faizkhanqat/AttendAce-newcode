@@ -206,10 +206,16 @@ document.getElementById('submitClass')?.addEventListener('click',async()=>{
 });
 
 /* INIT */
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   await fetchProfile();
   fetchClasses();
+
+  // reveal animation trigger
+  document.querySelectorAll('.reveal').forEach(el => {
+    setTimeout(() => el.classList.add('show'), 100);
+  });
 });
+
 </script>
 </body>
 </html>
