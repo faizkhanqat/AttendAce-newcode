@@ -1,250 +1,222 @@
-<!-- teacher-classes.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Classes | AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: #fefae0;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-      padding: 40px 0;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AttendAce | Class Management</title>
 
-    .classes-container {
-      background: #fff;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 500px;
-      text-align: center;
-    }
-
-    header {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .logo { width: 80px; margin-bottom: 10px; }
-    h1 { color: #5f8b6e; margin: 0; }
-
-    .list-container { text-align: left; margin-top: 20px; }
-
-    .class-item {
-      background: #f5f5f5;
-      border: 1px solid #d9e0e6;
-      padding: 15px;
-      margin-bottom: 12px;
-      border-radius: 12px;
-    }
-
-    .class-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      font-weight: 500;
-    }
-
-    .controls {
-      display: flex;
-      gap: 6px;
-      margin-top: 8px;
-    }
-
-    select, button {
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      cursor: pointer;
-    }
-
-    .activate-btn {
-      background: #38b000;
-      color: #fff;
-      border: none;
-    }
-
-    .activate-btn.deactivate {
-      background: #ff3b3b;
-    }
-
-    .activate-btn:hover {
-      opacity: 0.9;
-    }
-
-    .status {
-      font-size: 13px;
-      margin-top: 6px;
-      color: #555;
-    }
-
-    .menu-btn, .add-btn {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 12px 20px;
-      border-radius: 12px;
-      text-decoration: none;
-      color: white;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .menu-btn { background: #5f8b6e; }
-    .menu-btn:hover { background: #497c59; }
-
-    .add-btn { background: #3a86ff; margin-bottom: 20px; }
-    .add-btn:hover { background: #265abf; }
-
-    .loading { text-align: center; color: #5f8b6e; font-weight: 500; }
-  </style>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles2.css">
 </head>
-<body>
-  <div class="classes-container">
-    <header>
-      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-      <h1>My Classes</h1>
-    </header>
 
-    <button class="add-btn" onclick="window.location.href='teacher-add-class.html'">+ Add Class</button>
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
 
-    <div id="classesList" class="list-container">
-      <p class="loading">Loading classes...</p>
+<div id="bg-anim"></div>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3"></audio>
+
+<!-- HEADER -->
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">Class Management</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+    OFFICIAL
+  </button>
+</header>
+
+<!-- PROFILE CARD -->
+<section class="px-5 mt-2 reveal">
+  <div class="glass p-5 flex justify-between items-center">
+    <div>
+      <p class="text-xs font-semibold text-[var(--accent)]" id="teacherId">ID: --</p>
+      <h2 class="text-xl font-black mt-1" id="teacherName">Teacher</h2>
+      <p class="text-xs text-[var(--muted)]" id="teacherDept">Department</p>
     </div>
-
-    <a href="teacher-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
+    <button onclick="window.location.href='teacher-dashboard.html'"
+      class="px-3 py-2 text-xs rounded-full glass press">
+      ← Dashboard
+    </button>
   </div>
+</section>
 
-  <script>
-    const classesList = document.getElementById('classesList');
-    const token = localStorage.getItem('token');
+<!-- ADD CLASS BUTTON -->
+<section class="px-6 mt-5 reveal">
+  <button id="openAddModal"
+    class="menu-btn w-full rounded-xl p-4 text-lg font-semibold">
+    + Add New Class
+  </button>
+</section>
 
-    async function toggleClass(classId, duration, btn, statusEl) {
-      try {
-        if (btn.dataset.active === 'true') {
-          // Deactivate immediately
-          btn.disabled = true;
-          statusEl.innerText = 'Deactivating class...';
-          const res = await fetch('/api/teacher/classes/deactivate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ class_id: classId })
-          });
-          if (!res.ok) throw new Error('Failed to deactivate');
-          btn.dataset.active = 'false';
-          btn.innerText = 'Activate';
-          btn.classList.remove('deactivate');
-          statusEl.innerText = '⚠️ Class deactivated';
-          btn.disabled = false;
-        } else {
-          // Activate
-          btn.disabled = true;
-          statusEl.innerText = 'Activating class...';
-          const res = await fetch('/api/teacher/classes/activate', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ class_id: classId, duration })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.message || 'Activation failed');
+<!-- CLASSES LIST -->
+<section class="px-6 mt-4 flex flex-col gap-3 reveal pb-10" id="classesList">
+  <div class="text-center text-sm opacity-60">Loading classes...</div>
+</section>
 
-          btn.dataset.active = 'true';
-          btn.innerText = 'Deactivate';
-          btn.classList.add('deactivate');
-          statusEl.innerText = `✅ Class active for ${duration} min`;
+<!-- ADD CLASS MODAL -->
+<div id="addModal"
+  class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
 
-          // Auto deactivate after duration
-          setTimeout(() => {
-            btn.dataset.active = 'false';
-            btn.innerText = 'Activate';
-            btn.classList.remove('deactivate');
-            statusEl.innerText = '⚠️ Class automatically deactivated';
-          }, duration * 60 * 1000);
-          btn.disabled = false;
-        }
-      } catch (err) {
-        console.error(err);
-        statusEl.innerText = '❌ Action failed';
-        btn.disabled = false;
-      }
-    }
+  <div class="glass p-6 w-[90%] max-w-[350px]">
+    <h3 class="text-xl font-bold mb-4">Add Class</h3>
 
-    async function fetchClasses() {
-      try {
-        const res = await fetch('/api/teacher/classes', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
+    <input id="className"
+      class="w-full p-3 mb-3 rounded-xl bg-transparent border border-gray-400 outline-none"
+      placeholder="Class Name">
 
-        if (!res.ok) throw new Error('Failed to fetch classes');
+    <input id="subject"
+      class="w-full p-3 mb-4 rounded-xl bg-transparent border border-gray-400 outline-none"
+      placeholder="Subject">
 
-        const classes = await res.json();
-        classesList.innerHTML = '';
+    <button id="submitClass"
+      class="hero-btn w-full py-3 rounded-xl font-bold">
+      Add Class
+    </button>
 
-        if (!classes.length) {
-          classesList.innerHTML = '<p class="loading">No classes found.</p>';
-          return;
-        }
+    <button id="closeModal"
+      class="mt-3 w-full text-sm opacity-70">
+      Cancel
+    </button>
 
-        classes.forEach(cls => {
-          const div = document.createElement('div');
-          div.className = 'class-item';
+    <p id="modalMsg" class="text-sm mt-3"></p>
+  </div>
+</div>
 
-          const isActive = cls.is_active; // backend should return true/false if class is active
-          div.innerHTML = `
-            <div class="class-header">
-              <span>${cls.name}</span>
-              <span>${cls.subject || ''}</span>
-            </div>
+<script>
+const API = "https://attendace-zjzu.onrender.com/api/teacher";
+const token = localStorage.getItem('token');
+const clickSound = document.getElementById('clickSound');
 
-            <div class="controls">
-              <select>
-                <option value="5">5 min</option>
-                <option value="10">10 min</option>
-                <option value="15" selected>15 min</option>
-                <option value="30">30 min</option>
-              </select>
-              <button class="activate-btn">${isActive ? 'Deactivate' : 'Activate'}</button>
-            </div>
+document.querySelectorAll('button').forEach(b=>{
+  b.addEventListener('click',()=>clickSound.play());
+});
 
-            <div class="status">${isActive ? '✅ Class active' : ''}</div>
-          `;
+/* THEME */
+const toggle = document.getElementById('themeToggle');
+toggle.onclick = ()=>{
+  document.body.classList.toggle('gaming');
+  toggle.innerText = document.body.classList.contains('gaming')
+    ? 'GAMING' : 'OFFICIAL';
+};
 
-          const select = div.querySelector('select');
-          const btn = div.querySelector('button');
-          const status = div.querySelector('.status');
+/* FETCH PROFILE */
+async function fetchProfile(){
+  const res = await fetch(`${API}/profile`,{
+    headers:{ Authorization:'Bearer '+token }
+  });
+  if(!res.ok){ window.location.href="login.html"; return; }
+  const data = await res.json();
+  localStorage.setItem('user',JSON.stringify(data.user));
+  return data.user;
+}
 
-          if (isActive) btn.dataset.active = 'true';
-          else btn.dataset.active = 'false';
+/* LOAD CLASSES */
+async function fetchClasses(){
+  const res = await fetch(`${API}/classes`,{
+    headers:{ Authorization:'Bearer '+token }
+  });
+  const classes = await res.json();
+  const container = document.getElementById('classesList');
+  container.innerHTML='';
 
-          btn.onclick = () => {
-            toggleClass(cls.id, parseInt(select.value), btn, status);
-          };
+  if(!classes.length){
+    container.innerHTML='<div class="text-center opacity-60">No classes found</div>';
+    return;
+  }
 
-          classesList.appendChild(div);
-        });
+  classes.forEach(cls=>{
+    const card=document.createElement('div');
+    card.className="menu-btn p-4 rounded-xl flex flex-col gap-2";
 
-      } catch (err) {
-        classesList.innerHTML = `<p class="loading">Error loading classes</p>`;
-      }
-    }
+    card.innerHTML=`
+      <div class="flex justify-between items-center">
+        <div>
+          <div class="font-bold text-lg">${cls.name}</div>
+          <div class="text-xs opacity-70">${cls.subject || ''}</div>
+        </div>
+        <button class="press px-3 py-2 rounded-full text-xs font-bold
+          ${cls.is_active ? 'bg-red-500 text-white' : 'bg-green-600 text-white'}">
+          ${cls.is_active ? 'Deactivate' : 'Activate'}
+        </button>
+      </div>
+      <div class="text-xs opacity-70">
+        ${cls.is_active ? 'Class is active' : ''}
+      </div>
+    `;
 
-    fetchClasses();
-  </script>
+    const btn=card.querySelector('button');
+    btn.onclick=()=>toggleClass(cls.id,btn);
+
+    container.appendChild(card);
+  });
+}
+
+/* ACTIVATE / DEACTIVATE */
+async function toggleClass(id,btn){
+  const isActive=btn.innerText==='Deactivate';
+
+  const url=isActive?`${API}/classes/deactivate`:`${API}/classes/activate`;
+  const body=isActive?{class_id:id}:{class_id:id,minutes:5};
+
+  const res=await fetch(url,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      Authorization:'Bearer '+token
+    },
+    body:JSON.stringify(body)
+  });
+
+  if(res.ok) fetchClasses();
+}
+
+/* ADD CLASS MODAL */
+const modal=document.getElementById('addModal');
+document.getElementById('openAddModal').onclick=()=>modal.classList.remove('hidden');
+document.getElementById('closeModal').onclick=()=>modal.classList.add('hidden');
+
+document.getElementById('submitClass').onclick=async()=>{
+  const name=document.getElementById('className').value;
+  const subject=document.getElementById('subject').value;
+  const msg=document.getElementById('modalMsg');
+
+  const res=await fetch(`${API}/classes/add`,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      Authorization:'Bearer '+token
+    },
+    body:JSON.stringify({name,subject})
+  });
+
+  const data=await res.json();
+  if(!res.ok){
+    msg.innerText=data.message||"Error";
+    msg.style.color="red";
+    return;
+  }
+
+  msg.innerText="Class added successfully";
+  msg.style.color="green";
+  document.getElementById('className').value='';
+  document.getElementById('subject').value='';
+  fetchClasses();
+};
+
+/* INIT */
+document.addEventListener('DOMContentLoaded',async()=>{
+  const user=await fetchProfile();
+  if(!user)return;
+
+  document.getElementById('teacherName').innerText=user.name;
+  document.getElementById('teacherId').innerText="ID: "+user.id;
+  document.getElementById('teacherDept').innerText="Department: "+(user.department||"--");
+
+  if(user.mode==='gaming'){
+    document.body.classList.add('gaming');
+    toggle.innerText='GAMING';
+  }
+
+  fetchClasses();
+});
+</script>
 </body>
 </html>
