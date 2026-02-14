@@ -1,13 +1,8 @@
 // frontend/assets/scanqr.js
 
-// --- Ensure face verification before QR scan ---
-const urlParams = new URLSearchParams(window.location.search);
-const faceVerified = urlParams.get('faceVerified');
-const classId = urlParams.get('class_id');
-
-
 const token = localStorage.getItem('token'); // student JWT
 const errorMsg = document.getElementById('errorMsg');
+const html5QrcodeScanner = new Html5Qrcode("reader");
 
 if (!token) {
   alert('Not logged in. Please log in as student.');
@@ -15,32 +10,30 @@ if (!token) {
   throw new Error('No JWT token in localStorage');
 }
 
-async function isClassActive(classId) {
-  const res = await fetch(`/api/student/classes/${classId}`);
-  if (!res.ok) return false;
-  const data = await res.json();
-  return data.is_active; // boolean from backend
+// Fetch active class from backend
+async function getActiveClass() {
+  try {
+    const res = await fetch('/api/student/classes/active', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data; // { class_id, expires_at } or null if none
+  } catch (err) {
+    console.error('Error fetching active class:', err);
+    return null;
+  }
 }
 
-// --- Verify face only if class is active ---
-(async () => {
-  if (!classId) {
-    alert('Class not selected');
-    window.location.href = 'student-classes.html';
-    return;
-  }
-  const active = await isClassActive(classId);
-  if (active && faceVerified !== 'true') {
-    alert('❌ Face not verified! Please scan your face first.');
-    window.location.href = 'scanface.html';
-  }
-})();
-
+// --- Mark attendance via QR ---
 async function markAttendance(class_id, qrToken) {
   try {
-    const res = await fetch('https://attendace-zjzu.onrender.com/api/attendance/mark', {
+    const res = await fetch('/api/attendance/mark', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token 
+      },
       body: JSON.stringify({ class_id, token: qrToken })
     });
 
@@ -61,9 +54,9 @@ async function markAttendance(class_id, qrToken) {
   }
 }
 
+// QR scan callbacks
 function onScanSuccess(decodedText, decodedResult) {
   try {
-    // QR should contain JSON: { class_id, token }
     const parsed = JSON.parse(decodedText);
     if (!parsed.class_id || !parsed.token) throw new Error('QR missing fields');
     markAttendance(parsed.class_id, parsed.token);
@@ -75,31 +68,53 @@ function onScanSuccess(decodedText, decodedResult) {
 }
 
 function onScanFailure(err) {
-  // ignore frequently; optionally show a small message
-  // console.warn('scan failure', err);
+  // optionally ignore or log
 }
 
-// init scanner
-const html5QrcodeScanner = new Html5Qrcode("reader");
-Html5Qrcode.getCameras().then(cameras => {
-  if (!cameras || cameras.length === 0) {
-    if (errorMsg) errorMsg.textContent = 'No camera found on this device.';
-    return;
+// --- Main initialization ---
+(async () => {
+  const activeClass = await getActiveClass();
+
+  if (activeClass) {
+    // Active class exists → check face verification
+    const urlParams = new URLSearchParams(window.location.search);
+    const faceVerified = urlParams.get('faceVerified');
+
+    if (faceVerified !== 'true') {
+      // Redirect to scanface with active class_id
+      window.location.href = `scanface.html?class_id=${activeClass.class_id}`;
+      return;
+    }
+
+    // Face verified → start QR scanner
+    startScanner(activeClass.class_id);
+
+  } else {
+    // No active class → skip face verification, open QR scanner directly
+    console.log('No active class → starting QR scanner directly');
+    startScanner(null);
   }
+})();
 
-  const videoWidth = document.getElementById('reader').clientWidth;
-  const videoHeight = document.getElementById('reader').clientHeight;
+// --- Start QR scanner ---
+function startScanner(class_id) {
+  Html5Qrcode.getCameras().then(cameras => {
+    if (!cameras || cameras.length === 0) {
+      if (errorMsg) errorMsg.textContent = 'No camera found on this device.';
+      return;
+    }
 
-  html5QrcodeScanner.start(
-    { facingMode: "environment" },
-    {
-      fps: 10,
-      qrbox: { width: videoWidth, height: videoHeight } // full camera feed
-    },
-    onScanSuccess,
-    onScanFailure
-  ).catch(err => {
-    console.error('Unable to start camera:', err);
-    if (errorMsg) errorMsg.textContent = 'Cannot access camera. Allow permissions.';
+    const videoWidth = document.getElementById('reader').clientWidth;
+    const videoHeight = document.getElementById('reader').clientHeight;
+
+    html5QrcodeScanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: videoWidth, height: videoHeight } },
+      onScanSuccess,
+      onScanFailure
+    ).catch(err => {
+      console.error('Unable to start camera:', err);
+      if (errorMsg) errorMsg.textContent = 'Cannot access camera. Allow permissions.';
+    });
   });
-});
+}
