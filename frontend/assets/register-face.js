@@ -28,14 +28,17 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 async function loadModels() {
   try {
-    status.innerText = 'Loading models...';
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
-    ]);
-    status.innerText = 'Models loaded.';
-    //await startVideo();
+    if (!faceapi.nets.tinyFaceDetector.params) {
+      status.innerText = 'Loading models...';
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
+      ]);
+      status.innerText = 'Models loaded.';
+    } else {
+      status.innerText = 'Models already loaded!';
+    }
   } catch (err) {
     console.error('❌ Model loading error:', err);
     status.innerText = 'Failed to load face detection models.';
