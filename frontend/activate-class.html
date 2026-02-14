@@ -1,0 +1,221 @@
+<!--activate-class.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Management - AttendAce</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="styles2.css">
+</head>
+
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
+
+  <!-- GAMING BACKGROUND -->
+  <div id="bg-anim"></div>
+
+  <!-- CLICK SOUND -->
+  <audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
+
+  <!-- HEADER -->
+  <header class="p-4 flex justify-between items-center reveal">
+    <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+    <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+      OFFICIAL
+    </button>
+  </header>
+
+  <section class="px-5 mt-4 reveal">
+    <div class="glass p-6 relative overflow-hidden text-center">
+
+      <h2 class="text-2xl font-black mb-4">Class Management</h2>
+
+      <!-- Error -->
+      <div id="errorMsg" class="text-red-500 text-sm mb-4"></div>
+
+      <!-- Enrolled Classes -->
+<div id="classesList" class="space-y-3 text-[var(--text)] text-left"></div>      <!-- Add Class -->
+      <button id="openAddModal" class="mt-6 w-full py-3 rounded-lg bg-[var(--accent)] text-white font-bold">
+        + Add Class
+      </button>
+      <button class="menu-btn group w-full rounded-xl p-4 mt-6 flex flex-col items-center"
+              onclick="window.location.href='teacher-dashboard.html'">
+        <!-- Main row: Icon + Button name -->
+        <div class="flex items-center gap-3">
+      <img src="assets/back.svg" alt="Developer Support" class="scan-icon w-6 h-6 transition-all duration-300">    
+      <div class="text-lg">Return to Dashboard</div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <!-- Modal -->
+<div id="availableClassesModal" class="fixed inset-0 hidden bg-black/50 flex items-center justify-center z-50">
+  <div class="glass bg-[var(--card)] p-6 w-[95%] max-w-xl text-[var(--text)]">
+
+    <h3 class="text-lg font-semibold mb-4 text-center">Add Class</h3>
+
+    <input id="className" type="text" placeholder="Class Name"
+     class="w-full mb-3 px-4 py-2 rounded-xl border border-gray-300" />
+
+    <input id="subject" type="text" placeholder="Subject"
+     class="w-full mb-4 px-4 py-2 rounded-xl border border-gray-300" />
+
+    <button id="submitClass"
+     class="w-full bg-[var(--accent)] text-white py-2 rounded-xl font-bold">
+     Add Class
+    </button>
+
+    <button id="closeModalBtn"
+     class="mt-3 w-full bg-gray-200 text-gray-700 py-2 rounded-xl">
+     Close
+    </button>
+
+  </div>
+</div>
+
+<script>
+const API = "https://attendace-zjzu.onrender.com/api/teacher";
+const token = localStorage.getItem('token');
+
+/* THEME INIT */
+const cachedUser = JSON.parse(localStorage.getItem('user'));
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  document.getElementById('themeToggle').innerText = 'GAMING';
+}
+
+/* THEME TOGGLE */
+document.getElementById('themeToggle').onclick = () => {
+  document.body.classList.toggle('gaming');
+};
+
+/* FETCH PROFILE */
+async function fetchProfile(){
+  const res = await fetch(`${API}/profile`,{
+    headers:{ Authorization:'Bearer '+token }
+  });
+
+  if(!res.ok){
+    window.location.href="login.html";
+    return;
+  }
+
+  const data = await res.json();
+  localStorage.setItem('user',JSON.stringify(data.user));
+  return data.user;
+}
+
+/* FETCH CLASSES */
+async function fetchClasses(){
+  const res = await fetch(`${API}/classes`,{
+    headers:{ Authorization:'Bearer '+token }
+  });
+
+  const classes = await res.json();
+  const container = document.getElementById('classesList');
+  container.innerHTML='';
+
+  if(!classes.length){
+    container.innerHTML='<div class="text-center opacity-60">No classes found</div>';
+    return;
+  }
+
+  classes.forEach(cls=>{
+    const card=document.createElement('div');
+    card.className="menu-btn p-4 rounded-xl flex justify-between items-center";
+
+    card.innerHTML=`
+      <div>
+        <div class="font-bold">${cls.name}</div>
+        <div class="text-xs opacity-70">${cls.subject || ''}</div>
+      </div>
+      <button class="px-3 py-2 rounded-full text-xs font-bold
+        ${cls.is_active ? 'bg-red-500 text-white' : 'bg-green-600 text-white'}">
+        ${cls.is_active ? 'Deactivate' : 'Activate'}
+      </button>
+    `;
+
+    const btn=card.querySelector('button');
+    btn.onclick=()=>toggleClass(cls.id,btn);
+
+    container.appendChild(card);
+  });
+}
+
+/* ACTIVATE / DEACTIVATE */
+async function toggleClass(id,btn){
+  const isActive=btn.innerText==='Deactivate';
+
+  const url=isActive
+    ? `${API}/classes/deactivate`
+    : `${API}/classes/activate`;
+
+  const body=isActive
+    ? { class_id:id }
+    : { class_id:id, minutes:5 };
+
+  const res=await fetch(url,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      Authorization:'Bearer '+token
+    },
+    body:JSON.stringify(body)
+  });
+
+  if(res.ok) fetchClasses();
+}
+
+/* ADD CLASS MODAL */
+const modal=document.getElementById('availableClassesModal');
+document.getElementById('openAddModal').onclick=()=>{
+  modal.classList.remove('hidden');
+};
+
+document.getElementById('closeModalBtn').onclick=()=>{
+  modal.classList.add('hidden');
+};
+
+document.getElementById('submitClass')?.addEventListener('click',async()=>{
+  const name=document.getElementById('className').value;
+  const subject=document.getElementById('subject').value;
+
+  const res=await fetch(`${API}/classes/add`,{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      Authorization:'Bearer '+token
+    },
+    body:JSON.stringify({name,subject})
+  });
+
+  if(res.ok){
+    fetchClasses();
+    modal.classList.add('hidden');
+  }
+});
+
+/* INIT */
+document.addEventListener('DOMContentLoaded', async () => {
+  await fetchProfile();
+  fetchClasses();
+
+  // reveal animation trigger
+  document.querySelectorAll('.reveal').forEach(el => {
+    setTimeout(() => el.classList.add('show'), 100);
+  });
+});
+
+</script>
+</body>
+</html>
