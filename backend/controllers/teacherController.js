@@ -104,6 +104,44 @@ exports.addClass = async (req, res) => {
 };
 
 // ==========================
+// REMOVE CLASS
+// ==========================
+exports.removeClass = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const { class_id } = req.body;
+
+    if (!class_id)
+      return res.status(400).json({ message: 'class_id is required' });
+
+    // Verify class belongs to teacher
+    const [classRows] = await pool.query(
+      'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
+      [class_id, teacherId]
+    );
+    if (classRows.length === 0)
+      return res.status(403).json({ message: 'Unauthorized class access' });
+
+    // Delete class
+    await pool.query(
+      'DELETE FROM classes WHERE id = ? AND teacher_id = ?',
+      [class_id, teacherId]
+    );
+
+    // Optional: remove from active_classes if present
+    await pool.query(
+      'DELETE FROM active_classes WHERE class_id = ?',
+      [class_id]
+    );
+
+    res.json({ message: 'Class removed successfully' });
+  } catch (err) {
+    console.error('❌ Remove class error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ==========================
 // Generate QR (UNCHANGED)
 // ==========================
 exports.generateQR = async (req, res) => {

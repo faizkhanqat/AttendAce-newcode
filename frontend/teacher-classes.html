@@ -139,41 +139,44 @@ async function fetchClasses(){
         <div class="font-bold">${cls.name}</div>
         <div class="text-xs opacity-70">${cls.subject || ''}</div>
       </div>
-      <button class="px-3 py-2 rounded-full text-xs font-bold
-        ${cls.is_active ? 'bg-red-500 text-white' : 'bg-green-600 text-white'}">
-        ${cls.is_active ? 'Deactivate' : 'Activate'}
+      <button class="px-3 py-2 rounded-full text-xs font-bold bg-red-500 text-white">
+        🗑 Remove
       </button>
     `;
 
-    const btn=card.querySelector('button');
-    btn.onclick=()=>toggleClass(cls.id,btn);
+    const btn = card.querySelector('button');
+    btn.onclick = () => removeClass(cls.id);
 
     container.appendChild(card);
   });
 }
 
-/* ACTIVATE / DEACTIVATE */
-async function toggleClass(id,btn){
-  const isActive=btn.innerText==='Deactivate';
 
-  const url=isActive
-    ? `${API}/classes/deactivate`
-    : `${API}/classes/activate`;
 
-  const body=isActive
-    ? { class_id:id }
-    : { class_id:id, minutes:5 };
+async function removeClass(classId) {
+  if (!confirm('Are you sure you want to remove this class?')) return;
 
-  const res=await fetch(url,{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      Authorization:'Bearer '+token
-    },
-    body:JSON.stringify(body)
-  });
+  try {
+    const res = await fetch(`${API}/classes/remove`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token
+      },
+      body: JSON.stringify({ class_id: classId })
+    });
 
-  if(res.ok) fetchClasses();
+    if (res.ok) {
+      alert('Class removed successfully');
+      fetchClasses();
+    } else {
+      const data = await res.json();
+      alert(data.message || 'Failed to remove class');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error removing class');
+  }
 }
 
 /* ADD CLASS MODAL */

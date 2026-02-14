@@ -12,6 +12,8 @@ router.put('/update', teacherController.updateProfile);
 
 router.get('/classes', teacherController.getClasses);
 router.post('/classes/add', teacherController.addClass);
+// NEW: Remove class
+router.post('/classes/remove', teacherController.removeClass);
 
 // QR (UNCHANGED)
 router.post('/classes/generate-qr', teacherController.generateQR);
