@@ -38,7 +38,7 @@ exports.markAttendance = async (req, res) => {
 
     // Mark attendance
     await pool.query(
-      'INSERT INTO attendance (student_id, class_id, status, qr_token, timestamp, method) VALUES (?, ?, ?, ?, NOW(), ?)',
+      'INSERT INTO attendance (student_id, class_id, status, qr_token, timestamp, method, conducted_on) VALUES (?, ?, ?, ?, NOW(), ?, CURRENT_DATE())',
       [studentId, class_id, 'present', token, 'qr']
     );
 
