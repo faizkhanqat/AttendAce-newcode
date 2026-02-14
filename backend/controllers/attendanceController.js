@@ -181,39 +181,55 @@ exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // Fetch per-class summary directly
+    // 1️⃣ Per-class attendance
     const [byClass] = await pool.query(`
-  SELECT 
-    c.id AS class_id,
-    c.name AS class_name,
-    c.total_classes,
-    COUNT(a.id) AS attended
-  FROM student_classes sc
-  JOIN classes c ON c.id = sc.class_id
-  LEFT JOIN attendance a 
-    ON a.class_id = c.id AND a.student_id = sc.student_id
-  WHERE sc.student_id = ?
-  GROUP BY c.id
-`, [studentId]);
+      SELECT 
+        c.id AS class_id,
+        c.name AS class_name,
+        COUNT(a.id) AS attended,
+        COUNT(DISTINCT ac.conducted_on) AS total
+      FROM student_classes sc
+      JOIN classes c ON c.id = sc.class_id
+      LEFT JOIN attendance a 
+        ON a.class_id = c.id AND a.student_id = sc.student_id AND a.status='present'
+      LEFT JOIN active_classes ac 
+        ON ac.class_id = c.id
+      WHERE sc.student_id = ?
+      GROUP BY c.id
+    `, [studentId]);
 
-const risk = byClass.map(c => ({
-  name: c.class_name,
-  total: c.total_classes,
-  attended: c.attended,
-  missed: c.total_classes - c.attended,
-  percentage: c.total_classes ? Math.round((c.attended / c.total_classes) * 100) : 0
-}));
+    // 2️⃣ Risk subjects (below 75%)
+    const risk = byClass.map(c => {
+      const percentage = c.total ? Math.round((c.attended / c.total) * 100) : 0;
+      return {
+        name: c.class_name,
+        total: c.total,
+        attended: c.attended,
+        missed: c.total - c.attended,
+        percentage
+      };
+    });
 
-const overall = byClass.reduce((acc, c) => {
-  acc.total += c.total_classes;
-  acc.present += c.attended;
-  return acc;
-}, { total: 0, present: 0 });
+    // 3️⃣ Overall attendance
+    const overall = byClass.reduce((acc, c) => {
+      acc.total += c.total;
+      acc.present += c.attended;
+      return acc;
+    }, { total: 0, present: 0 });
 
-res.json({ overall, byClass: risk });
+    // 4️⃣ Trend: last 30 days
+    const [trend] = await pool.query(`
+      SELECT DATE(conducted_on) AS day, COUNT(*) AS present
+      FROM attendance
+      WHERE student_id = ? AND status='present'
+        AND conducted_on >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+      GROUP BY DATE(conducted_on)
+      ORDER BY day ASC
+    `, [studentId]);
 
+    res.json({ overall, byClass: risk, trend });
   } catch (err) {
-    console.error('❌ Analytics error (summary table):', err);
+    console.error('❌ Analytics error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
