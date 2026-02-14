@@ -52,14 +52,6 @@ exports.markAttendance = async (req, res) => {
 
     const teacherId = classRow[0].teacher_id;
 
-    await pool.query(`
-    UPDATE classes
-    SET total_classes = COALESCE(total_classes, 0) + 1
-    WHERE id=? AND NOT EXISTS (
-      SELECT 1 FROM attendance 
-      WHERE class_id=? AND conducted_on=CURDATE()
-    )
-  `, [class_id, class_id]);
 
     return res.json({ message: 'Attendance marked successfully (QR)', class_id });
   } catch (err) {
@@ -149,14 +141,6 @@ if (!rows.length || !rows[0].face_encoding) {
         expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR)
     `, [class_id, teacherId]);
 
-    await pool.query(`
-    UPDATE classes
-    SET total_classes = COALESCE(total_classes, 0) + 1
-    WHERE id=? AND NOT EXISTS (
-      SELECT 1 FROM attendance 
-      WHERE class_id=? AND conducted_on=CURDATE()
-    )
-  `, [class_id, class_id]);
 
     // Optional log
     await pool.query(
@@ -187,13 +171,11 @@ exports.getStudentAnalytics = async (req, res) => {
         c.id AS class_id,
         c.name AS class_name,
         COUNT(a.id) AS attended,
-        COUNT(DISTINCT ac.conducted_on) AS total
+        c.total_classes AS total
       FROM student_classes sc
       JOIN classes c ON c.id = sc.class_id
       LEFT JOIN attendance a 
         ON a.class_id = c.id AND a.student_id = sc.student_id AND a.status='present'
-      LEFT JOIN active_classes ac 
-        ON ac.class_id = c.id
       WHERE sc.student_id = ?
       GROUP BY c.id
     `, [studentId]);

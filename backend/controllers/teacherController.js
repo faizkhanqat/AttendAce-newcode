@@ -214,6 +214,26 @@ exports.activateClass = async (req, res) => {
       [class_id, teacherId, expiresAt, conductedOn]
     );
 
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+    // Attempt to insert class session for today
+    const [result] = await pool.query(
+      `INSERT INTO class_sessions (class_id, activated_on)
+      VALUES (?, ?) 
+      ON DUPLICATE KEY UPDATE id=id`, // dummy update
+      [class_id, today]
+    );
+
+    if (result.affectedRows === 1) {
+      // New session created, increment total_classes
+      await pool.query(
+        `UPDATE classes
+        SET total_classes = COALESCE(total_classes, 0) + 1
+        WHERE id = ?`,
+        [class_id]
+      );
+    }
+
     res.json({
       message: `Class activated for ${activeMinutes} minute(s)`,
       class_id,
