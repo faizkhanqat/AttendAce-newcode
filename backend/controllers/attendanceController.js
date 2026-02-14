@@ -42,6 +42,25 @@ exports.markAttendance = async (req, res) => {
       [studentId, class_id, 'present', token, 'qr']
     );
 
+    // Get teacher_id for the class
+    const [classRow] = await pool.query(
+      'SELECT teacher_id FROM classes WHERE id = ? LIMIT 1',
+      [class_id]
+    );
+
+    if (!classRow.length) return res.status(400).json({ message: 'Class not found' });
+
+    const teacherId = classRow[0].teacher_id;
+
+
+    // Update or create active_classes for today
+    await pool.query(`
+      INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on)
+      VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR), CURRENT_DATE())
+      ON DUPLICATE KEY UPDATE
+        expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+    `, [class_id, teacherId]);
+
     // ===== Update Student Summary =====
     await pool.query(`
       INSERT INTO student_attendance_summary (student_id, class_id, total_sessions, present_count, qr_attendance_count, last_attended)
@@ -72,9 +91,11 @@ exports.markAttendance = async (req, res) => {
       GROUP BY c.id
       ON DUPLICATE KEY UPDATE
         total_sessions = total_sessions + 1,
-        average_attendance_percent = ROUND(
-          SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / total_students * 100, 2
-        ),
+        average_attendance_percent = ROUND( 
+        IF(COUNT(sc.student_id)=0, 0,
+    SUM(CASE WHEN a.status='present' THEN 1 ELSE 0 END)/COUNT(sc.student_id)*100
+  ), 2
+),
         last_session = NOW();
     `, [class_id]);
 
@@ -146,6 +167,25 @@ if (!rows.length || !rows[0].face_encoding) {
        VALUES (?, ?, ?, ?, ?, NOW(), CURRENT_DATE())`,
       [studentId, class_id, 'present', true, 'face']
     );
+
+    // Get teacher_id for the class
+    const [classRow] = await pool.query(
+      'SELECT teacher_id FROM classes WHERE id = ? LIMIT 1',
+      [class_id]
+    );
+
+    if (!classRow.length) return res.status(400).json({ message: 'Class not found' });
+
+    const teacherId = classRow[0].teacher_id;
+
+
+    // Update or create active_classes for today
+    await pool.query(`
+      INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on)
+      VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR), CURRENT_DATE())
+      ON DUPLICATE KEY UPDATE
+        expires_at = DATE_ADD(NOW(), INTERVAL 1 HOUR)
+    `, [class_id, teacherId]);
 
     // ===== Update Student Summary =====
     await pool.query(`
@@ -228,6 +268,23 @@ exports.getStudentAnalytics = async (req, res) => {
       [studentId]
     );
 
+    // Attendance trends per day
+    const [trendRows] = await pool.query(
+      `SELECT class_id, conducted_on AS date,
+              SUM(CASE WHEN student_id=? AND status='present' THEN 1 ELSE 0 END) AS present_count,
+              COUNT(*) AS total_students
+      FROM attendance
+      WHERE student_id=?
+      GROUP BY class_id, conducted_on
+      ORDER BY class_id, conducted_on ASC`,
+      [studentId, studentId]
+    );
+
+    const trends = trendRows.map(r => ({
+      date: r.date,
+      percentage: r.total_students ? Math.round((r.present_count / r.total_students) * 100) : 0
+    }));
+
     // Overall
     const overall = byClass.reduce((acc, c) => {
       acc.total += c.total;
@@ -236,18 +293,41 @@ exports.getStudentAnalytics = async (req, res) => {
     }, { total: 0, present: 0 });
 
     // Risk (< 75%)
-    const risk = byClass
-      .map(c => ({
-        name: c.class_name,
-        percentage: c.total ? Math.round((c.present / c.total) * 100) : 0,
-        missed: c.total - c.present
-      }))
-      .filter(c => c.percentage < 75);
+    // Calculate missed classes and risk
+    const risk = [];
+
+    for (let c of byClass) {
+      // Total sessions conducted for this class
+      const [sessions] = await pool.query(
+        `SELECT COUNT(*) AS total_sessions 
+        FROM active_classes 
+        WHERE class_id = ?`,
+        [c.class_id]
+      );
+
+      const totalSessions = sessions[0]?.total_sessions || 0;
+      const missed = totalSessions - c.present;
+      const percentage = totalSessions ? Math.round((c.present / totalSessions) * 100) : null;
+
+      if (percentage !== null && percentage < 75) {
+        risk.push({
+          name: c.class_name,
+          percentage,
+          missed
+        });
+      }
+
+      // Update byClass for frontend
+      c.total = totalSessions;
+      c.missed = missed;
+      c.percentage = percentage;
+    }
 
     res.json({
       overall,
       byClass,
-      risk
+      risk,
+      trends
     });
 
   } catch (err) {
