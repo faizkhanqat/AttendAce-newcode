@@ -55,16 +55,27 @@ exports.markAttendance = async (req, res) => {
 
     // ===== Update Teacher Summary =====
     await pool.query(`
-      INSERT INTO teacher_class_summary (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
-      SELECT c.id, c.teacher_id, COUNT(sc.student_id), 1, 100, NOW()
+      INSERT INTO teacher_class_summary 
+        (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
+      SELECT 
+        c.id,
+        c.teacher_id,
+        COUNT(sc.student_id),
+        1,
+        ROUND(
+          SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / COUNT(sc.student_id) * 100, 2
+        ),
+        NOW()
       FROM classes c
       LEFT JOIN student_classes sc ON sc.class_id = c.id
-      WHERE c.id = ?
+      LEFT JOIN attendance a ON a.class_id = c.id AND a.conducted_on = CURDATE()      WHERE c.id = ?
       GROUP BY c.id
       ON DUPLICATE KEY UPDATE
         total_sessions = total_sessions + 1,
-        average_attendance_percent = ROUND((present_count / total_students) * 100, 2),
-        last_session = NOW()
+        average_attendance_percent = ROUND(
+          SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / total_students * 100, 2
+        ),
+        last_session = NOW();
     `, [class_id]);
 
     return res.json({ message: 'Attendance marked successfully (QR)', class_id });
@@ -149,16 +160,28 @@ if (!rows.length || !rows[0].face_encoding) {
 
     // ===== Update Teacher Summary =====
     await pool.query(`
-      INSERT INTO teacher_class_summary (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
-      SELECT c.id, c.teacher_id, COUNT(sc.student_id), 1, 100, NOW()
+      INSERT INTO teacher_class_summary 
+        (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
+      SELECT 
+        c.id,
+        c.teacher_id,
+        COUNT(sc.student_id),
+        1,
+        ROUND(
+          SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / COUNT(sc.student_id) * 100, 2
+        ),
+        NOW()
       FROM classes c
       LEFT JOIN student_classes sc ON sc.class_id = c.id
+      LEFT JOIN attendance a ON a.class_id = c.id AND a.conducted_on = CURDATE()
       WHERE c.id = ?
       GROUP BY c.id
       ON DUPLICATE KEY UPDATE
         total_sessions = total_sessions + 1,
-        average_attendance_percent = ROUND((present_count / total_students) * 100, 2),
-        last_session = NOW()
+        average_attendance_percent = ROUND(
+          SUM(CASE WHEN a.status = 'present' THEN 1 ELSE 0 END) / total_students * 100, 2
+        ),
+        last_session = NOW();
     `, [class_id]);
 
     // Optional log
