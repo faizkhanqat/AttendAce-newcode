@@ -214,20 +214,30 @@ const [sessionRows] = await pool.query(
   [class_id, today]
 );
 
+let shouldIncrement = false;
+
 if (sessionRows.length === 0) {
-  // No session yet, insert new one
+  // No session yet today → insert session
   await pool.query(
     'INSERT INTO class_sessions (class_id, activated_on) VALUES (?, ?)',
     [class_id, today]
   );
+  shouldIncrement = true; // we will increment total_classes below
+}
 
-  // Increment total_classes
+// Increment total_classes only if first activation today
+if (shouldIncrement) {
   await pool.query(
     'UPDATE classes SET total_classes = COALESCE(total_classes, 0) + 1 WHERE id = ?',
     [class_id]
   );
-} 
-// else → already exists today → do nothing
+}
+
+// Always activate class for the requested minutes
+await pool.query(
+  'INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE expires_at = VALUES(expires_at)',
+  [class_id, teacherId, expiresAt, today]
+);
 
     res.json({
       message: `Class activated for ${activeMinutes} minute(s)`,
