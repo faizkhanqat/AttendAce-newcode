@@ -53,7 +53,7 @@ function renderSubjectChart(data) {
       datasets: [
         {
           label: 'Present',
-          data: data.byClass.map(c => c.present),
+          data: data.byClass.map(c => c.attended),
           backgroundColor: '#10b981'
         },
         {
