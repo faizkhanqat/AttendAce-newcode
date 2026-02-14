@@ -49,7 +49,7 @@ function renderSubjectChart(data) {
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.byClass.map(c => c.name),
+      labels: data.byClass.map(c => c.class_name),
       datasets: [
         {
           label: 'Present',

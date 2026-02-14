@@ -42,6 +42,31 @@ exports.markAttendance = async (req, res) => {
       [studentId, class_id, 'present', token, 'qr']
     );
 
+    // ===== Update Student Summary =====
+    await pool.query(`
+      INSERT INTO student_attendance_summary (student_id, class_id, total_sessions, present_count, qr_attendance_count, last_attended)
+      VALUES (?, ?, 1, 1, 1, NOW())
+      ON DUPLICATE KEY UPDATE
+        total_sessions = total_sessions + 1,
+        present_count = present_count + 1,
+        qr_attendance_count = qr_attendance_count + 1,
+        last_attended = NOW()
+    `, [studentId, class_id]);
+
+    // ===== Update Teacher Summary =====
+    await pool.query(`
+      INSERT INTO teacher_class_summary (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
+      SELECT c.id, c.teacher_id, COUNT(sc.student_id), 1, 100, NOW()
+      FROM classes c
+      LEFT JOIN student_classes sc ON sc.class_id = c.id
+      WHERE c.id = ?
+      GROUP BY c.id
+      ON DUPLICATE KEY UPDATE
+        total_sessions = total_sessions + 1,
+        average_attendance_percent = ROUND((present_count / total_students) * 100, 2),
+        last_session = NOW()
+    `, [class_id]);
+
     return res.json({ message: 'Attendance marked successfully (QR)', class_id });
   } catch (err) {
     console.error('❌ Error in markAttendance:', err);
@@ -111,6 +136,31 @@ if (!rows.length || !rows[0].face_encoding) {
       [studentId, class_id, 'present', true, 'face']
     );
 
+    // ===== Update Student Summary =====
+    await pool.query(`
+      INSERT INTO student_attendance_summary (student_id, class_id, total_sessions, present_count, face_attendance_count, last_attended)
+      VALUES (?, ?, 1, 1, 1, NOW())
+      ON DUPLICATE KEY UPDATE
+        total_sessions = total_sessions + 1,
+        present_count = present_count + 1,
+        face_attendance_count = face_attendance_count + 1,
+        last_attended = NOW()
+    `, [studentId, class_id]);
+
+    // ===== Update Teacher Summary =====
+    await pool.query(`
+      INSERT INTO teacher_class_summary (class_id, teacher_id, total_students, total_sessions, average_attendance_percent, last_session)
+      SELECT c.id, c.teacher_id, COUNT(sc.student_id), 1, 100, NOW()
+      FROM classes c
+      LEFT JOIN student_classes sc ON sc.class_id = c.id
+      WHERE c.id = ?
+      GROUP BY c.id
+      ON DUPLICATE KEY UPDATE
+        total_sessions = total_sessions + 1,
+        average_attendance_percent = ROUND((present_count / total_students) * 100, 2),
+        last_session = NOW()
+    `, [class_id]);
+
     // Optional log
     await pool.query(
       'INSERT INTO attendance_logs (student_id, action, details) VALUES (?, ?, ?)',
@@ -128,33 +178,31 @@ if (!rows.length || !rows[0].face_encoding) {
 };
 
 /**
- * Get attendance analytics for the logged-in student
+ * Get attendance analytics for the logged-in student (using summary table)
  */
 exports.getStudentAnalytics = async (req, res) => {
   try {
     const studentId = req.user.id;
 
-    // Subject/Class-wise attendance
+    // Fetch per-class summary directly
     const [byClass] = await pool.query(
       `
       SELECT 
-        c.id,
-        c.name,
-        COUNT(DISTINCT ac.id) AS total,
-        COUNT(DISTINCT a.id) AS present
+        c.id AS class_id,
+        c.name AS class_name,
+        COALESCE(s.total_sessions, 0) AS total,
+        COALESCE(s.present_count, 0) AS present,
+        COALESCE(s.qr_attendance_count, 0) AS qr_count,
+        COALESCE(s.face_attendance_count, 0) AS face_count,
+        COALESCE(s.manual_attendance_count, 0) AS manual_count,
+        s.last_attended
       FROM student_classes sc
       JOIN classes c ON c.id = sc.class_id
-      LEFT JOIN active_classes ac 
-        ON ac.class_id = c.id
-        AND ac.conducted_on <= CURDATE()
-      LEFT JOIN attendance a
-        ON a.class_id = c.id
-        AND a.student_id = ?
-        AND DATE(a.timestamp) = ac.conducted_on
+      LEFT JOIN student_attendance_summary s
+        ON s.student_id = sc.student_id AND s.class_id = sc.class_id
       WHERE sc.student_id = ?
-      GROUP BY c.id
       `,
-      [studentId, studentId]
+      [studentId]
     );
 
     // Overall
@@ -167,80 +215,52 @@ exports.getStudentAnalytics = async (req, res) => {
     // Risk (< 75%)
     const risk = byClass
       .map(c => ({
-        name: c.name,
+        name: c.class_name,
         percentage: c.total ? Math.round((c.present / c.total) * 100) : 0,
         missed: c.total - c.present
       }))
       .filter(c => c.percentage < 75);
 
-    // Attendance trend (last 14 days)
-    const [trend] = await pool.query(
-      `
-      SELECT 
-        DATE(timestamp) AS day,
-        COUNT(*) AS present
-      FROM attendance
-      WHERE student_id = ?
-      GROUP BY DATE(timestamp)
-      ORDER BY day DESC
-      LIMIT 14
-      `,
-      [studentId]
-    );
-
     res.json({
       overall,
       byClass,
-      trend: trend.reverse(),
       risk
     });
 
   } catch (err) {
-    console.error('❌ Analytics error:', err);
+    console.error('❌ Analytics error (summary table):', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
 
 /**
- * Get attendance analytics for teacher's classes
+ * Get attendance analytics for teacher's classes (using summary table)
  */
 exports.getTeacherAnalytics = async (req, res) => {
   try {
     const teacherId = req.user.id;
 
     const [classes] = await pool.query(
-      'SELECT id, name FROM classes WHERE teacher_id = ?',
+      `
+      SELECT 
+        c.id AS class_id,
+        c.name AS class_name,
+        COALESCE(t.total_students, COUNT(sc.student_id)) AS total_students,
+        COALESCE(t.total_sessions, 0) AS total_sessions,
+        COALESCE(t.average_attendance_percent, 0) AS avg_attendance,
+        t.last_session
+      FROM classes c
+      LEFT JOIN student_classes sc ON sc.class_id = c.id
+      LEFT JOIN teacher_class_summary t ON t.class_id = c.id
+      WHERE c.teacher_id = ?
+      GROUP BY c.id
+      `,
       [teacherId]
     );
 
-    const analytics = [];
-
-    for (const cls of classes) {
-      const [totalStudentsRows] = await pool.query(
-        'SELECT COUNT(*) AS total_students FROM student_classes WHERE class_id = ?',
-        [cls.id]
-      );
-
-      const [attendanceRows] = await pool.query(
-        'SELECT COUNT(*) AS attended_count FROM attendance WHERE class_id = ?',
-        [cls.id]
-      );
-
-      const avgAttendance = totalStudentsRows[0].total_students
-        ? Math.round(attendanceRows[0].attended_count / totalStudentsRows[0].total_students)
-        : 0;
-
-      analytics.push({
-        id: cls.id,
-        name: cls.name,
-        total_students: totalStudentsRows[0].total_students,
-        avg_attendance: avgAttendance,
-      });
-    }
-
-    return res.json({ classes: analytics });
+    res.json({ classes });
   } catch (err) {
-    console.error('❌ Error fetching teacher analytics:', err);
+    console.error('❌ Teacher analytics error (summary table):', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
