@@ -115,6 +115,9 @@ async function fetchClasses() {
       }
       classSelect.appendChild(opt);
     });
+    // Update button for selected class (preselected or first)
+    const initialClass = classes.find(c => c.id == (preselectedClassId || classes[0]?.id));
+    if (initialClass) updateActivationButton(initialClass);
 
   } catch (err) {
     console.error(err);
