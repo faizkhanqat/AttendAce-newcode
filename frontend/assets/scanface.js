@@ -227,17 +227,20 @@ const detection = await faceapi
     return;
   }
 
-  status.innerText = '✅ Face matched. Marking attendance...';
+status.innerText = '✅ Face verified. Now scan QR to mark attendance.';
 
-  const activeClass = await getActiveClass();
-  if (!activeClass) {
-    status.innerText = '⏳ No active class right now';
-    clearInterval(detectionInterval);
-    return;
-  }
+const activeClass = await getActiveClass();
+if (!activeClass) {
+  status.innerText = '⏳ No active class right now';
+  clearInterval(detectionInterval);
+  return;
+}
 
-  await markFaceAttendance(activeClass.class_id);
-  window.location.href = `scanqr.html?faceVerified=true&class_id=${activeClass.class_id}`;
+// Stop detection but **do NOT mark attendance**
+clearInterval(detectionInterval);
+
+// Redirect to scan QR page with faceVerified flag
+window.location.href = `scanqr.html?faceVerified=true&class_id=${activeClass.class_id}`;
 } else {
       status.innerText = 'No face detected...';
     }

@@ -5,10 +5,6 @@ const urlParams = new URLSearchParams(window.location.search);
 const faceVerified = urlParams.get('faceVerified');
 const classId = urlParams.get('class_id');
 
-if (faceVerified !== 'true' || !classId) {
-  alert('❌ Face not verified! Please scan your face first.');
-  window.location.href = 'scanface.html';
-}
 
 const token = localStorage.getItem('token'); // student JWT
 const errorMsg = document.getElementById('errorMsg');
@@ -18,6 +14,27 @@ if (!token) {
   if (errorMsg) errorMsg.textContent = 'No auth token. Login first.';
   throw new Error('No JWT token in localStorage');
 }
+
+async function isClassActive(classId) {
+  const res = await fetch(`/api/student/classes/${classId}`);
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.is_active; // boolean from backend
+}
+
+// --- Verify face only if class is active ---
+(async () => {
+  if (!classId) {
+    alert('Class not selected');
+    window.location.href = 'student-classes.html';
+    return;
+  }
+  const active = await isClassActive(classId);
+  if (active && faceVerified !== 'true') {
+    alert('❌ Face not verified! Please scan your face first.');
+    window.location.href = 'scanface.html';
+  }
+})();
 
 async function markAttendance(class_id, qrToken) {
   try {
