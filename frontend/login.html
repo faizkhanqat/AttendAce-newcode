@@ -207,7 +207,17 @@
     const nameGroup = document.getElementById('nameGroup');
     const genderGroup = document.getElementById('genderGroup');
     const dobGroup = document.getElementById('dobGroup');
+    const departmentGroup = document.getElementById('departmentGroup');
     const roleGroup = document.getElementById('roleGroup');
+    const roleSelect = document.getElementById('role');
+
+    roleSelect.addEventListener('change', (e) => {
+      if (e.target.value === 'student') {
+        departmentGroup.classList.remove('hidden');
+      } else {
+        departmentGroup.classList.add('hidden');
+      }
+    });
     const otpGroup = document.getElementById('otpGroup');
     const otpInput = document.getElementById('otp');
     const newPasswordGroup = document.getElementById('newPasswordGroup');
@@ -218,6 +228,7 @@
 
     // Toggle login/register
     toggleLink.addEventListener('click', () => {
+      otpInput.value = '';
       isLogin = !isLogin;
       isForgot = false;
       otpSent = false;
@@ -229,7 +240,6 @@
       passwordInput.type = 'password';
       roleGroup.classList.remove('hidden');
       document.getElementById('role').required = true;
-      departmentGroup.classList.remove('hidden'); // show for registration
 
       if (isLogin) {
         formTitle.textContent = 'AttendAce Login';
@@ -256,6 +266,7 @@
 
     // Show forgot password
     forgotLink.addEventListener('click', () => {
+      otpInput.value = '';
       isForgot = true;
       isLogin = false;
       otpSent = false;
@@ -370,19 +381,32 @@
 
     async function register(name, email, password, role, gender, dob, department) {
       try {
-        const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/register', {
+        const res = await fetch('https://attendace-zjzu.onrender.com/api/auth/register-request', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password, role, gender, dob, department })
         });
+
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Registration failed');
-        alert('Registration successful! Please login.');
-        toggleLink.click();
+        if (!res.ok) throw new Error(data.message);
+
+        otpGroup.classList.remove('hidden');
+        passwordGroup.classList.add('hidden');
+        confirmGroup.classList.add('hidden');
+        roleGroup.classList.add('hidden');
+        departmentGroup.classList.add('hidden');
+        genderGroup.classList.add('hidden');
+        dobGroup.classList.add('hidden');
+        submitBtn.textContent = 'Verify OTP';
+        msg.style.color = 'green';
+        msg.textContent = data.message;
+
+        otpSent = true;
+        resetEmail = email;
+
       } catch (err) {
-        console.error(err);
         msg.style.color = 'red';
-        msg.textContent = 'Registration failed: ' + err.message;
+        msg.textContent = err.message;
       }
     }
 
@@ -476,31 +500,56 @@
           return;
         }
         login(email, password, role);
-      } else {
+            } else {
         const name = document.getElementById('name').value;
         const password = passwordInput.value;
         const confirmPassword = document.getElementById('confirmPassword').value;
         const gender = document.getElementById('gender').value;
         const dob = document.getElementById('dob').value;
         const department = document.getElementById('department').value;
-        if (!name || !email || !password || !role || !confirmPassword) {
-          msg.style.color='red';
-          msg.textContent='Please fill all required fields';
-          return;
-        }
-        if(role === 'student' && !department) {
-          msg.style.color='red';
-          msg.textContent='Please select department';
-          return;
-        }
 
-      
-        if (password !== confirmPassword) {
-          msg.style.color='red';
-          msg.textContent="Passwords don't match";
-          return;
+        if (!otpSent) {
+          if (!name || !email || !password || !role || !confirmPassword) {
+            msg.style.color = 'red';
+            msg.textContent = 'Please fill all required fields';
+            return;
+          }
+
+          if (password !== confirmPassword) {
+            msg.style.color = 'red';
+            msg.textContent = "Passwords don't match";
+            return;
+          }
+
+          register(name, email, password, role, gender || null, dob || null, department || null);
+
+        } else {
+          const otp = otpInput.value;
+          if (!otp) {
+            msg.style.color = 'red';
+            msg.textContent = 'Please enter OTP';
+            return;
+          }
+
+          fetch('https://attendace-zjzu.onrender.com/api/auth/register-verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: resetEmail, otp })
+          })
+          .then(res => res.json())
+          .then(data => {
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('user', JSON.stringify(data.user));
+              window.location.href = data.user.role === 'student'
+                ? 'student-dashboard.html'
+                : 'teacher-dashboard.html';
+            } else {
+              msg.style.color = 'red';
+              msg.textContent = data.message;
+            }
+          });
         }
-        register(name,email,password,role,gender||null,dob||null, department||null);
       }
     });
   </script>

@@ -14,120 +14,7 @@ const EMAIL_FROM = process.env.EMAIL_FROM;
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
-// ------------------ REGISTER ------------------
-exports.register = async (req, res) => {
-  const { name, email, password, role, gender, dob } = req.body;
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
-
-  if (role === 'student' && !req.body.department) {
-    return res.status(400).json({ message: 'Department required for students' });
-  }
-
-  try {
-    const [existing] = await pool.query(
-      'SELECT * FROM users WHERE email = ?',
-      [email]
-    );
-    if (existing.length > 0) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-
-// Insert user with department; aviation_id will be generated after insert
-const mode = role === 'student' ? 'gaming' : 'official';
-
-const [result] = await pool.query(
-  'INSERT INTO users (name, email, password_hash, role, gender, dob, department, mode) VALUES (?, ?, ?, ?, ?, ?, ? , ?)',
-  [name, email, hashedPassword, role, gender || null, dob || null, req.body.department || null, mode]
-);
-
-// Generate aviation_id
-const aviationId = `${role === 'student' ? 'STD-' : 'TCH-'}${String(result.insertId).padStart(4, '0')}`;
-
-await pool.query(
-  'UPDATE users SET aviation_id = ? WHERE id = ?',
-  [aviationId, result.insertId]
-);
-
-const [newUser] = await pool.query(
-  'SELECT id, name, email, role, gender, dob, department, aviation_id FROM users WHERE id = ?',
-  [result.insertId]
-);
-
-    // ------------------ SEND CREATIVE WELCOME EMAIL ------------------
-    try {
-      await sgMail.send({
-        to: newUser[0].email,
-        from: EMAIL_FROM,
-        subject: `🎉 Welcome to AttendAce, ${newUser[0].name}!`,
-        text: `Hi ${newUser[0].name},
-
-Welcome to AttendAce! Kevin Hamad and the AttendAce Team are thrilled to have you on board.
-
-You can now log in and start exploring all the features we've built for you.
-
-Cheers,
-Kevin Hamad & AttendAce Team 🚀`,
-        html: `
-          <div style="font-family: Arial, sans-serif; background:#f0f2f5; padding:20px;">
-            <div style="max-width:550px; margin:auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1); text-align:center;">
-              
-              <h1 style="color:#2d6a4f; font-size:28px; margin-bottom:10px;">🎉 Welcome to AttendAce, ${newUser[0].name}! 🎉</h1>
-              
-              <p style="color:#333; font-size:16px; line-height:1.5;">
-                Kevin Hamad and the entire AttendAce Team are thrilled to have you onboard. <br>
-                You now have access to all the tools to manage attendance and classes effortlessly.
-              </p>
-
-              <div style="background:#e9f5ec; color:#1b4332; padding:16px; margin:20px 0; border-radius:8px; font-size:18px; font-weight:bold;">
-                Start exploring your dashboard today!
-              </div>
-
-              <p style="color:#555; font-size:14px; margin-bottom:25px;">
-                Need help? We're always here for you — just reply to this email.
-              </p>
-
-              <a href="https://attendace-zjzu.onrender.com/login.html" style="display:inline-block; background:#2d6a4f; color:#fff; text-decoration:none; padding:12px 24px; border-radius:8px; font-size:16px; margin-bottom:20px;">
-                Explore AttendAce
-              </a>
-
-              <p style="font-size:14px; color:#444; margin-top:30px;">
-                Warm regards,<br>
-                <strong>Kevin Hamad & AttendAce Team 🚀</strong>
-              </p>
-
-              <p style="font-size:12px; color:#999;">
-                P.S. Remember: Great things happen when you attend on time! 😉
-              </p>
-
-            </div>
-          </div>
-        `
-      });
-    } catch (emailErr) {
-      console.error('Welcome email error:', emailErr);
-    }
-
-    const token = jwt.sign(
-      { id: newUser[0].id, role: newUser[0].role },
-      JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
-    res.status(201).json({
-      message: 'Registration successful',
-      token,
-      user: newUser[0]
-    });
-  } catch (err) {
-    console.error('Register error:', err);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
 
 // ------------------ LOGIN ------------------
 exports.login = async (req, res) => {
@@ -139,17 +26,17 @@ exports.login = async (req, res) => {
 
   try {
     const [users] = await pool.query(
-      'SELECT * FROM users WHERE email = ? AND role = ?',
+      'SELECT * FROM users WHERE email = ? AND role = ? AND is_verified = TRUE',
       [email, role]
     );
     if (users.length === 0) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Account not verified or invalid credentials' });
     }
 
     const user = users[0];
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: 'Account not verified or invalid credentials' });
     }
 
     await pool.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
@@ -214,7 +101,7 @@ exports.requestOtp = async (req, res) => {
 
     const user = users[0];
 
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
 
     await pool.query(
@@ -318,6 +205,12 @@ exports.verifyOtp = async (req, res) => {
       return res.status(400).json({ message: 'OTP expired' });
     }
 
+    // 🔐 Make OTP single-use
+    await pool.query(
+      'UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE email = ?',
+      [email]
+    );
+
     res.json({ message: 'OTP verified. You can reset your password now.' });
   } catch (err) {
     console.error('Verify OTP error:', err);
@@ -331,6 +224,12 @@ exports.resetPassword = async (req, res) => {
   if (!email || !otp || !newPassword) {
     return res.status(400).json({
       message: 'Email, OTP, and new password required'
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      message: 'Password must be at least 6 characters'
     });
   }
 
@@ -366,6 +265,198 @@ exports.resetPassword = async (req, res) => {
     });
   } catch (err) {
     console.error('Reset Password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ------------------ REGISTER OTP REQUEST ------------------
+exports.registerRequestOtp = async (req, res) => {
+  const { name, email, password, role, gender, dob, department } = req.body;
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ message: 'Password must be at least 6 characters' });
+  }
+
+  try {
+    await pool.query(
+      'DELETE FROM users WHERE email = ? AND is_verified = FALSE',
+      [email]
+    );
+    const [existing] = await pool.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60000);
+
+    await pool.query(
+      'INSERT INTO users (name, email, password_hash, role, gender, dob, department, reg_otp_code, reg_otp_expires, mode, is_verified) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)',
+      [
+        name,
+        email,
+        await bcrypt.hash(password, SALT_ROUNDS),
+        role,
+        gender || null,
+        dob || null,
+        department || null,
+        otp,
+        expires,
+        role === 'student' ? 'gaming' : 'official'
+      ]
+    );
+
+    await sgMail.send({
+      to: email,
+      from: EMAIL_FROM,
+      subject: '🔐 Verify your AttendAce account',
+      html: `
+        <div style="font-family:Arial;padding:20px">
+          <h2>Verify Your Account</h2>
+          <p>Your OTP is:</p>
+          <div style="font-size:28px;font-weight:bold">${otp}</div>
+          <p>This OTP is valid for ${OTP_EXPIRY_MINUTES} minutes.</p>
+        </div>
+      `
+    });
+
+    res.json({ message: 'OTP sent to your email. Please verify to complete registration.' });
+
+  } catch (err) {
+    console.error('Register OTP error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ------------------ VERIFY REGISTER OTP ------------------
+exports.registerVerifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ message: 'Email and OTP required' });
+  }
+
+  try {
+    const [users] = await pool.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const user = users[0];
+
+    if (!user.reg_otp_code || !user.reg_otp_expires) {
+      return res.status(400).json({ message: 'No registration OTP requested' });
+    }
+
+    if (user.reg_otp_code !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (new Date(user.reg_otp_expires) < new Date()) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    // Clear registration OTP
+    await pool.query(
+      'UPDATE users SET reg_otp_code = NULL, reg_otp_expires = NULL, is_verified = TRUE WHERE email = ?',
+      [email]
+    );
+
+    // Generate aviation_id
+    const aviationId = `${user.role === 'student' ? 'STD-' : 'TCH-'}${String(user.id).padStart(4, '0')}`;
+
+    await pool.query(
+      'UPDATE users SET aviation_id = ? WHERE id = ?',
+      [aviationId, user.id]
+    );
+
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    try {
+      await sgMail.send({
+        to: user.email,
+        from: EMAIL_FROM,
+        subject: `🎉 Welcome to AttendAce, ${user.name}!`,
+        text: `Hi ${user.name},
+
+Welcome to AttendAce! Kevin Hamad and the AttendAce Team are thrilled to have you on board.
+
+You can now log in and start exploring all the features we've built for you.
+
+Cheers,
+Kevin Hamad & AttendAce Team 🚀`,
+        html: `
+          <div style="font-family: Arial, sans-serif; background:#f0f2f5; padding:20px;">
+            <div style="max-width:550px; margin:auto; background:#ffffff; border-radius:12px; padding:30px; box-shadow:0 6px 18px rgba(0,0,0,0.1); text-align:center;">
+              
+              <h1 style="color:#2d6a4f; font-size:28px; margin-bottom:10px;">🎉 Welcome to AttendAce, ${user.name}! 🎉</h1>
+              
+              <p style="color:#333; font-size:16px; line-height:1.5;">
+                Kevin Hamad and the entire AttendAce Team are thrilled to have you onboard. <br>
+                You now have access to all the tools to manage attendance and classes effortlessly.
+              </p>
+
+              <div style="background:#e9f5ec; color:#1b4332; padding:16px; margin:20px 0; border-radius:8px; font-size:18px; font-weight:bold;">
+                Start exploring your dashboard today!
+              </div>
+
+              <p style="color:#555; font-size:14px; margin-bottom:25px;">
+                Need help? We're always here for you — just reply to this email.
+              </p>
+
+              <a href="https://attendace-zjzu.onrender.com/login.html" style="display:inline-block; background:#2d6a4f; color:#fff; text-decoration:none; padding:12px 24px; border-radius:8px; font-size:16px; margin-bottom:20px;">
+                Explore AttendAce
+              </a>
+
+              <p style="font-size:14px; color:#444; margin-top:30px;">
+                Warm regards,<br>
+                <strong>Kevin Hamad & AttendAce Team 🚀</strong>
+              </p>
+
+              <p style="font-size:12px; color:#999;">
+                P.S. Remember: Great things happen when you attend on time! 😉
+              </p>
+
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      console.error('Welcome email error:', emailErr);
+    }
+
+    res.json({
+      message: 'Registration verified successfully',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        gender: user.gender,
+        dob: user.dob,
+        department: user.department,
+        aviation_id: aviationId
+      }
+    });
+
+  } catch (err) {
+    console.error('Register verify error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

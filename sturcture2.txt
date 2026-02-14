@@ -1,0 +1,87 @@
+.
+├── backend
+│   ├── config
+│   │   └── db.js
+│   ├── controllers
+│   │   ├── attendanceController.js
+│   │   ├── authController.js
+│   │   ├── contactController.js
+│   │   ├── qrController.js
+│   │   ├── studentController.js
+│   │   └── teacherController.js
+│   ├── middlewares
+│   │   ├── authMiddleware.js
+│   │   └── roleMiddleware.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── attendanceRoutes.js
+│   │   ├── authRoutes.js
+│   │   ├── contactRoutes.js
+│   │   ├── qrRoutes.js
+│   │   ├── studentRoutes.js
+│   │   └── teacherRoutes.js
+│   ├── server.js
+│   └── ssl
+│       ├── server.cert
+│       ├── server.crt
+│       └── server.key
+├── frontend
+│   ├── analytics-student.html
+│   ├── analytics-teacher.html
+│   ├── assets
+│   │   ├── account-settings.svg
+│   │   ├── analytics-student.js
+│   │   ├── analytics-teacher.js
+│   │   ├── analytics.svg
+│   │   ├── back.svg
+│   │   ├── back2.svg
+│   │   ├── back3.svg
+│   │   ├── back4.svg
+│   │   ├── back5.svg
+│   │   ├── back6.svg
+│   │   ├── classes.svg
+│   │   ├── dev-support.svg
+│   │   ├── icon-192.png
+│   │   ├── icon-512.png
+│   │   ├── image.png
+│   │   ├── login-background.png
+│   │   ├── logo.png
+│   │   ├── models
+│   │   │   ├── face_landmark_68_model-shard1
+│   │   │   ├── face_landmark_68_model-weights_manifest.json
+│   │   │   ├── face_recognition_model-shard1
+│   │   │   ├── face_recognition_model-shard2
+│   │   │   ├── face_recognition_model-weights_manifest.json
+│   │   │   ├── tiny_face_detector_model-shard1
+│   │   │   └── tiny_face_detector_model-weights_manifest.json
+│   │   ├── register-face.js
+│   │   ├── register-face.svg
+│   │   ├── save.svg
+│   │   ├── scan-qr.svg
+│   │   ├── scanface.js
+│   │   ├── scanqr.js
+│   │   ├── student-classes.js
+│   │   ├── student.jpg
+│   │   ├── styles.css
+│   │   └── teacher-qrgenerator.js
+│   ├── contact-developers.html
+│   ├── login.html
+│   ├── manifest.json
+│   ├── register-face.html
+│   ├── scanface.html
+│   ├── scanqr.html
+│   ├── settings.html
+│   ├── student-classes.html
+│   ├── student-dashboard.html
+│   ├── styles2.css
+│   ├── teacher-add-class.html
+│   ├── teacher-classes.html
+│   ├── teacher-dashboard.html
+│   └── teacher-qrgenerator.html
+├── package-lock.json
+├── package.json
+├── structure.txt
+└── sturcture2.txt
+
+10 directories, 75 files
