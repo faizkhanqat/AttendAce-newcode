@@ -212,11 +212,13 @@
     const roleSelect = document.getElementById('role');
 
     roleSelect.addEventListener('change', (e) => {
+      if (!isLogin){
       if (e.target.value === 'student') {
         departmentGroup.classList.remove('hidden');
       } else {
         departmentGroup.classList.add('hidden');
       }
+    }
     });
     const otpGroup = document.getElementById('otpGroup');
     const otpInput = document.getElementById('otp');
@@ -299,6 +301,16 @@
 
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+
+
+
+      // Start preloading facial models in background (silent)
+      const script = document.createElement('script');
+      script.src = 'assets/preload-face-models.js';
+      document.body.appendChild(script);
+
+      // Redirect normally
+      window.location.href = data.user.role === 'student' ? 'student-dashboard.html' : 'teacher-dashboard.html';
 
         if (!data.isComplete) {
           // Show message and prompt user to fill missing fields

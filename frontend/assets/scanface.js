@@ -64,15 +64,16 @@ async function init() {
       return;
     }
 
-    status.innerText = 'Loading models...';
+    // Skip loading if already loaded
+    if (!faceapi.nets.tinyFaceDetector.params) {
+      await Promise.all([
+        faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
+        faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
+        faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
+      ]);
+    }
 
-    await Promise.all([
-      faceapi.nets.tinyFaceDetector.loadFromUri('/assets/models'),
-      faceapi.nets.faceLandmark68Net.loadFromUri('/assets/models'),
-      faceapi.nets.faceRecognitionNet.loadFromUri('/assets/models')
-    ]);
-
-    status.innerText = 'Models loaded. Starting camera...';
+    // Start camera
     await startVideo();
   } catch (err) {
     console.error('❌ Init failed:', err);
