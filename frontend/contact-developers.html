@@ -129,6 +129,15 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 const token = localStorage.getItem('token');
 const user = JSON.parse(localStorage.getItem('user'));
 
+const returnBtn = document.getElementById('returnDashboardBtn');
+returnBtn.addEventListener('click', () => {
+  if (user.role === 'teacher') {
+    window.location.href = 'teacher-dashboard.html';
+  } else {
+    window.location.href = 'student-dashboard.html';
+  }
+});
+
 // Redirect to login if not logged in
 if (!token || !user) {
   window.location.href = 'login.html';
@@ -180,13 +189,6 @@ sendBtn.addEventListener('click', async () => {
       })
     });
 
-    document.getElementById('returnDashboardBtn').addEventListener('click', () => {
-  if (user.role === 'teacher') {
-    window.location.href = 'teacher-dashboard.html';
-  } else {
-    window.location.href = 'student-dashboard.html';
-  }
-});
 
     const data = await response.json();
     statusMessage.textContent = response.ok ? data.message : (data.message || 'Error sending feedback.');
