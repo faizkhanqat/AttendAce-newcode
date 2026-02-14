@@ -206,33 +206,28 @@ exports.activateClass = async (req, res) => {
     // Calculate JS-based dates to avoid DB function issues
     const now = new Date();
     const expiresAt = new Date(now.getTime() + activeMinutes * 60000); // add minutes
-    const conductedOn = now.toISOString().split('T')[0]; // YYYY-MM-DD
-
-    await pool.query(
-      `INSERT INTO active_classes (class_id, teacher_id, expires_at, conducted_on)
-       VALUES (?, ?, ?, ?)`,
-      [class_id, teacherId, expiresAt, conductedOn]
-    );
-
     const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-    // Attempt to insert class session for today
-    const [result] = await pool.query(
-      `INSERT INTO class_sessions (class_id, activated_on)
-      VALUES (?, ?) 
-      ON DUPLICATE KEY UPDATE id=id`, // dummy update
-      [class_id, today]
-    );
+// Check if session exists today
+const [sessionRows] = await pool.query(
+  'SELECT id FROM class_sessions WHERE class_id = ? AND activated_on = ?',
+  [class_id, today]
+);
 
-    if (result.affectedRows === 1) {
-      // New session created, increment total_classes
-      await pool.query(
-        `UPDATE classes
-        SET total_classes = COALESCE(total_classes, 0) + 1
-        WHERE id = ?`,
-        [class_id]
-      );
-    }
+if (sessionRows.length === 0) {
+  // No session yet, insert new one
+  await pool.query(
+    'INSERT INTO class_sessions (class_id, activated_on) VALUES (?, ?)',
+    [class_id, today]
+  );
+
+  // Increment total_classes
+  await pool.query(
+    'UPDATE classes SET total_classes = COALESCE(total_classes, 0) + 1 WHERE id = ?',
+    [class_id]
+  );
+} 
+// else → already exists today → do nothing
 
     res.json({
       message: `Class activated for ${activeMinutes} minute(s)`,
