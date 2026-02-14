@@ -106,9 +106,9 @@ if (!rows.length || !rows[0].face_encoding) {
     // ✅ Mark attendance via FACE
     await pool.query(
       `INSERT INTO attendance 
-       (student_id, class_id, status, face_match, method, timestamp) 
+       (student_id, class_id, status, face_match, method, timestamp, conducted_on) 
        VALUES (?, ?, ?, ?, ?, NOW())`,
-      [studentId, class_id, 'present', true, 'face']
+      [studentId, class_id, 'present', true, 'face', CURDATE()]
     );
 
     // Optional log
