@@ -176,34 +176,6 @@ async function toggleClass(id,btn){
   if(res.ok) fetchClasses();
 }
 
-/* ADD CLASS MODAL */
-const modal=document.getElementById('availableClassesModal');
-document.getElementById('openAddModal').onclick=()=>{
-  modal.classList.remove('hidden');
-};
-
-document.getElementById('closeModalBtn').onclick=()=>{
-  modal.classList.add('hidden');
-};
-
-document.getElementById('submitClass')?.addEventListener('click',async()=>{
-  const name=document.getElementById('className').value;
-  const subject=document.getElementById('subject').value;
-
-  const res=await fetch(`${API}/classes/add`,{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      Authorization:'Bearer '+token
-    },
-    body:JSON.stringify({name,subject})
-  });
-
-  if(res.ok){
-    fetchClasses();
-    modal.classList.add('hidden');
-  }
-});
 
 /* INIT */
 document.addEventListener('DOMContentLoaded', async () => {

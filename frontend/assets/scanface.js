@@ -237,6 +237,7 @@ const detection = await faceapi
   }
 
   await markFaceAttendance(activeClass.class_id);
+  window.location.href = `scanqr.html?faceVerified=true&class_id=${activeClass.class_id}`;
 } else {
       status.innerText = 'No face detected...';
     }

@@ -1,4 +1,15 @@
 // frontend/assets/scanqr.js
+
+// --- Ensure face verification before QR scan ---
+const urlParams = new URLSearchParams(window.location.search);
+const faceVerified = urlParams.get('faceVerified');
+const classId = urlParams.get('class_id');
+
+if (faceVerified !== 'true' || !classId) {
+  alert('❌ Face not verified! Please scan your face first.');
+  window.location.href = 'scanface.html';
+}
+
 const token = localStorage.getItem('token'); // student JWT
 const errorMsg = document.getElementById('errorMsg');
 
