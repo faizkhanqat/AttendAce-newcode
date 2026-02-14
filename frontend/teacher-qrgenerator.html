@@ -100,6 +100,11 @@
 
       </button>
 
+      <button id="activationBtn"
+        class="w-full py-3 rounded-xl bg-green-600 text-white font-bold mt-4">
+        Activate
+      </button>
+
     </div>
   </section>
 
@@ -107,32 +112,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
   <script src="assets/teacher-qrgenerator.js"></script>
 
-  <script>
-    /* THEME INIT */
-    const cachedUser = JSON.parse(localStorage.getItem('user'));
-    if (cachedUser?.mode === 'gaming') {
-      document.body.classList.add('gaming');
-      document.getElementById('themeToggle').innerText = 'GAMING';
-    }
-
-    /* THEME TOGGLE */
-    document.getElementById('themeToggle').onclick = () => {
-      document.body.classList.toggle('gaming');
-      const btn = document.getElementById('themeToggle');
-      btn.innerText =
-        document.body.classList.contains('gaming')
-          ? 'GAMING'
-          : 'OFFICIAL';
-    };
-
-    /* Reveal Animation */
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.reveal')
-        .forEach(el => {
-          setTimeout(() => el.classList.add('show'), 100);
-        });
-    });
-  </script>
 
 </body>
 </html>

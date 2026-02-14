@@ -153,18 +153,17 @@ async function fetchClasses(){
 }
 
 /* ACTIVATE / DEACTIVATE */
-async function toggleClass(id,btn){
-  const isActive=btn.innerText==='Deactivate';
-
-  const url=isActive
+async function toggleClass(id, btn){
+  const isActive = btn.innerText === 'Deactivate';
+  const url = isActive
     ? `${API}/classes/deactivate`
     : `${API}/classes/activate`;
 
-  const body=isActive
-    ? { class_id:id }
-    : { class_id:id, minutes:5 };
+  const body = isActive
+    ? { class_id: id }
+    : { class_id: id, minutes: 15 }; // default QR duration
 
-  const res=await fetch(url,{
+  const res = await fetch(url,{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
@@ -173,7 +172,14 @@ async function toggleClass(id,btn){
     body:JSON.stringify(body)
   });
 
-  if(res.ok) fetchClasses();
+  if(res.ok){
+    // Redirect **only after activation**
+    if(!isActive) {
+      window.location.href = `teacher-qrgenerator.html?class_id=${id}`;
+    } else {
+      fetchClasses(); // refresh
+    }
+  }
 }
 
 
