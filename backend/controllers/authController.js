@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
+const { mode: AUTH_MODE } = require('../config/authMode');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
@@ -11,8 +12,9 @@ const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES) || 10;
 // SendGrid config
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const EMAIL_FROM = process.env.EMAIL_FROM;
-
-sgMail.setApiKey(SENDGRID_API_KEY);
+if (SENDGRID_API_KEY) {
+  sgMail.setApiKey(SENDGRID_API_KEY);
+}
 
 
 
@@ -85,6 +87,12 @@ exports.login = async (req, res) => {
 
 // 1️⃣ Request OTP
 exports.requestOtp = async (req, res) => {
+  if (AUTH_MODE !== 'otp') {
+    return res.status(400).json({
+      message: 'OTP functionality is disabled'
+    });
+  }
+
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ message: 'Email is required' });
@@ -180,6 +188,12 @@ exports.requestOtp = async (req, res) => {
 
 // 2️⃣ Verify OTP
 exports.verifyOtp = async (req, res) => {
+  if (AUTH_MODE !== 'otp') {
+    return res.status(400).json({
+      message: 'OTP functionality is disabled'
+    });
+  }
+
   const { email, otp } = req.body;
   if (!email || !otp) {
     return res.status(400).json({ message: 'Email and OTP required' });
@@ -220,6 +234,12 @@ exports.verifyOtp = async (req, res) => {
 
 // 3️⃣ Reset Password
 exports.resetPassword = async (req, res) => {
+  if (AUTH_MODE !== 'otp') {
+    return res.status(400).json({
+      message: 'OTP functionality is disabled'
+    });
+  }
+
   const { email, otp, newPassword } = req.body;
   if (!email || !otp || !newPassword) {
     return res.status(400).json({
@@ -271,6 +291,70 @@ exports.resetPassword = async (req, res) => {
 
 // ------------------ REGISTER OTP REQUEST ------------------
 exports.registerRequestOtp = async (req, res) => {
+  // 🔥 BYPASS OTP IF DISABLED
+  if (AUTH_MODE !== 'otp') {
+    try {
+    const { name, email, password, role, gender, dob, department } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
+    const [existing] = await pool.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    const [result] = await pool.query(
+      `INSERT INTO users 
+      (name, email, password_hash, role, gender, dob, department, mode, is_verified) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE)`,
+      [
+        name,
+        email,
+        hashedPassword,
+        role,
+        gender || null,
+        dob || null,
+        department || null,
+        role === 'student' ? 'gaming' : 'official'
+      ]
+    );
+
+    const aviationId = `${role === 'student' ? 'STD-' : 'TCH-'}${String(result.insertId).padStart(4, '0')}`;
+
+    await pool.query(
+      'UPDATE users SET aviation_id = ? WHERE id = ?',
+      [aviationId, result.insertId]
+    );
+
+    const token = jwt.sign(
+      { id: result.insertId, role },
+      JWT_SECRET,
+      { expiresIn: '8h' }
+    );
+
+    return res.status(201).json({
+      message: 'Registered successfully (OTP disabled)',
+      token
+    });
+    } catch(err){
+      console.error('Register (no OTP) error:', err);
+     return res.status(500).json({ message: 'Server error' });
+    }
+  }
+
+
   const { name, email, password, role, gender, dob, department } = req.body;
 
   if (!name || !email || !password || !role) {
@@ -337,6 +421,13 @@ exports.registerRequestOtp = async (req, res) => {
 
 // ------------------ VERIFY REGISTER OTP ------------------
 exports.registerVerifyOtp = async (req, res) => {
+
+  if (AUTH_MODE !== 'otp') {
+    return res.status(400).json({
+      message: 'OTP functionality is disabled'
+    });
+  }
+
   const { email, otp } = req.body;
 
   if (!email || !otp) {
