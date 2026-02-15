@@ -127,7 +127,7 @@ async function fetchClasses(){
         <div class="font-bold">${cls.name}</div>
         <div class="text-xs opacity-70">${cls.subject || ''}</div>
       </div>
-      <button class="px-3 py-2 rounded-full text-xs font-bold
+      <button class="px-3 py-2 rounded-full text-base font-bold
         ${cls.is_active ? 'bg-red-500 text-white' : 'bg-green-600 text-white'}">
         ${cls.is_active ? 'Deactivate' : 'Activate'}
       </button>
