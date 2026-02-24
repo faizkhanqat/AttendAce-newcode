@@ -17,8 +17,7 @@
   <link rel="stylesheet" href="styles2.css">
 </head>
 
-<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
-
+<body class="font-sans overflow-y-auto relative z-10">
 <!-- GAMING BACKGROUND -->
 <div id="bg-anim"></div>
 
@@ -34,9 +33,9 @@
 </header>
 
 <section class="px-5 mt-4 reveal">
-  <div class="glass p-6 relative overflow-hidden">
+  <div class="glass max-w-[1200px] mx-auto px-4">
 
-    <h2 class="text-2xl font-black mb-4 text-center">
+    <h2 class="text-2xl font-black mb-4 text-center mt-4">
       Attendance Analytics
     </h2>
 
@@ -44,32 +43,32 @@
     <div class="grid grid-cols-3 gap-3 mb-6 text-center">
       <div class="glass p-3 rounded-xl">
         <p class="text-xs text-[var(--muted)]">Overall</p>
-        <p id="overallPercent" class="text-xl font-black">--%</p>
+        <p id="overallPercent" class="text-3xl md:text-4xl font-extrabold mt-1">--%</p>
       </div>
 
       <div class="glass p-3 rounded-xl">
         <p class="text-xs text-[var(--muted)]">Present</p>
-        <p id="presentCount" class="text-xl font-black">--</p>
+        <p id="presentCount" class="text-3xl md:text-4xl font-extrabold mt-1 text-green-600">--</p>
       </div>
 
       <div class="glass p-3 rounded-xl">
         <p class="text-xs text-[var(--muted)]">Missed</p>
-        <p id="missedCount" class="text-xl font-black">--</p>
+        <p id="missedCount" class="text-3xl md:text-4xl font-extrabold mt-1 text-rose-500">--</p>
       </div>
     </div>
 
     <!-- Charts -->
-    <div class="space-y-6">
-      <div class="glass p-4 rounded-xl">
-        <h3 class="font-bold mb-2">By Subject</h3>
-        <canvas id="subjectChart"></canvas>
-      </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="glass p-4 rounded-xl">
+    <h3 class="font-bold mb-2">By Subject</h3>
+    <canvas id="subjectChart" class="w-full h-[300px]"></canvas>
+  </div>
 
-      <div class="glass p-4 rounded-xl">
-        <h3 class="font-bold mb-2">Last 30 Days</h3>
-        <canvas id="trendChart"></canvas>
-      </div>
-    </div>
+  <div class="glass p-4 rounded-xl">
+    <h3 class="font-bold mb-2">Last 30 Days</h3>
+    <canvas id="trendChart" class="w-full h-[300px]"></canvas>
+  </div>
+</div>
 
     <!-- Risk -->
     <div class="mt-6 glass p-4 rounded-xl">
@@ -80,7 +79,7 @@
     </div>
 
     <!-- Back -->
-    <div class="mt-6">
+    <div class="mt-12 mb-6">
       <button class="menu-btn w-full rounded-xl p-4"
               onclick="window.location.href='student-dashboard.html'">
         Return to Dashboard
