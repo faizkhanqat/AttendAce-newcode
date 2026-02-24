@@ -209,7 +209,14 @@ exports.getStudentAnalytics = async (req, res) => {
       ORDER BY day ASC
     `, [studentId]);
 
-    res.json({ overall, byClass: risk, trend });
+    const riskSubjects = risk.filter(r => r.percentage < 75);
+
+    res.json({
+      overall,
+      byClass: risk,
+      trend,
+      risk: riskSubjects
+    });
   } catch (err) {
     console.error('❌ Analytics error:', err);
     res.status(500).json({ message: 'Server error' });

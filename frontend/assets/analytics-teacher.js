@@ -35,10 +35,10 @@ async function renderTeacherAnalytics() {
   new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: data.classes.map(c => c.name),
+      labels: data.classes.map(c => c.class_name),
       datasets: [
         { label: 'Total Students', data: data.classes.map(c => c.total_students), backgroundColor: '#5f8b6e' },
-        { label: 'Average Attendance', data: data.classes.map(c => c.avg_attendance), backgroundColor: '#a7c4a0' },
+        { label: 'Average Attendance', data: data.classes.map(c => c.attendance_percentage), backgroundColor: '#a7c4a0' },
       ],
     },
     options: { responsive: true, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, stepSize: 1 } } },
