@@ -328,7 +328,7 @@ if (!REGISTER_OTP_ENABLED) {
         gender || null,
         dob || null,
         department || null,
-        role === 'student' ? 'gaming' : 'official'
+        'official'
       ]
     );
 
@@ -346,7 +346,7 @@ if (!REGISTER_OTP_ENABLED) {
     );
 
     return res.status(201).json({
-      message: 'Registered successfully (OTP disabled)',
+      message: 'Registered successfully (OTP disabled) | Directly go to Login Page',
       token
     });
     } catch(err){
@@ -394,7 +394,7 @@ if (!REGISTER_OTP_ENABLED) {
         department || null,
         otp,
         expires,
-        role === 'student' ? 'gaming' : 'official'
+        'official'
       ]
     );
 
