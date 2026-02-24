@@ -209,7 +209,9 @@ exports.getStudentAnalytics = async (req, res) => {
       ORDER BY day ASC
     `, [studentId]);
 
-    const riskSubjects = risk.filter(r => r.percentage < 75);
+    const riskSubjects = risk.filter(r => 
+      r.total > 0 && r.percentage < 75
+    );
 
     res.json({
       overall,
