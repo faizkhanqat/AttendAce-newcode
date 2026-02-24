@@ -1,89 +1,155 @@
+<!-- scanqr.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Attendance Analytics · AttendAce</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Analytics | AttendAce</title>
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <!-- Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
-  <style>
-    body { font-family: Inter, system-ui, sans-serif; }
-  </style>
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="styles2.css">
 </head>
 
-<body class="bg-slate-50 min-h-screen">
+<body class="font-sans max-w-[420px] mx-auto overflow-y-auto relative z-10">
 
-  <!-- Header -->
-  <header class="sticky top-0 z-20 bg-white/80 backdrop-blur border-b">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <img src="assets/logo.png" class="w-9 h-9" />
-        <h1 class="font-extrabold text-lg tracking-tight">Attendance Analytics</h1>
+<!-- GAMING BACKGROUND -->
+<div id="bg-anim"></div>
+
+<!-- CLICK SOUND -->
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
+
+<!-- HEADER -->
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
+    OFFICIAL
+  </button>
+</header>
+
+<section class="px-5 mt-4 reveal">
+  <div class="glass p-6 relative overflow-hidden">
+
+    <h2 class="text-2xl font-black mb-4 text-center">
+      Attendance Analytics
+    </h2>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-3 gap-3 mb-6 text-center">
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Overall</p>
+        <p id="overallPercent" class="text-xl font-black">--%</p>
       </div>
 
-      <a href="student-dashboard.html"
-         class="text-sm font-medium text-slate-600 hover:text-slate-900">
-        ← Back to Dashboard
-      </a>
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Present</p>
+        <p id="presentCount" class="text-xl font-black">--</p>
+      </div>
+
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Missed</p>
+        <p id="missedCount" class="text-xl font-black">--</p>
+      </div>
     </div>
-  </header>
-
-  <!-- Main -->
-  <main class="max-w-6xl mx-auto px-6 py-8 space-y-8">
-
-    <!-- KPI Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Overall Attendance</p>
-        <p id="overallPercent" class="mt-2 text-4xl font-extrabold text-emerald-600">--%</p>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Classes Attended</p>
-        <p id="presentCount" class="mt-2 text-4xl font-extrabold">--</p>
-      </div>
-
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <p class="text-sm text-slate-500">Classes Missed</p>
-        <p id="missedCount" class="mt-2 text-4xl font-extrabold text-rose-500">--</p>
-      </div>
-    </section>
 
     <!-- Charts -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-      <!-- By Subject -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 class="font-semibold mb-4">Attendance by Subject</h2>
-        <canvas id="subjectChart" height="220"></canvas>
+    <div class="space-y-6">
+      <div class="glass p-4 rounded-xl">
+        <h3 class="font-bold mb-2">By Subject</h3>
+        <canvas id="subjectChart"></canvas>
       </div>
 
-      <!-- Trend -->
-      <div class="bg-white rounded-2xl p-6 shadow-sm">
-        <h2 class="font-semibold mb-4">Last 30 Days Trend</h2>
-        <canvas id="trendChart" height="220"></canvas>
+      <div class="glass p-4 rounded-xl">
+        <h3 class="font-bold mb-2">Last 30 Days</h3>
+        <canvas id="trendChart"></canvas>
       </div>
+    </div>
 
-    </section>
-
-    <!-- Risk Section -->
-    <section class="bg-white rounded-2xl p-6 shadow-sm">
-      <h2 class="font-semibold mb-4">Subjects at Risk</h2>
-      <div id="riskList" class="space-y-3 text-sm text-slate-600">
-        <p class="text-slate-400">Loading…</p>
+    <!-- Risk -->
+    <div class="mt-6 glass p-4 rounded-xl">
+      <h3 class="font-bold mb-2">Subjects at Risk</h3>
+      <div id="riskList" class="space-y-2 text-sm">
+        Loading...
       </div>
-    </section>
+    </div>
 
-  </main>
+    <!-- Back -->
+    <div class="mt-6">
+      <button class="menu-btn w-full rounded-xl p-4"
+              onclick="window.location.href='student-dashboard.html'">
+        Return to Dashboard
+      </button>
+    </div>
 
-  <script src="assets/analytics-student.js"></script>
+  </div>
+</section>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/analytics-student.js"></script>
+
+<script>
+
+// ⚡ Apply mode instantly (before render)
+const cachedUser = JSON.parse(localStorage.getItem('user'));
+
+if (cachedUser?.mode === 'gaming') {
+  document.body.classList.add('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'GAMING';
+} else if (cachedUser?.mode === 'official') {
+  document.body.classList.remove('gaming');
+  const toggleBtn = document.getElementById('themeToggle');
+  if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+}
+
+if (cachedUser?.mode === 'gaming') {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(1)';
+  });
+} else {
+  document.querySelectorAll('.scan-icon').forEach(icon => {
+    icon.style.filter = 'invert(0)';
+  });
+}
+
+/* CLICK SOUND */
+const clickSound = document.getElementById('clickSound');
+
+// Play click sound for all buttons and links
+document.querySelectorAll('button, a').forEach(el => {
+  el.addEventListener('click', () => {
+    clickSound.currentTime = 0; // rewind in case still playing
+    clickSound.play().catch(err => {
+      console.log("Click sound blocked by browser:", err);
+    });
+  });
+});
+
+/* THEME TOGGLE */
+const toggle = document.getElementById('themeToggle');
+toggle.onclick = () => {
+  document.body.classList.toggle('gaming');
+  toggle.innerText = document.body.classList.contains('gaming')
+    ? 'GAMING'
+    : 'OFFICIAL';
+};
+
+/* REVEAL ANIMATION */
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('show');
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
