@@ -8,6 +8,7 @@ const { mode: AUTH_MODE } = require('../config/authMode');
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS) || 10;
 const OTP_EXPIRY_MINUTES = parseInt(process.env.OTP_EXPIRY_MINUTES) || 10;
+const REGISTER_OTP_ENABLED = process.env.REGISTER_OTP_ENABLED === 'true';
 
 // SendGrid config
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
@@ -292,7 +293,7 @@ exports.resetPassword = async (req, res) => {
 // ------------------ REGISTER OTP REQUEST ------------------
 exports.registerRequestOtp = async (req, res) => {
   // 🔥 BYPASS OTP IF DISABLED
-  if (AUTH_MODE !== 'otp') {
+if (!REGISTER_OTP_ENABLED) {
     try {
     const { name, email, password, role, gender, dob, department } = req.body;
 
@@ -422,7 +423,7 @@ exports.registerRequestOtp = async (req, res) => {
 // ------------------ VERIFY REGISTER OTP ------------------
 exports.registerVerifyOtp = async (req, res) => {
 
-  if (AUTH_MODE !== 'otp') {
+  if (!REGISTER_OTP_ENABLED) {
     return res.status(400).json({
       message: 'OTP functionality is disabled'
     });
