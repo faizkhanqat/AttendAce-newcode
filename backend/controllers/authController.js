@@ -220,10 +220,10 @@ exports.verifyOtp = async (req, res) => {
     }
 
     // 🔐 Make OTP single-use
-    await pool.query(
-      'UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE email = ?',
-      [email]
-    );
+    // await pool.query(
+    //   'UPDATE users SET otp_code = NULL, otp_expires = NULL WHERE email = ?',
+    //   [email]
+    // );
 
     res.json({ message: 'OTP verified. You can reset your password now.' });
   } catch (err) {
