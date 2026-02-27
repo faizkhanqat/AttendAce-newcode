@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",
+    "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.0",
     "moment": "^2.30.1",
     "mysql2": "^3.6.0",

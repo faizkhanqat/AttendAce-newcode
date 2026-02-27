@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { Parser } = require('json2csv');
 
 /**
  * Mark attendance for a student using a QR token
@@ -296,6 +297,75 @@ GROUP BY c.id;
 
   } catch (err) {
     console.error('❌ Teacher analytics error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+
+
+exports.getClassAttendanceCSV = async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const classId = req.params.class_id;
+
+    // 1️⃣ Verify class belongs to teacher
+    const [cls] = await pool.query(
+      'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
+      [classId, teacherId]
+    );
+    if (!cls.length) return res.status(403).json({ message: 'Unauthorized' });
+
+    // 2️⃣ Get enrolled students
+    const [students] = await pool.query(
+      `SELECT u.id, u.name
+       FROM student_classes sc
+       JOIN users u ON u.id = sc.student_id
+       WHERE sc.class_id = ?`,
+      [classId]
+    );
+
+    // 3️⃣ Get class sessions
+    const [sessions] = await pool.query(
+      `SELECT id, activated_on
+       FROM class_sessions
+       WHERE class_id = ?
+       ORDER BY activated_on ASC`,
+      [classId]
+    );
+
+    // 4️⃣ Get attendance
+    const [attendance] = await pool.query(
+      `SELECT student_id, conducted_on, status
+       FROM attendance
+       WHERE class_id = ?`,
+      [classId]
+    );
+
+    // 5️⃣ Build table
+    const table = students.map(s => {
+      const row = { student_name: s.name };
+      sessions.forEach((sess, i) => {
+        const att = attendance.find(a =>
+          a.student_id === s.id &&
+          a.conducted_on.toISOString?.().slice(0,10) === sess.activated_on.toISOString?.().slice(0,10) ||
+          a.conducted_on === sess.activated_on // fallback string comparison
+        );
+        row[`Class ${i+1}`] = att ? (att.status === 'present' ? 'P' : 'A') : '-';
+      });
+      return row;
+    });
+
+    // 6️⃣ Convert to CSV
+    const parser = new Parser();
+    const csv = parser.parse(table);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment(`class_${classId}_attendance.csv`);
+    res.send(csv);
+
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };

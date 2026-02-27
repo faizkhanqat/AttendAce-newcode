@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authMiddleware');
 const authorizeRole = require('../middlewares/roleMiddleware');
+const { getClassAttendanceCSV } = require('../controllers/attendanceController');
 const { 
   markAttendance, 
   faceMarkAttendance, 
@@ -21,5 +22,8 @@ router.get('/analytics/student', authenticateToken, authorizeRole('student'), ge
 
 // Teacher analytics
 router.get('/analytics/teacher', authenticateToken, authorizeRole('teacher'), getTeacherAnalytics);
+
+//csv
+router.get('/analytics/class/:class_id/csv', authMiddleware, getClassAttendanceCSV);
 
 module.exports = router;
