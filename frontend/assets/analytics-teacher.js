@@ -77,3 +77,25 @@ function renderRisk(data) {
     alert('Failed to load analytics');
   }
 })();
+
+document.querySelectorAll('.export-csv-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const classId = btn.dataset.classId;
+    const token = localStorage.getItem('token'); // or wherever you store JWT
+
+    fetch(`/api/attendance/analytics/class/${classId}/csv`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `class_${classId}_attendance.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    })
+    .catch(err => console.error(err));
+  });
+});
