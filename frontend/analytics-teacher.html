@@ -1,37 +1,81 @@
-<!--analytics-teacher.html-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Teacher Analytics | AttendAce</title>
-  <link rel="stylesheet" href="assets/styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { background: #fefae0; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px 0; display: flex; justify-content: center; }
-    .analytics-container { max-width: 600px; width: 100%; background: #fff; border-radius: 25px; box-shadow: 0 5px 25px rgba(0,0,0,0.1); padding: 25px; box-sizing: border-box; margin-bottom: 20px; }
-    header { text-align: center; margin-bottom: 25px; position: relative; }
-    header .logo { width: 60px; margin-bottom: 10px; }
-    header h1 { font-family: 'Playfair Display', serif; font-size: 24px; margin: 0; color: #333; }
-    #charts { padding: 20px; border-radius: 15px; background: #f5f7f8; text-align: center; min-height: 250px; display: flex; justify-content: center; align-items: center; font-size: 16px; color: #333; flex-direction: column; }
-    .menu-btn { display: block; width: 100%; text-align: center; margin-top: 20px; padding: 12px; border-radius: 12px; font-weight: 500; text-decoration: none; background: #5f8b6e; color: #fff; transition: all 0.3s ease; }
-    .menu-btn:hover { background: #497c59; }
-  </style>
-</head>
-<body>
-  <div class="analytics-container">
-    <header>
-      <img src="assets/logo.png" alt="AttendAce Logo" class="logo">
-      <h1>Teacher Analytics</h1>
-    </header>
 
-    <div id="charts">
-      <p>Loading class attendance...</p>
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Shared UI Styles -->
+  <link rel="stylesheet" href="assets/styles2.css">
+</head>
+<body class="font-sans overflow-y-auto relative z-10">
+
+<div id="bg-anim"></div>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3" preload="auto"></audio>
+
+<header class="p-4 flex justify-between items-center reveal">
+  <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">OFFICIAL</button>
+</header>
+
+<section class="px-5 mt-4 reveal">
+  <div class="glass max-w-[1200px] mx-auto px-4">
+    <h2 class="text-2xl font-black mb-4 text-center mt-4">Teacher Analytics</h2>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-3 gap-3 mb-6 text-center">
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Overall Attendance</p>
+        <p id="overallPercent" class="text-3xl md:text-4xl font-extrabold mt-1">--%</p>
+      </div>
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Total Students Present</p>
+        <p id="presentCount" class="text-3xl md:text-4xl font-extrabold mt-1 text-green-600">--</p>
+      </div>
+      <div class="glass p-3 rounded-xl">
+        <p class="text-xs text-[var(--muted)]">Total Students</p>
+        <p id="missedCount" class="text-3xl md:text-4xl font-extrabold mt-1 text-rose-500">--</p>
+      </div>
     </div>
 
-    <a href="teacher-dashboard.html" class="menu-btn">⬅️ Back to Dashboard</a>
-  </div>
+    <!-- Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="glass p-4 rounded-xl">
+        <h3 class="font-bold mb-2">By Class</h3>
+        <canvas id="subjectChart" class="w-full h-[300px]"></canvas>
+      </div>
+      <div class="glass p-4 rounded-xl">
+        <h3 class="font-bold mb-2">Attendance Trend</h3>
+        <canvas id="trendChart" class="w-full h-[300px]"></canvas>
+      </div>
+    </div>
 
-  <script src="assets/analytics-teacher.js"></script>
+    <!-- Risk -->
+    <div class="mt-6 glass p-4 rounded-xl">
+      <h3 class="font-bold mb-2">Classes at Risk</h3>
+      <div id="riskList" class="space-y-2 text-sm">Loading...</div>
+    </div>
+
+    <!-- Back -->
+    <div class="mt-12 mb-6">
+      <button class="menu-btn w-full rounded-xl p-4"
+              onclick="window.location.href='teacher-dashboard.html'">
+        Return to Dashboard
+      </button>
+    </div>
+
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="assets/analytics-teacher.js"></script>
+
 </body>
 </html>

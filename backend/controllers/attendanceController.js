@@ -228,38 +228,66 @@ exports.getStudentAnalytics = async (req, res) => {
 /**
  * Get attendance analytics for teacher's classes (using summary table)
  */
+// Get attendance analytics for teacher's classes (frontend-friendly)
 exports.getTeacherAnalytics = async (req, res) => {
   try {
     const teacherId = req.user.id;
 
+    // 1️⃣ Get all classes of the teacher
     const [classes] = await pool.query(`
-  SELECT 
-    c.id AS class_id,
-    c.name AS class_name,
-    c.total_classes,
-    COUNT(sc.student_id) AS total_students,
-    SUM(CASE WHEN a.status='present' THEN 1 ELSE 0 END) AS total_attended
-  FROM classes c
-  LEFT JOIN student_classes sc ON sc.class_id = c.id
-  LEFT JOIN attendance a ON a.class_id = c.id
-  WHERE c.teacher_id = ?
-  GROUP BY c.id
-`, [teacherId]);
+      SELECT 
+        c.id AS class_id,
+        c.name AS class_name,
+        c.total_classes,
+        COUNT(sc.student_id) AS total_students,
+        SUM(CASE WHEN a.status='present' THEN 1 ELSE 0 END) AS total_attended
+      FROM classes c
+      LEFT JOIN student_classes sc ON sc.class_id = c.id
+      LEFT JOIN attendance a ON a.class_id = c.id
+      WHERE c.teacher_id = ?
+      GROUP BY c.id
+    `, [teacherId]);
 
-const classData = classes.map(cls => ({
-  class_id: cls.class_id,
-  class_name: cls.class_name,
-  total_students: cls.total_students,
-  total_classes: cls.total_classes,
-  total_attended: cls.total_attended,
-  attendance_percentage: cls.total_classes 
-    ? Math.round((cls.total_attended / (cls.total_students * cls.total_classes)) * 100)
-    : 0
-}));
+    if (!classes.length) return res.json({ overall: {}, byClass: [], risk: [] });
 
-res.json({ classes: classData });
+    // 2️⃣ Map class data
+    const classData = classes.map(cls => {
+      const attendancePercentage = (cls.total_classes && cls.total_students)
+        ? Math.round((cls.total_attended / (cls.total_classes * cls.total_students)) * 100)
+        : 0;
+      return {
+        class_id: cls.class_id,
+        name: cls.class_name,
+        total: cls.total_classes || 0,
+        attended: cls.total_attended || 0,
+        percentage: attendancePercentage,
+        total_students: cls.total_students
+      };
+    });
+
+    // 3️⃣ Calculate overall
+    const overall = classData.reduce((acc, cls) => {
+      acc.total_classes += cls.total || 0;
+      acc.total_students += cls.total_students || 0;
+      acc.total_attended += cls.attended || 0;
+      return acc;
+    }, { total_classes: 0, total_students: 0, total_attended: 0 });
+
+    const overallPercent = overall.total_classes && overall.total_students
+      ? Math.round((overall.total_attended / (overall.total_classes * overall.total_students)) * 100)
+      : 0;
+
+    // 4️⃣ Risk classes (<75%)
+    const risk = classData.filter(c => c.percentage < 75);
+
+    res.json({
+      overall: { percent: overallPercent, total_attended: overall.total_attended, total_students: overall.total_students },
+      byClass: classData,
+      risk
+    });
+
   } catch (err) {
-    console.error('❌ Teacher analytics error (summary table):', err);
+    console.error('❌ Teacher analytics error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
