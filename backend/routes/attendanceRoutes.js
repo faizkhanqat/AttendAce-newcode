@@ -24,6 +24,6 @@ router.get('/analytics/student', authenticateToken, authorizeRole('student'), ge
 router.get('/analytics/teacher', authenticateToken, authorizeRole('teacher'), getTeacherAnalytics);
 
 //csv
-router.get('/analytics/class/:class_id/csv', authMiddleware, getClassAttendanceCSV);
+router.get('/analytics/class/:class_id/csv', authenticateToken, authorizeRole('teacher'), getClassAttendanceCSV);
 
 module.exports = router;
