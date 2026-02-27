@@ -236,17 +236,25 @@ exports.getTeacherAnalytics = async (req, res) => {
     // 1️⃣ Get all classes of the teacher
     const [classes] = await pool.query(`
       SELECT 
-        c.id AS class_id,
-        c.name AS class_name,
-        c.total_classes,
-        COUNT(sc.student_id) AS total_students,
-        SUM(CASE WHEN a.status='present' THEN 1 ELSE 0 END) AS total_attended
-      FROM classes c
-      LEFT JOIN student_classes sc ON sc.class_id = c.id
-      LEFT JOIN attendance a ON a.class_id = c.id
-      WHERE c.teacher_id = ?
-      GROUP BY c.id
-    `, [teacherId]);
+    c.id AS class_id,
+    c.name AS class_name,
+    c.total_classes,
+    COUNT(DISTINCT sc.student_id) AS total_students,
+    COUNT(DISTINCT CONCAT(a.student_id, '_', a.conducted_on)) AS total_attended,
+    CASE 
+        WHEN c.total_classes > 0 AND COUNT(DISTINCT sc.student_id) > 0
+        THEN ROUND(
+            COUNT(DISTINCT CONCAT(a.student_id, '_', a.conducted_on)) 
+            / (COUNT(DISTINCT sc.student_id) * c.total_classes) * 100
+        )
+        ELSE 0
+    END AS attendance_percentage
+FROM classes c
+LEFT JOIN student_classes sc ON sc.class_id = c.id
+LEFT JOIN attendance a 
+    ON a.class_id = c.id
+GROUP BY c.id;
+    `);
 
     if (!classes.length) return res.json({ overall: {}, byClass: [], risk: [] });
 
