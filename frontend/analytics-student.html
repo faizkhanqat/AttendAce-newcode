@@ -27,8 +27,8 @@
 <!-- HEADER -->
 <header class="p-4 flex justify-between items-center reveal">
   <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
-  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
-    LUMOS
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press min-w-[80px]">
+    NOX
   </button>
 </header>
 
@@ -101,11 +101,11 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
   const toggleBtn = document.getElementById('themeToggle');
-  if (toggleBtn) toggleBtn.innerText = 'NOX';
+  if (toggleBtn) toggleBtn.innerText = 'LUMOS';
 } else if (cachedUser?.mode === 'official') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
-  if (toggleBtn) toggleBtn.innerText = 'LUMOS';
+  if (toggleBtn) toggleBtn.innerText = 'NOX';
 }
 
 if (cachedUser?.mode === 'gaming') {
@@ -136,8 +136,8 @@ const toggle = document.getElementById('themeToggle');
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
   toggle.innerText = document.body.classList.contains('gaming')
-    ? 'NOX'
-    : 'LUMOS';
+    ? 'LUMOS'
+    : 'NOX';
 };
 
 /* REVEAL ANIMATION */

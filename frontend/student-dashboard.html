@@ -22,8 +22,8 @@
 <!-- HEADER -->
 <header class="p-4 flex justify-between items-center reveal">
   <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
-  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
-    LUMOS
+  <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press min-w-[80px]">
+    NOX
   </button>
 </header>
 
@@ -140,7 +140,7 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
-  document.getElementById('themeToggle').innerText = 'NOX';
+  document.getElementById('themeToggle').innerText = 'LUMOS';
 }
 
 if (cachedUser?.mode === 'gaming') {
@@ -165,8 +165,8 @@ document.querySelectorAll('button').forEach(b => {
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
   toggle.innerText = document.body.classList.contains('gaming')
-    ? 'NOX'
-    : 'LUMOS';
+    ? 'LUMOS'
+    : 'NOX';
 };
 
 /* SCROLL REVEAL */
@@ -218,10 +218,10 @@ document.getElementById('studentDept').textContent = "Department: " + (user.depa
 // ✅ Set mode from DB
   if (user.mode === 'gaming') {
     document.body.classList.add('gaming');
-    toggle.innerText = 'NOX';
+    toggle.innerText = 'LUMOS';
   } else {
     document.body.classList.remove('gaming');
-    toggle.innerText = 'LUMOS';
+    toggle.innerText = 'NOX';
   }
 
 
