@@ -54,35 +54,33 @@ if (!classes.length) {
   return;
 }
 
-// Add column headers
-myClassesContainer.innerHTML += `
-  <div class="grid grid-cols-4 gap-3 font-bold text-sm text-gray-500 px-3 py-2">
-    <span>Code</span>
-    <span>Subject</span>
-    <span>Teacher</span>
-    <span></span>
-  </div>
-`;
-
 classes.forEach(cls => {
-  const row = document.createElement('div');
-  row.className =
-    'grid grid-cols-4 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
+  const card = document.createElement('div');
+  card.className =
+    'bg-[var(--card)] border border-gray-200 rounded-2xl p-4 shadow-sm space-y-2';
 
-  row.innerHTML = `
-    <span class="font-medium">${cls.name}</span>
-    <span class="text-sm">${cls.subject || ''}</span>
-    <span class="text-sm">${cls.teacher_name || cls.teacher_id}</span>
-    <div class="text-right">
-      <button
-        class="px-3 py-1 rounded-lg bg-gray-500 text-white text-sm
-              hover:bg-gray-400 hover:shadow-md transition"
-        onclick="unenroll(${cls.id}, this)">
-        Unenroll
-      </button>
+  card.innerHTML = `
+    <div class="flex justify-between items-start">
+      <div>
+        <div class="text-lg font-bold">${cls.name}</div>
+        <div class="text-sm text-gray-500">${cls.subject || ''}</div>
+        <div class="text-sm text-gray-500">
+          Teacher: ${cls.teacher_name || cls.teacher_id}
+        </div>
+      </div>
+      <div class="flex justify-center">
+  <button
+    onclick="unenroll(${cls.id})"
+    class="px-4 py-2 rounded-lg bg-gray-500 text-white text-sm font-medium
+           hover:bg-gray-400 hover:shadow-md transition
+           min-w-[95px]">
+    Unenroll
+  </button>
+</div>
     </div>
   `;
-  myClassesContainer.appendChild(row);
+
+  myClassesContainer.appendChild(card);
 });
   } catch (err) {
     errorMsg.textContent = err.message;
@@ -124,26 +122,30 @@ function renderAvailableClasses(classes) {
   }
 
   classes.forEach(cls => {
-    const row = document.createElement('div');
-    row.className =
-  'grid grid-cols-4 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
+  const card = document.createElement('div');
+  card.className =
+    'class-card bg-[var(--card)] border border-gray-200 rounded-2xl p-4 shadow-sm flex justify-between items-center';
 
-    row.innerHTML = `
-      <span class="font-medium">${cls.name}</span>
-      <span class="text-sm text-gray-500">${cls.subject || ''}</span>
-      <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
-      <div class="text-right">
-        <button
-          class="px-3 py-1 rounded-lg bg-[#5FC26B] text-white text-sm
-                hover:opacity-90 hover:shadow-md transition"
-          onclick="enroll(${cls.id}, '${escapeHtml(cls.name)}',
-          '${escapeHtml(cls.teacher_name || cls.teacher_id)}')">
-          Enroll
-        </button>
+  card.innerHTML = `
+    <div>
+      <div class="font-semibold">${cls.name}</div>
+      <div class="text-sm text-gray-500">${cls.subject || ''}</div>
+      <div class="text-sm text-gray-500">
+        Teacher: ${cls.teacher_name || cls.teacher_id}
       </div>
-    `;
-    availableClassesContainer.appendChild(row);
-  });
+    </div>
+
+    <button
+      class="px-4 py-2 rounded-lg bg-[#5FC26B] text-white text-sm font-medium
+       hover:opacity-90 hover:shadow-md transition
+       min-w-[95px]"
+      onclick="enroll(${cls.id})">
+      Enroll
+    </button>
+  `;
+
+  availableClassesContainer.appendChild(card);
+});
 }
 
 async function enroll(classId, className, teacherName) {
@@ -185,7 +187,7 @@ async function unenroll(classId, btn) {
 
     if (!res.ok) throw new Error('Unenroll failed');
 
-    btn.closest('div.grid').remove();
+    await fetchMyClasses();
 
     if (!myClassesContainer.children.length) {
       myClassesContainer.innerHTML =
