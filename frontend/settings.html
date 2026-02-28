@@ -71,7 +71,7 @@
       <div class="form-group">
         <label for="mode" class="block text-lg font-semibold mb-1">Mode</label>
         <select id="mode" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
-            <option value="gaming">Gaming</option>
+            <option value="gaming">Dark</option>
           <option value="official">Light</option>
         </select>
       </div>
@@ -109,7 +109,7 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
   const toggleBtn = document.getElementById('themeToggle');
-  if (toggleBtn) toggleBtn.innerText = 'GAMING';
+  if (toggleBtn) toggleBtn.innerText = 'NOX';
 } else if (cachedUser?.mode === 'official') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
@@ -143,7 +143,7 @@ document.querySelectorAll('button, a').forEach(el => {
 const toggle = document.getElementById('themeToggle');
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
-  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'LUMOS';
+  toggle.innerText = document.body.classList.contains('gaming') ? 'NOX' : 'LUMOS';
 };
 
 // -------------------------------

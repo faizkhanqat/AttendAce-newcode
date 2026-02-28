@@ -127,7 +127,7 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
-  document.getElementById('themeToggle').innerText = 'GAMING';
+  document.getElementById('themeToggle').innerText = 'NOX';
 }
 
 if (cachedUser?.mode === 'gaming') {
@@ -152,7 +152,7 @@ document.querySelectorAll('button').forEach(b => {
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
   toggle.innerText = document.body.classList.contains('gaming')
-    ? 'GAMING'
+    ? 'NOX'
     : 'LUMOS';
 };
 
@@ -205,7 +205,7 @@ document.getElementById('teacherDept').textContent = "Department: " + (user.depa
 // ✅ Set mode from DB
   if (user.mode === 'gaming') {
     document.body.classList.add('gaming');
-    toggle.innerText = 'GAMING';
+    toggle.innerText = 'NOX';
   } else {
     document.body.classList.remove('gaming');
     toggle.innerText = 'LUMOS';

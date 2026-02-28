@@ -22,7 +22,7 @@ const cachedUser = JSON.parse(localStorage.getItem('user'));
 if (cachedUser?.mode === 'gaming') {
   document.body.classList.add('gaming');
   const themeToggleBtn = document.getElementById('themeToggle');
-  if (themeToggleBtn) themeToggleBtn.innerText = 'GAMING';
+  if (themeToggleBtn) themeToggleBtn.innerText = 'NOX';
 }
 
 const themeToggleBtn = document.getElementById('themeToggle');
@@ -30,7 +30,7 @@ if (themeToggleBtn) {
   themeToggleBtn.onclick = () => {
     document.body.classList.toggle('gaming');
     themeToggleBtn.innerText = document.body.classList.contains('gaming')
-      ? 'GAMING'
+      ? 'NOX'
       : 'LUMOS';
   };
 }
