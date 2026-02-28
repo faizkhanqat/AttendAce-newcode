@@ -41,6 +41,12 @@ viewBtn.addEventListener('click', async () => {
     headers: { Authorization: `Bearer ${token}` }
   });
 
+  if (!res.ok) {
+    const errText = await res.text();
+    console.error("Backend error:", errText);
+    alert("Server error while loading attendance");
+    return;
+  }
   const data = await res.json();
   currentData = data;
   currentClass = classSelect.options[classSelect.selectedIndex];
@@ -54,7 +60,7 @@ viewBtn.addEventListener('click', async () => {
 function renderTable(data) {
   table.innerHTML = '';
 
-  if (!data.students.length) {
+  if (!data || !data.students || !data.students.length) {
     table.innerHTML = `<tr><td class="p-4">No records found</td></tr>`;
     return;
   }

@@ -1,5 +1,6 @@
 const pool = require('../config/db');
 const { Parser } = require('json2csv');
+const db = require('../config/db');
 
 /**
  * Mark attendance for a student using a QR token
