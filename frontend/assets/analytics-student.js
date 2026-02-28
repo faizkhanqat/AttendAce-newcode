@@ -87,7 +87,7 @@ function renderTrendChart(data) {
   new Chart(ctx, {
     type: 'line',
     data: {
-      labels: data.trend.map(d => d.day),
+      labels: data.trend.map(d => d.day.slice(0, 10)),
       datasets: [{
         data: data.trend.map(d => d.present),
         borderColor: '#0f766e',

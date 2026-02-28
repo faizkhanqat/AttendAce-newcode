@@ -10,9 +10,9 @@
   --radius: 1rem;
 }
 
-.menu-btn {
+/* .menu-btn {
   font-family: 'Roboto', sans-serif !important;
-}
+} */
 
 /* HERO BUTTON – GAMING MODE */
 body.gaming .hero-btn {
@@ -103,10 +103,13 @@ body:not(.gaming) {
 }
 
 body:not(.gaming) .menu-btn {
-  background: #ffffff;
-  color: #111827;
+  background: var(--card);
+  backdrop-filter: blur(18px);
+  /* color: #111827; */
   border-left: 4px solid #2563eb;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.25),
+    inset 0 1px 0 rgba(255,255,255,.15);
 }
 body:not(.gaming) .menu-btn:hover {
   background: #f1f5f9;
