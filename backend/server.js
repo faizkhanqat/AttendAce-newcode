@@ -36,6 +36,10 @@ app.use('/api/attendance', attendanceRoutes);
 app.use('/api/qr', qrRoutes);
 app.use('/api/contact', contactRoutes);
 
+const pingRoutes = require('./routes/pingRoutes');
+app.use('/api/attendance', pingRoutes);
+
+
 // Unknown API route handler
 app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
@@ -51,5 +55,3 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
 
-const pingRoutes = require('./routes/pingRoutes');
-app.use('/api/attendance', pingRoutes);

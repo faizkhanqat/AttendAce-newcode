@@ -1,9 +1,10 @@
+// backend/routes/pingRoutes.js
 const express = require('express');
 const router = express.Router();
 
-// Lightweight ping endpoint
+// Super lightweight ping
 router.get('/ping', (req, res) => {
-  res.json({ status: 'ok', time: new Date() });
+  res.json({ status: 'ok', time: new Date() }); // just send 'ok'
 });
 
 module.exports = router;
