@@ -30,7 +30,7 @@
 <header class="p-4 flex justify-between items-center reveal">
   <h1 class="font-black text-lg tracking-tight">AttendAce</h1>
   <button id="themeToggle" class="px-4 py-2 rounded-full glass text-xs font-bold press">
-    OFFICIAL
+    LUMOS
   </button>
 </header>
 
@@ -72,7 +72,7 @@
         <label for="mode" class="block text-lg font-semibold mb-1">Mode</label>
         <select id="mode" class="glass w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-400" required>
             <option value="gaming">Gaming</option>
-          <option value="official">Official</option>
+          <option value="official">Light</option>
         </select>
       </div>
     </form>
@@ -113,7 +113,7 @@ if (cachedUser?.mode === 'gaming') {
 } else if (cachedUser?.mode === 'official') {
   document.body.classList.remove('gaming');
   const toggleBtn = document.getElementById('themeToggle');
-  if (toggleBtn) toggleBtn.innerText = 'OFFICIAL';
+  if (toggleBtn) toggleBtn.innerText = 'LUMOS';
 }
 
 if (cachedUser?.mode === 'gaming') {
@@ -143,7 +143,7 @@ document.querySelectorAll('button, a').forEach(el => {
 const toggle = document.getElementById('themeToggle');
 toggle.onclick = () => {
   document.body.classList.toggle('gaming');
-  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'OFFICIAL';
+  toggle.innerText = document.body.classList.contains('gaming') ? 'GAMING' : 'LUMOS';
 };
 
 // -------------------------------
