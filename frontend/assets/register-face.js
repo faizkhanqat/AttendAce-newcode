@@ -63,7 +63,7 @@ lastScore = 0;
     video.srcObject = stream;
     video.onloadedmetadata = () => {
       video.play();
-      status.innerText = 'Bring your face closer to the camera, you monkey!';
+      status.innerText = 'Position your face closer to the camera.';
       startDetection();
     };
   } catch (err) {
@@ -117,14 +117,14 @@ faceapi.matchDimensions(canvas, displaySize);
       lastDescriptor = resized.descriptor;
       lastScore = resized.detection.score;
 
-      status.innerText = `Hey you monkey! Come closer to the camera! Confidence: ${lastScore.toFixed(2)}`;
+      status.innerText = `Lean in a bit… confidence: ${lastScore.toFixed(2)}`;
 
       // ✅ Stop scanning at 0.9
       if (lastScore >= 0.9) {
         scanCompleted = true;
         clearInterval(detectionInterval);
 
-        status.innerText = 'Alright alright, face scanned, move away now.';
+        status.innerText = 'All done! You can step back now.';
 
         if (registeredDescriptor) {
           const distance = faceapi.euclideanDistance(
@@ -140,7 +140,7 @@ faceapi.matchDimensions(canvas, displaySize);
           //   matchStatusBox.style.backgroundColor = '#d9534f';
           // }
         } else {
-          matchStatusBox.innerText = 'New Face Captured!. Click on Update Face to save it.';
+          matchStatusBox.innerText = 'New face captured! Tap "Update Face" once again to save it.';
           matchStatusBox.style.backgroundColor = '#000000ff';
         }
 
@@ -160,7 +160,7 @@ async function checkFaceStatus() {
   const token = localStorage.getItem('token');
 
   if (!token) {
-    faceStatusBox.innerText = '⚠️ You are not logged in';
+    faceStatusBox.innerText = 'You are not logged in!';
     faceStatusBox.style.backgroundColor = '#f0ad4e';
     return;
   }
@@ -177,7 +177,7 @@ async function checkFaceStatus() {
   : null;
 
     if (data.registered) {
-  faceStatusBox.innerText = '✅ A face is already registered. Click on the button below to register new face.';
+  faceStatusBox.innerText = 'You already have a face registered. Click on "Update Face" to register a new one.';
   faceStatusBox.style.backgroundColor = '#5f8b6e';
 
   // show UPDATE button only

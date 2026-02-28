@@ -26,7 +26,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Step 2: Check attendance status
   const attendanceStatus = await checkAttendanceStatus(activeClass.class_id);
   if (attendanceStatus.marked) {
-    status.innerText = '⚠️ Attendance already marked';
+    status.innerText = 'Attendance already marked for today!';
     hasMarkedAttendance = true;
     return; // ✅ Skip camera and detection
   }
@@ -100,7 +100,7 @@ async function startVideo() {
 
 
 
-      status.innerText = 'Align your face in front of the camera';
+      status.innerText = 'Could you bring your face a little closer to the camera?';
       startDetection();
     };
   } catch (err) {
@@ -170,9 +170,9 @@ async function markFaceAttendance(class_id) {
     const data = await res.json();
 
     if (res.ok) {
-      status.innerText = '✅ Attendance marked successfully!';
+      status.innerText = 'Attendance marked successfully!';
     } else if (res.status === 409) {
-      status.innerText = '⚠️ Attendance already marked';
+      status.innerText = 'Attendance already marked for today';
       hasMarkedAttendance = true; // prevent further 409 POSTs
     } else {
       status.innerText = data.message || '❌ Attendance failed';
@@ -222,16 +222,16 @@ const detection = await faceapi
   );
 
   if (distance > 0.6) {
-    status.innerText = '❌ Face does not match registered face';
+    status.innerText = "This face doesn't match the registered one. If it’s really you, give it another try!";
     clearInterval(detectionInterval);
     return;
   }
 
-status.innerText = '✅ Face verified. Now scan QR to mark attendance.';
+status.innerText = 'Face verified! Go ahead and scan your QR to mark attendance.';
 
 const activeClass = await getActiveClass();
 if (!activeClass) {
-  status.innerText = '⏳ No active class right now';
+  status.innerText = "⏳ Looks like there’s no active class at the moment.";
   clearInterval(detectionInterval);
   return;
 }

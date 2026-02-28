@@ -31,7 +31,7 @@ if (themeToggleBtn) {
     document.body.classList.toggle('gaming');
     themeToggleBtn.innerText = document.body.classList.contains('gaming')
       ? 'GAMING'
-      : 'OFFICIAL';
+      : 'LUMOS';
   };
 }
 
