@@ -89,7 +89,7 @@ exports.updateProfile = async (req, res) => {
 exports.getMyClasses = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT c.id, c.name, u.name AS teacher_name, c.teacher_id
+      `SELECT c.id, c.name, c.subject, u.name AS teacher_name, c.teacher_id
        FROM student_classes sc
        JOIN classes c ON sc.class_id = c.id
        JOIN users u ON c.teacher_id = u.id
@@ -107,7 +107,7 @@ exports.getMyClasses = async (req, res) => {
 exports.getAvailableClasses = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT c.id, c.name, u.name AS teacher_name, c.teacher_id
+      `SELECT c.id, c.name, c.subject, u.name AS teacher_name, c.teacher_id
        FROM classes c
        JOIN users u ON c.teacher_id = u.id
        WHERE c.id NOT IN (SELECT class_id FROM student_classes WHERE student_id = ?)`,

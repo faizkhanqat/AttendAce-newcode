@@ -56,8 +56,9 @@ if (!classes.length) {
 
 // Add column headers
 myClassesContainer.innerHTML += `
-  <div class="grid grid-cols-3 gap-3 font-bold text-sm text-gray-500 px-3 py-2">
-    <span>Subject Code</span>
+  <div class="grid grid-cols-4 gap-3 font-bold text-sm text-gray-500 px-3 py-2">
+    <span>Code</span>
+    <span>Subject</span>
     <span>Teacher</span>
     <span></span>
   </div>
@@ -66,15 +67,16 @@ myClassesContainer.innerHTML += `
 classes.forEach(cls => {
   const row = document.createElement('div');
   row.className =
-    'grid grid-cols-3 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
+    'grid grid-cols-4 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
 
   row.innerHTML = `
     <span class="font-medium">${cls.name}</span>
+    <span class="text-sm">${cls.subject || ''}</span>
     <span class="text-sm">${cls.teacher_name || cls.teacher_id}</span>
     <div class="text-right">
       <button
         class="px-3 py-1 rounded-lg bg-gray-500 text-white text-sm
-               hover:bg-gray-400 hover:shadow-md transition"
+              hover:bg-gray-400 hover:shadow-md transition"
         onclick="unenroll(${cls.id}, this)">
         Unenroll
       </button>
@@ -124,15 +126,16 @@ function renderAvailableClasses(classes) {
   classes.forEach(cls => {
     const row = document.createElement('div');
     row.className =
-  'grid grid-cols-3 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
+  'grid grid-cols-4 gap-3 items-center bg-[var(--card)] border border-gray-200 rounded-xl px-3 py-2 text-[var(--text)]';
 
     row.innerHTML = `
       <span class="font-medium">${cls.name}</span>
+      <span class="text-sm text-gray-500">${cls.subject || ''}</span>
       <span class="text-sm text-gray-500">${cls.teacher_name || cls.teacher_id}</span>
       <div class="text-right">
         <button
           class="px-3 py-1 rounded-lg bg-[#5FC26B] text-white text-sm
-                 hover:opacity-90 hover:shadow-md transition"
+                hover:opacity-90 hover:shadow-md transition"
           onclick="enroll(${cls.id}, '${escapeHtml(cls.name)}',
           '${escapeHtml(cls.teacher_name || cls.teacher_id)}')">
           Enroll
