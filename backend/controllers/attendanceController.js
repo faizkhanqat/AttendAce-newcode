@@ -372,55 +372,68 @@ exports.getClassAttendanceCSV = async (req, res) => {
 };
 
 exports.getClassAttendancePreview = async (req, res) => {
-  const classId = req.params.id;
-
   try {
-    // 1️⃣ Get total classes conducted
-    const totalResult = await db.query(
-      `SELECT COUNT(*) as total 
-       FROM attendance 
-       WHERE class_id = $1`,
+    const classId = req.params.id;
+    const teacherId = req.user.id;
+
+    // 1️⃣ Verify teacher owns class
+    const [cls] = await pool.query(
+      'SELECT * FROM classes WHERE id = ? AND teacher_id = ?',
+      [classId, teacherId]
+    );
+
+    if (!cls.length)
+      return res.status(403).json({ message: 'Unauthorized' });
+
+    // 2️⃣ Get enrolled students
+    const [students] = await pool.query(
+      `SELECT u.id, u.name
+       FROM student_classes sc
+       JOIN users u ON u.id = sc.student_id
+       WHERE sc.class_id = ?`,
       [classId]
     );
 
-    const totalClasses = parseInt(totalResult.rows[0].total);
-
-    // 2️⃣ Get students in class
-    const studentsResult = await db.query(
-      `SELECT s.id, s.name
-       FROM students s
-       JOIN enrollments e ON e.student_id = s.id
-       WHERE e.class_id = $1`,
+    // 3️⃣ Get all attendance records
+    const [attendance] = await pool.query(
+      `SELECT student_id, conducted_on, status
+       FROM attendance
+       WHERE class_id = ?
+       ORDER BY conducted_on ASC`,
       [classId]
     );
 
-    const students = [];
+    // 4️⃣ Get unique class dates
+    const classDates = [
+      ...new Set(attendance.map(a =>
+        new Date(a.conducted_on).toISOString().slice(0, 10)
+      ))
+    ];
 
-    for (let stu of studentsResult.rows) {
+    // 5️⃣ Build student attendance matrix
+    const formattedStudents = students.map(student => {
+      const records = classDates.map(date => {
+        const record = attendance.find(a =>
+          a.student_id === student.id &&
+          new Date(a.conducted_on).toISOString().slice(0,10) === date
+        );
 
-      const recordResult = await db.query(
-        `SELECT status 
-         FROM attendance
-         WHERE class_id = $1 AND student_id = $2
-         ORDER BY date ASC`,
-        [classId, stu.id]
-      );
-
-      const records = recordResult.rows.map(r => r.status);
-
-      students.push({
-        name: stu.name,
-        records
+        return record && record.status === 'present' ? 'present' : 'absent';
       });
-    }
+
+      return {
+        name: student.name,
+        records
+      };
+    });
 
     res.json({
-      totalClasses,
-      students
+      totalClasses: classDates.length,
+      students: formattedStudents
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('❌ Preview error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
