@@ -10,6 +10,8 @@ const {
   getStudentAnalytics, 
   getTeacherAnalytics 
 } = require('../controllers/attendanceController');
+const attendanceController = require('../controllers/attendanceController');
+const verifyToken = require('../middlewares/verifyToken');
 
 // Mark attendance via QR
 router.post('/mark', authenticateToken, authorizeRole('student'), markAttendance);
@@ -25,5 +27,7 @@ router.get('/analytics/teacher', authenticateToken, authorizeRole('teacher'), ge
 
 //csv
 router.get('/analytics/class/:class_id/csv', authenticateToken, authorizeRole('teacher'), getClassAttendanceCSV);
+
+router.get('/class/:id', verifyToken, attendanceController.getClassAttendancePreview);
 
 module.exports = router;

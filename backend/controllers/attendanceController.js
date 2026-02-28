@@ -369,3 +369,57 @@ exports.getClassAttendanceCSV = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+exports.getClassAttendancePreview = async (req, res) => {
+  const classId = req.params.id;
+
+  try {
+    // 1️⃣ Get total classes conducted
+    const totalResult = await db.query(
+      `SELECT COUNT(*) as total 
+       FROM attendance 
+       WHERE class_id = $1`,
+      [classId]
+    );
+
+    const totalClasses = parseInt(totalResult.rows[0].total);
+
+    // 2️⃣ Get students in class
+    const studentsResult = await db.query(
+      `SELECT s.id, s.name
+       FROM students s
+       JOIN enrollments e ON e.student_id = s.id
+       WHERE e.class_id = $1`,
+      [classId]
+    );
+
+    const students = [];
+
+    for (let stu of studentsResult.rows) {
+
+      const recordResult = await db.query(
+        `SELECT status 
+         FROM attendance
+         WHERE class_id = $1 AND student_id = $2
+         ORDER BY date ASC`,
+        [classId, stu.id]
+      );
+
+      const records = recordResult.rows.map(r => r.status);
+
+      students.push({
+        name: stu.name,
+        records
+      });
+    }
+
+    res.json({
+      totalClasses,
+      students
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
