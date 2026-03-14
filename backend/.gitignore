@@ -5,7 +5,9 @@ node_modules/
 backend/.env
 
 # SSL certificates (optional)
-backend/ssl/
+backend/ssl/server.cert
+backend/ssl/server.crt
+backend/ssl/server.key
 
 # Logs
 *.log
