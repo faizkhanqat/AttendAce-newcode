@@ -27,10 +27,10 @@ AttendAce introduces a **session-driven attendance system** designed to prevent 
 <br>
 
 [About](#-about-attendace) •
-[Features](#--core-features) •
-[Tech Stack](#tech-stack) •
-[Architecture](#system-architecture) •
-[Installation](#installation--setup)
+[Features](#-core-features) •
+[Tech Stack](#-tech-stack) •
+[Architecture](#-system-architecture) •
+[Installation](#-installation--setup)
 
 </div>
 
@@ -39,18 +39,18 @@ AttendAce introduces a **session-driven attendance system** designed to prevent 
 # 📌 Table of Contents
 
 - [About AttendAce](#-about-attendace)
-- [Why AttendAce](#why-attendace)
-- [Core Features](#--core-features)
-- [Tech Stack](#tech-stack)
-- [System Architecture](#system-architecture)
-- [Project Structure](#project-structure)
-- [Installation & Setup](#installation--setup)
-- [Security Model](#security-model)
-- [API Overview](#api-overview)
-- [Deployment](#deployment)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Project Philosophy](#project-philosophy)
+- [Why AttendAce](#-why-attendace)
+- [Core Features](#-core-features)
+- [Tech Stack](#-tech-stack)
+- [System Architecture](#-system-architecture)
+- [Project Structure](#-project-structure)
+- [Installation & Setup](#-installation--setup)
+- [Security Model](#-security-model)
+- [API Overview](#-api-overview)
+- [Deployment](#-deployment)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [Project Philosophy](#-project-philosophy)
 
 ---
 
